@@ -306,7 +306,7 @@ function Button({ primary }) {
 ## What's next
 
 With your components structured and styled, the next step is making them dynamic — passing data through props and managing local UI state with the useState hook.`,
-    video: "https://youtu.be/Im287Wj8X0M?si=46gd5UWAQRVGe5BT",
+    video: "https://youtu.be/rQACwgrYwKM",
     name: "Styling the Webpage",
     course: 2,
     duration: 290,

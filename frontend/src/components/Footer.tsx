@@ -67,7 +67,7 @@ function Footer() {
           <h3 className="text-2xl font-extrabold font-cal-sans leading-4">
             Learn Loop
           </h3>
-          <span className="text-muted font-lora text-center">
+          <span className="text-muted text-center font-lora">
             {role === "student"
               ? "Learn Today. Lead Tomorrow."
               : "Teach. Inspire. Transform."}
@@ -85,7 +85,7 @@ function Footer() {
                 <h3 className="text-2xl font-bold font-cal-sans">
                   {item.name}
                 </h3>
-                <span className="text-muted font-lora text-center w-60">
+                <span className="text-muted text-center w-60">
                   {role === "student"
                     ? "Learn Today. Lead Tomorrow."
                     : "Teach. Inspire. Transform."}
@@ -105,7 +105,7 @@ function Footer() {
         })}
       </div>
       <div className="border-t border-footer-border">
-        <div className="flex items-center justify-between p-4 text-xs text-background-secondary max-w-7xl mx-auto">
+        <div className="flex items-center justify-between p-4 text-xs text-white max-w-7xl mx-auto">
           <span>&copy; Copyright Reserved</span>
           <span>
             Made with ❤️ by{" "}

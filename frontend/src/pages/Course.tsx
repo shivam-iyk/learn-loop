@@ -1,6 +1,6 @@
 import { Skeleton } from "@heroui/react";
 import CourseDetails from "../components/CourseDetails";
-import EnrollCourse from "../components/CourseStatus";
+import CourseStatus from "../components/CourseStatus";
 import { lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import RateCourse from "../components/RateCourse";
@@ -18,12 +18,12 @@ function Course() {
   return (
     <div className="flex flex-col pb-6 gap-6">
       <CourseDetails>
-        <EnrollCourse className="max-md:hidden" courseId={params?.courseId} />
+        <CourseStatus className="max-md:hidden" courseId={params?.courseId} />
       </CourseDetails>
       <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col gap-4">
-            <EnrollCourse
+            <CourseStatus
               className="md:hidden py-0 *:max-md:w-full"
               courseId={params?.courseId}
             />

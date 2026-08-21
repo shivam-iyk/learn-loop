@@ -14,7 +14,10 @@ function Slide({
   isSuggested?: boolean;
 }) {
   return (
-    <Link to={`/course/${course.id}`} className="group focus-visible:outline-none w-full">
+    <Link
+      to={`/course/${course.id}`}
+      className="group focus-visible:outline-none w-full"
+    >
       <div className="relative overflow-hidden w-full rounded-xl aspect-video">
         <img
           src={course.cover}
@@ -27,17 +30,17 @@ function Slide({
             {isSuggested ? "Start Learning" : "Continue Learning"}
           </h3>
         </div>
-        <div className="bg-linear-to-b from-transparent via-black/50 to-black/80 absolute bottom-0 text-white p-4 w-full rounded-b-xl transition-all">
-          <h3 className="lg:text-2xl md:text-xl text-lg text-background font-outfit">
+        <div className="bg-linear-to-b from-transparent via-black/50 to-black/80 absolute bottom-0 p-4 w-full rounded-b-xl transition-all">
+          <h3 className="lg:text-2xl md:text-xl text-lg font-outfit text-background dark:text-foreground truncate">
             {course.name}
           </h3>
           <div className="flex justify-between items-center">
-            <p className="md:text-base text-sm text-background-tertiary/60 truncate">
+            <p className="md:text-base text-sm text-background-tertiary/60 dark:text-muted truncate">
               {course.tagline}
             </p>
             <RatingChip
               rating={course.rating_sum / course.rating_count}
-              className="bg-warning font-poppins font-medium"
+              className="bg-warning font-poppins font-medium text-black"
               size={12}
               starClassName="text-black"
             />

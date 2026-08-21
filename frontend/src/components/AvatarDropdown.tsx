@@ -17,7 +17,7 @@ export function AvatarDropdown({ handleLogOut }: { handleLogOut: () => void }) {
         </Avatar>
       </Dropdown.Trigger>
       <Dropdown.Popover>
-        <div className="px-3 pt-3 pb-1 font-lora">
+        <div className="px-3 pt-3 pb-1">
           <div className="flex items-center gap-2">
             <Avatar size="sm" className="bg-transparent">
               <Avatar.Image alt="Jane" src={avatar ?? "/avatar-big.png"} />

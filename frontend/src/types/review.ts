@@ -7,6 +7,7 @@ export interface Review {
   review: string;
   created_at: string;
   course: number;
+  course_name: string;
 }
 
 export interface ReviewSlice {

@@ -57,7 +57,7 @@ function Filters({ className = "" }: { className?: string }) {
   return (
     <div
       className={cn(
-        "lg:w-80 max-md:hidden md:bg-background/50 rounded-lg sm:p-4 px-2 font-lora h-fit sticky top-20",
+        "lg:w-80 max-md:hidden md:bg-background/50 rounded-lg sm:p-4 px-2 h-fit sticky top-20",
         className,
       )}
     >
@@ -134,7 +134,7 @@ function Filters({ className = "" }: { className?: string }) {
                   key={index}
                 >
                   <Chip
-                    className={`capitalize rounded-full border border-accent text-accent bg-white ${filters.categories.includes(item) ? "bg-accent text-white" : ""}`}
+                    className={`capitalize rounded-full border border-accent text-accent bg-background ${filters.categories.includes(item) ? "bg-accent text-white" : ""}`}
                   >
                     {item}
                   </Chip>

@@ -154,6 +154,10 @@
   min-height: 80px;
 }
 
+.ql-editor:before {
+  @apply text-field-placeholder!;
+}
+
 .ql-tooltip {
   @apply bg-background-secondary! rounded-3xl p-3! text-black! border-none! shadow-sm!;
 }
@@ -183,19 +187,19 @@
 }
 
 .ql-picker-label {
-  @apply bg-background! w-12! ring-accent px-2! py-1.5! rounded-3xl! outline-none!;
+  @apply bg-background! w-12! ring-accent px-2! text-foreground! hover:text-accent! py-1.5! rounded-3xl! outline-none!;
 }
 
 .ql-picker-label:focus-visible {
-  @apply ring-2;
+  @apply ring-2 text-foreground!;
 }
 
 .ql-picker-label[aria-expanded="true"] {
-  @apply text-black!;
+  @apply text-foreground! border-default!;
 }
 
 .ql-picker-options {
-  @apply rounded-3xl! p-0!;
+  @apply rounded-3xl! p-0! bg-background! text-foreground! border-default!;
 }
 
 .ql-picker-item {

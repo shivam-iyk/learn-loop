@@ -103,7 +103,7 @@ function Connect() {
               filteredChats.map((item, index) => (
                 <Link
                   to={`/connect/${item.id}`}
-                  className={`flex items-center gap-2 p-3 hover:bg-background ${location.pathname.includes(`/connect/${item.id}`) ? "group-hover:bg-white bg-background group-focus-within:bg-white" : ""} focus-visible:bg-background focus-visible:outline-none`}
+                  className={`flex items-center gap-2 p-3 hover:bg-default ${location.pathname.includes(`/connect/${item.id}`) ? "group-hover:bg-background bg-default group-focus-within:bg-white" : ""} focus-visible:bg-background focus-visible:outline-none`}
                   key={index}
                 >
                   <Avatar className="rounded-full">

@@ -6,6 +6,7 @@ function Logo({ className = "" }: { className?: string }) {
       src="/logo.png"
       loading="eager"
       className={cn("w-10 object-contain", className)}
+      draggable={false}
     />
   );
 }

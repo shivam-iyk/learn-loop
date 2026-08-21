@@ -187,7 +187,7 @@ function CourseDetailsForm({
           return result.success ? null : result.error.issues[0].message;
         }}
       >
-        <Label>Price</Label>
+        <Label>Price (in )</Label>
         <Input placeholder="Value of this course" />
         <Description>Enter 0 if you want this course to be free</Description>
         <FieldError />

@@ -39,7 +39,7 @@ function ExploreCard({ course }: { course: Course }) {
           <div className="flex gap-2">
             <RatingChip
               rating={course.rating_sum / course.rating_count}
-              className="bg-warning text-sm"
+              className="bg-warning text-sm text-black"
               starClassName="text-black"
               size={14}
             />

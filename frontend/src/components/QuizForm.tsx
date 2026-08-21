@@ -176,7 +176,7 @@ function QuizForm({
                     </Modal.Trigger>
                     <Modal.Backdrop>
                       <Modal.Container>
-                        <Modal.Dialog className="sm:max-w-[360px] font-lora">
+                        <Modal.Dialog className="sm:max-w-[360px]">
                           <Modal.Header className="items-center text-center">
                             <Modal.Heading className="tracking-tight text-lg font-semibold">
                               Delete Question

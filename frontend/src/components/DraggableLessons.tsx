@@ -99,7 +99,7 @@ function Lesson({
           </Button>
           <Modal.Backdrop>
             <Modal.Container>
-              <Modal.Dialog className="font-lora">
+              <Modal.Dialog>
                 <Modal.Icon className="bg-danger-soft text-danger-soft-foreground mx-auto mb-4">
                   <Trash />
                 </Modal.Icon>

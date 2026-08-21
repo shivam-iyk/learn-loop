@@ -25,10 +25,10 @@ function CourseDetails({ children }: { children: ReactNode }) {
               {course.category}
             </Chip>
             <div>
-              <h1 className="text-3xl tracking-tight font-bold font-outfit text-background">
+              <h1 className="text-3xl tracking-tight font-bold font-outfit text-background dark:text-foreground">
                 {course.name}
               </h1>
-              <p className="text-background-secondary/80 text-base">
+              <p className="text-background-secondary/80 dark:text-foreground/80 text-base">
                 {course.tagline}
               </p>
             </div>
@@ -42,11 +42,11 @@ function CourseDetails({ children }: { children: ReactNode }) {
                 </Chip>
               ))}
             </div>
-            <div className="flex items-center gap-2 whitespace-nowrap flex-wrap text-background-secondary/60 text-sm">
+            <div className="flex items-center gap-2 whitespace-nowrap flex-wrap text-background-secondary/60 dark:text-foreground text-sm">
               <RatingStars
                 stars={course.rating_sum / course.rating_count}
                 subText={"rated"}
-                subTextClassName="text-background-secondary/60"
+                subTextClassName="text-background-secondary/60 dark:text-foreground"
               />
               <span>·</span>
               <div className="flex items-center gap-1">

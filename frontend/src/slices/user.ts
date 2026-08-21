@@ -4,8 +4,8 @@ import type { UserSlice } from "../types/user";
 export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
   loading: false,
   user: {
-    id: 0,
-    role: "student",
+    id: 11,
+    role: "instructor",
     avatar: "/avatar-small.png",
     wallet: 0,
     skills: null,

@@ -116,7 +116,7 @@ const Editor = forwardRef<Quill, EditorProps>(
     return (
       <div
         data-invalid={isInvalid}
-        className={`shadow-sm bg-white transition-colors rounded-field ring-2 ${focused ? "ring-accent data-[invalid='true']:ring-danger bg-white" : "ring-transparent data-[invalid='true']:ring data-[invalid='true']:ring-danger hover:bg-field-hover"}`}
+        className={`shadow-sm bg-field transition-colors rounded-field ring-2 ${focused ? "ring-accent data-[invalid='true']:ring-danger bg-field" : "ring-transparent data-[invalid='true']:ring data-[invalid='true']:ring-danger hover:bg-field-hover"}`}
       >
         <EditorToolbar ref={toolbarRef} className={toolbarClassName} />
         <div

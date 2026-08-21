@@ -48,7 +48,7 @@ function MyCourseCard({ course }: { course: Course }) {
             </div>
             <RatingChip
               rating={course.rating_sum / course.rating_count}
-              className="bg-warning border border-black font-medium"
+              className="bg-warning border text-black border-black font-medium"
               starClassName="text-black"
               size={14}
             />

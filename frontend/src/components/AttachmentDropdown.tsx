@@ -125,7 +125,7 @@ function AttachmentDropdown() {
                     <audio src={attachment.url} controls className="w-full" />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center font-lora text-black py-4">
+                  <div className="flex flex-col items-center text-black py-4">
                     <span className="bg-background-secondary rounded-2xl p-2 mx-auto">
                       <FileText className="size-16" strokeWidth={1.5} />
                     </span>

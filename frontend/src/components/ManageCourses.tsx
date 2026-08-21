@@ -1,10 +1,11 @@
-import { Table } from "@heroui/react";
+import { Button, Table, Tooltip } from "@heroui/react";
 import useBoundStore from "../store";
-import { Layers, Star, Users } from "lucide-react";
+import { Eye, Layers, Star, Users } from "lucide-react";
 import RatingStars from "../components/RatingStars";
 import EditCourseModal from "./EditCourseModal";
 import CustomEmptyState from "./CustomEmptyState";
 import ArchiveCourseModal from "./ArchiveCourseModal";
+import { Link } from "react-router-dom";
 
 function ManageCourses() {
   const { courses } = useBoundStore();
@@ -73,6 +74,20 @@ function ManageCourses() {
                 </Table.Cell>
                 <Table.Cell>
                   <div className="flex items-center gap-2">
+                    <Tooltip delay={0}>
+                      <Link to={`/course/${item.id}`}>
+                        <Button
+                          className="bg-accent-soft text-accent-soft-foreground"
+                          size="sm"
+                          isIconOnly
+                        >
+                          <Eye />
+                        </Button>
+                      </Link>
+                      <Tooltip.Content>
+                        <p className="font-outfit">View Course</p>
+                      </Tooltip.Content>
+                    </Tooltip>
                     <EditCourseModal courseId={item.id} />
                     <ArchiveCourseModal courseId={item.id} />
                   </div>

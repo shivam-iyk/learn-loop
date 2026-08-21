@@ -75,7 +75,7 @@ function Navbar() {
 
   return (
     <div
-      className={`bg-white/50 backdrop-blur-lg w-full sm:px-8 px-4 py-2 border-b sticky top-0 left-0 z-50 ${location.pathname.includes("/connect/") ? "max-md:hiddden" : ""}`}
+      className={`bg-white/50 dark:bg-black/50 backdrop-blur-lg w-full sm:px-8 px-4 py-2 border-b sticky top-0 left-0 z-50 ${location.pathname.includes("/connect/") ? "max-md:hiddden" : ""}`}
     >
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <Drawer>
@@ -98,7 +98,7 @@ function Navbar() {
                   <Drawer.Heading>
                     <div className="flex justify-center items-center gap-2">
                       <Logo />
-                      <span className="text-3xl font-extrabold tracking-tighter font-lora">
+                      <span className="text-3xl font-extrabold tracking-tighter">
                         LMS
                       </span>
                     </div>

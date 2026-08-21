@@ -1,11 +1,11 @@
-import SearchCourses from "../components/SearchCourses";
+import SearchCourses from "../components/SearchBar";
 import useBoundStore from "../store";
 import MyCourseCard from "../components/MyCourseCard";
 import { useMemo, useState } from "react";
 import { Button, Chip } from "@heroui/react";
-import EmptyState from "../components/EmptyState";
 import { BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import CustomEmptyState from "../components/CustomEmptyState";
 
 function MyCourses() {
   const { setSearch, courses } = useBoundStore();
@@ -61,7 +61,7 @@ function MyCourses() {
             <MyCourseCard course={item} key={index} />
           ))
         ) : (
-          <EmptyState
+          <CustomEmptyState
             icon={BookOpen}
             title="No Courses Found"
             description={
@@ -82,6 +82,7 @@ function MyCourses() {
                 </div>
               )
             }
+            containerClassName="min-h-[50vh]"
           />
         )}
       </div>

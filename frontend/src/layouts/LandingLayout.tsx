@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ListBox, ListBoxItem, Select } from "@heroui/react";
 import { Check, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "../components/Logo";
 
 const Navbar = () => {
@@ -186,9 +186,7 @@ const Footer = () => {
           </div>
           <div className="grid sm:grid-cols-2 gap-4 md:justify-evenly sm:justify-start max-md:mt-6 w-full">
             <div className="flex flex-col text-footer-foreground">
-              <h4 className="text-xl font-semibold">
-                Quick Links
-              </h4>
+              <h4 className="text-xl font-semibold">Quick Links</h4>
               <ul className="flex flex-col gap-2 text-muted font-outfit mt-4">
                 {nav.map((item, index) => (
                   <li key={index}>
@@ -242,8 +240,18 @@ const Footer = () => {
 };
 
 function LandingLayout() {
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("light");
+    const theme =
+      document.documentElement.attributes.getNamedItem("data-theme");
+    if (!theme) return;
+    theme.value = "light";
+    document.documentElement.attributes.setNamedItem(theme);
+  }, []);
+
   return (
-    <div>
+    <div data-theme="light" className="light">
       <Navbar />
       <div className="relative">
         <div className="min-h-screen w-full">

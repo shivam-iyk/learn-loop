@@ -12,7 +12,7 @@ function UploadGuidelines() {
       <Modal.Backdrop>
         <Modal.Container size="lg">
           <Modal.Dialog>
-            <Modal.Body className="text-black font-lora">
+            <Modal.Body className="text-black">
               <h5 className="text-xl tracking-tight font-outfit font-semibold text-center">
                 Video Guidelines
               </h5>

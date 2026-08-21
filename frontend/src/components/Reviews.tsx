@@ -7,12 +7,12 @@ import { useMemo } from "react";
 
 function Review({ review }: { review: ReviewI }) {
   return (
-    <div className="flex flex-col gap-3 first:border-b p-4 font-lora">
+    <div className="flex flex-col gap-3 first:border-b p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Avatar className="rounded-full size-7">
             <Avatar.Image src={review.user_avatar} />
-            <Avatar.Fallback>{review.user_name}</Avatar.Fallback>
+            <Avatar.Fallback>{review.user_name[0]}</Avatar.Fallback>
           </Avatar>
           <div>
             <span className="font-semibold text-foreground">

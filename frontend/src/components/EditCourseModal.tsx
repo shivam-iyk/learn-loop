@@ -37,6 +37,18 @@ function EditCourseModal({
 
   const handleUpdate = () => {
     setOpen(false);
+    setStep(1);
+    setForm({
+      name: "",
+      tagline: "",
+      description: "",
+      level: "beginner",
+      category: "",
+      skills: [],
+      price: "",
+    });
+    setLessons([]);
+    setCover({ file: null, uri: "" });
   };
 
   useEffect(() => {
@@ -69,11 +81,18 @@ function EditCourseModal({
     }
   }, [lessonsStore]);
 
+  if(notFound) {
+    
+  }
+
   return (
     <Modal>
       <Tooltip delay={0}>
         <Button
-          className={cn("bg-success-soft text-success-soft-foreground", buttonClassName)}
+          className={cn(
+            "bg-success-soft text-success-soft-foreground",
+            buttonClassName,
+          )}
           onClick={() => setOpen(true)}
           size="sm"
           isIconOnly
@@ -89,8 +108,8 @@ function EditCourseModal({
         onOpenChange={setOpen}
         isDismissable={false}
       >
-        <Modal.Container size="lg" scroll="inside">
-          <Modal.Dialog>
+        <Modal.Container size="lg" scroll="inside" className="p-5">
+          <Modal.Dialog className="my-0 max-h-[95vh]">
             <Modal.CloseTrigger />
             <Modal.Header>
               <h4 className="text-xl font-outfit font-semibold tracking-tight text-center mb-4">
@@ -98,14 +117,14 @@ function EditCourseModal({
               </h4>
             </Modal.Header>
             {notFound ? (
-              <Modal.Body className="font-lora">
+              <Modal.Body>
                 <CustomEmptyState
                   title="Something went wrong"
                   description="Course not found"
                 />
               </Modal.Body>
             ) : (
-              <Modal.Body className="text-black font-lora">
+              <Modal.Body>
                 {step === 1 && (
                   <CourseDetailsForm
                     form={form}
@@ -114,7 +133,7 @@ function EditCourseModal({
                     setCover={setCover}
                     handleNext={() => setStep(2)}
                     headerClassName="hidden"
-                    formClassName="gap-4 max-h-[80vh]"
+                    formClassName="gap-4 "
                     toolbarClassName="sm:overflow-x-auto sm:flex-nowrap [&>*]:first:overflow-x-scroll [&>*]:first:flex-nowrap"
                   />
                 )}
@@ -125,7 +144,7 @@ function EditCourseModal({
                     handleBack={() => setStep(1)}
                     handleNext={handleUpdate}
                     headerClassName="hidden"
-                    containerClassName="max-h-[80vh]"
+                    actionText="Update"
                     toolbarClassName="sm:flex-nowrap [&>*]:first:overflow-x-scroll [&>*]:first:flex-nowrap"
                   />
                 )}

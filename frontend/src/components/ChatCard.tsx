@@ -1,9 +1,4 @@
-import {
-  Avatar,
-  Button,
-  Input,
-  Skeleton,
-} from "@heroui/react";
+import { Avatar, Button, Input, Skeleton } from "@heroui/react";
 import { ArrowLeft, Loader2, Send } from "lucide-react";
 import {
   lazy,
@@ -43,16 +38,18 @@ function ChatCard() {
 
     const older = Array.from(
       { length: messages.length === 0 ? 20 : 10 },
-      (_, i) => ({
-        id: Date.now() + i,
-        avatar: "/avatar-small.png",
-        user: i.toString().includes("1") || i.toString().includes("5") ? 0 : 2,
-        name: "Raghav",
-        role: "student",
-        message: `Old message ${messages.length + i}`,
-        attachment: null,
-        created_at: new Date().toISOString(),
-      } as MessageI),
+      (_, i) =>
+        ({
+          id: Date.now() + i,
+          avatar: "/avatar-small.png",
+          user:
+            i.toString().includes("1") || i.toString().includes("5") ? 0 : 2,
+          name: "Raghav",
+          role: "student",
+          message: `Old message ${messages.length + i}`,
+          attachment: null,
+          created_at: new Date().toISOString(),
+        }) as MessageI,
     );
 
     previousHeightRef.current = containerRef.current.scrollHeight;
@@ -124,10 +121,11 @@ function ChatCard() {
 
   return (
     <div className="flex flex-col md:col-span-3 max-md:w-full">
-      <div className="flex items-center gap-2 p-3 max-md:h-18 border-b max-md:fixed top-0 max-md:z-50 left-0 max-md:bg-white max-md:w-full">
+      <div className="flex items-center gap-2 p-3 max-md:h-18 border-b max-md:fixed top-0 max-md:z-50 left-0 max-md:bg-background max-md:w-full">
         <Button
           size="sm"
           variant="ghost"
+          className="md:hidden"
           onClick={() => history.back()}
           isIconOnly
         >
@@ -167,7 +165,7 @@ function ChatCard() {
           ))}
         </InfiniteScroll>
       </div>
-      <div className="flex items-center gap-2 p-3 h-18 border-t max-md:w-full max-md:fixed bottom-0 left-0 bg-white">
+      <div className="flex items-center gap-2 p-3 h-18 border-t max-md:w-full max-md:fixed bottom-0 left-0 bg-default/50">
         <Suspense
           fallback={<Skeleton className="size-9 md:size-8 rounded-xl" />}
         >

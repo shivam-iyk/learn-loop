@@ -4,14 +4,14 @@ import { Button, cn } from "@heroui/react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-function EnrollCourse({
+function CourseStatus({
   courseId,
   className,
 }: {
   courseId?: string;
   className?: string;
 }) {
-  const { course, enrolledCourses, progress } = useBoundStore();
+  const { course, enrolledCourses, progress, user } = useBoundStore();
 
   const benefits = [
     {
@@ -33,6 +33,10 @@ function EnrollCourse({
     if (!id) return false;
     return enrolledCourses.some((item) => item.id === id);
   }, [courseId]);
+
+  if (course.owner === user.id) {
+    return null;
+  }
 
   return (
     <div
@@ -95,4 +99,4 @@ function EnrollCourse({
   );
 }
 
-export default EnrollCourse;
+export default CourseStatus;

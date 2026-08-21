@@ -58,7 +58,7 @@ function DeleteAccount() {
                     Feedback
                   </h4>
                 </Modal.Header>
-                <Modal.Body className="font-lora">
+                <Modal.Body>
                   <Form className="flex flex-col gap-4">
                     <TextField
                       name="issue"

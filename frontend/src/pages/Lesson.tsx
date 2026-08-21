@@ -15,7 +15,7 @@ import RateCourse from "../components/RateCourse";
 function Lesson() {
   const params = useParams<{ lessonId?: string }>();
 
-  const { lesson, progress } = useBoundStore();
+  const { course, user, lesson, progress } = useBoundStore();
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -24,7 +24,7 @@ function Lesson() {
           <iframe
             width="100%"
             height="100%"
-            src="https://www.youtube.com/embed/Im287Wj8X0M"
+            src={`https://youtube.com/embed/${lesson.video.split("/").pop()}`}
             title="Cigarettes After Sex - Apocalypse (Sub. Español + Lyrics)"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           ></iframe>
@@ -40,10 +40,12 @@ function Lesson() {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
                 <div className="flex items-center gap-2">
-                  <Button>
-                    <CheckCircle2 />
-                    Mark Complete
-                  </Button>
+                  {course.owner !== user.id && (
+                    <Button>
+                      <CheckCircle2 />
+                      Mark Complete
+                    </Button>
+                  )}
                   <Button variant="secondary">
                     <Maximize />
                     Fullscreen

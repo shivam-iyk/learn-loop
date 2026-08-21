@@ -24,6 +24,7 @@ function BasicDetailsForm() {
     <Form className="flex flex-col gap-6 scroll-mt-20" id="basic-details">
       <TextField
         name="name"
+        autoComplete="name"
         value={form.name}
         onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
         validate={(value) => {
@@ -40,6 +41,7 @@ function BasicDetailsForm() {
         value={form.bio}
         onChange={(value) => setForm((prev) => ({ ...prev, bio: value }))}
         label="Bio"
+        placeholder="Tell about you"
         validate={(value) => {
           const result = bioSchema.safeParse(value);
           return result.success ? null : result.error.issues[0].message;

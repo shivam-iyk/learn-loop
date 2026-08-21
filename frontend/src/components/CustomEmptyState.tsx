@@ -7,12 +7,14 @@ function CustomEmptyState({
   description,
   iconSize = 24,
   containerClassName = "",
+  actions,
 }: {
   icon?: LucideIcon;
   title: string;
   description: string;
   iconSize?: number;
   containerClassName?: string;
+  actions?: React.ReactNode;
 }) {
   const Icon = icon;
 
@@ -27,9 +29,12 @@ function CustomEmptyState({
         <Icon size={iconSize} />
       </span>
       <div>
-        <h4 className="text-xl text-black font-outfit font-medium">{title}</h4>
+        <h4 className="text-xl text-foreground font-outfit font-medium">
+          {title}
+        </h4>
         <span className="text-sm text-muted">{description}</span>
       </div>
+      <div className="mt-2">{actions}</div>
     </EmptyState>
   );
 }

@@ -28,7 +28,7 @@ function EarningStats() {
             <h4 className="text-2xl font-agdasima uppercase font-bold tracking-tight text-accent">
               {title}
             </h4>
-            <p className="text-4xl font-lora">
+            <p className="text-4xl">
               {value.toLocaleString("en-IN", {
                 style: title.toLowerCase().includes("courses sold")
                   ? "decimal"

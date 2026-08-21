@@ -36,6 +36,7 @@ function LessonsForm({
   setLessons,
   handleBack,
   handleNext,
+  actionText = "Continue",
   formClassName = "",
   headerClassName = "",
   containerClassName = "",
@@ -45,6 +46,7 @@ function LessonsForm({
   setLessons: React.Dispatch<React.SetStateAction<LessonFormI[]>>;
   handleBack: () => void;
   handleNext: () => void;
+  actionText?: string;
   formClassName?: string;
   headerClassName?: string;
   containerClassName?: string;
@@ -358,7 +360,7 @@ function LessonsForm({
             handleNext();
           }}
         >
-          Continue
+          {actionText}
           <ChevronRight />
         </Button>
       </div>

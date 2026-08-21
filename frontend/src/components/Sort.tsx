@@ -16,7 +16,7 @@ function Sorting({ className = "" }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-4 w-full text-sm relative max-w-full font-lora",
+        "flex items-center gap-4 w-full text-sm relative max-w-full",
         className,
       )}
     >
@@ -27,7 +27,7 @@ function Sorting({ className = "" }: { className?: string }) {
         {sorting.map(({ id, title }, index) => (
           <Button
             variant="ghost"
-            className={`${sort === id ? "text-accent" : ""} whitespace-nowrap max-sm:w-full max-sm:text-left`}
+            className={`${sort === id ? "text-accent border-accent" : "border-transparent"} sm:border-b-2 hover:sm:bg-transparent sm:rounded-b-none whitespace-nowrap max-sm:w-full max-sm:text-left`}
             onClick={() => setSort(id)}
             slot="close"
             key={index}

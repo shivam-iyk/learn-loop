@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
 import Logo from "../components/Logo";
+import { useEffect } from "react";
 
 function Navbar() {
   return (
@@ -68,7 +69,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-footer-border p-4">
-        <div className="flex justify-between items-center gap-2 text-xs text-footer-foreground max-w-7xl mx-auto">
+        <div className="flex justify-between items-center gap-2 text-xs text-white max-w-7xl mx-auto">
           <span>&copy; Copyrights Reserved</span>
           <span>
             Made with ❤️ by{" "}
@@ -86,6 +87,17 @@ function Footer() {
 }
 
 function AuthLayout() {
+  
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("light");
+    const theme =
+      document.documentElement.attributes.getNamedItem("data-theme");
+    if (!theme) return;
+    theme.value = "light";
+    document.documentElement.attributes.setNamedItem(theme);
+  }, []);
+
   return (
     <div>
       <Navbar />

@@ -8,7 +8,7 @@ function Profile() {
   return (
     <div className="flex flex-col gap-6 py-6">
       <div>
-        <h3 className="text-font-outfit font-bold tracking-tighter sm:text-3xl text-xl">
+        <h3 className="text-font-outfit font-bold tracking-tighter sm:text-3xl text-2xl">
           Profile
         </h3>
         <p className="text-muted max-md:text-sm">

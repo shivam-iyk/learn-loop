@@ -167,19 +167,19 @@ function EditorInfo() {
       >
         <button
           type="button"
-          className="p-2.5! size-fit! rounded-3xl! focus-visible:bg-background! ring-visible hover:text-black! hover:bg-background! focus:text-black!"
+          className="p-2.5! size-fit! rounded-3xl! focus-visible:bg-background! ring-visible hover:text-foreground! hover:bg-background! focus:text-foreground!"
         >
           <Info size={16} />
         </button>
       </Modal.Trigger>
       <Modal.Backdrop>
-        <Modal.Container className="font-lora" size="lg">
+        <Modal.Container size="lg">
           <Modal.Dialog className="overflow-y-auto">
             <Modal.CloseTrigger />
             <h4 className="text-xl font-semibold tracking-tighter text-center">
               Rich Text Editor
             </h4>
-            <Modal.Body className="text-black mt-4">
+            <Modal.Body className="text-foreground mt-4">
               {!isMobile && (
                 <>
                   <h6 className="text-base font-medium tracking-tight mb-2">
@@ -235,7 +235,7 @@ function EditorInfo() {
                         <div className="flex items-center gap-2" key={idx}>
                           <Button
                             variant="tertiary"
-                            className="text-black"
+                            className="text-foreground"
                             size="sm"
                             isIconOnly
                           >

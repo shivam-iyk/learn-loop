@@ -27,7 +27,7 @@ function UserPreview({
               <Avatar.Fallback>{name[0]}</Avatar.Fallback>
             </Avatar>
             <Modal.Body className="flex flex-col gap-2 items-center justify-center">
-              <h4 className="text-3xl font-outfit tracking-tight font-semibold text-black text-center">
+              <h4 className="text-3xl font-outfit tracking-tight font-semibold text-foreground text-center">
                 {name}
               </h4>
               <Chip className="uppercase font-huninn mx-auto rounded-full text-accent-soft-foreground bg-accent-soft">

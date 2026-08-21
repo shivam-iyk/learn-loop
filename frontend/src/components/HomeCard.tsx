@@ -7,7 +7,7 @@ import RatingChip from "./RatingChip";
 function HomeCard({ course }: { course: CourseI }) {
   return (
     <Link to={`/course/${course.id}`} className="ring-visible-offset rounded-xl">
-      <div className="border border-background hover:border-background-tertiary hover:shadow-sm rounded-xl overflow-hidden relative group w-full">
+      <div className="border border-background dark:border-default hover:border-background-tertiary dark:hover:border-muted/30 hover:shadow-sm rounded-xl overflow-hidden relative group w-full">
         <Chip
           variant="soft"
           className="absolute top-2 right-2 rounded-full z-10 capitalize font-poppins"
@@ -36,7 +36,7 @@ function HomeCard({ course }: { course: CourseI }) {
           <div className="flex flex-col gap-1 items-end">
             <RatingChip
               rating={course.rating_sum / course.rating_count}
-              className="bg-black text-white"
+              className="bg-foreground text-background dark:font-medium"
               starClassName="text-warning"
               fill="currentColor"
               size={14}

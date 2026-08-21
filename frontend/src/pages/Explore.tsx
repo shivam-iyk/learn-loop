@@ -1,14 +1,15 @@
-import Filters from "../components/Filters";
 import useBoundStore from "../store";
-import SearchCourses from "../components/SearchCourses";
+import SearchCourses from "../components/SearchBar";
 import Sort from "../components/Sort";
 import ExploreCard from "../components/ExploreCard";
-import { Button, Pagination } from "@heroui/react";
+import { Button, Pagination, Skeleton } from "@heroui/react";
 import { useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
-import EmptyState from "../components/EmptyState";
+import { lazy, Suspense, useEffect } from "react";
 import { BookOpen } from "lucide-react";
 import { getPageNumbers } from "../lib/helpers";
+import CustomEmptyState from "../components/CustomEmptyState";
+
+const Filters = lazy(() => import("../components/Filters"));
 
 function Explore() {
   const { courses, search, setSearch, pagination, setFilters } =
@@ -22,7 +23,13 @@ function Explore() {
 
   return (
     <div className="flex gap-6 py-6">
-      <Filters />
+      <Suspense
+        fallback={
+          <Skeleton className="max-md:hidden lg:w-80 md:w-60 md:h-[70vh] rounded-lg" />
+        }
+      >
+        <Filters />
+      </Suspense>
       <div className="flex flex-1 flex-col gap-4 w-full">
         <h3 className="tracking-tighter sm:text-3xl text-2xl font-bold font-outfit">
           Explore Courses
@@ -31,7 +38,13 @@ function Explore() {
           <SearchCourses value={search} setValue={setSearch} />
           <div className="flex gap-2 max-sm:w-full">
             <Sort isDrawer />
-            <Filters isDrawer />
+            <Suspense
+              fallback={
+                <Skeleton className="md:hidden w-24 h-10 rounded-2xl" />
+              }
+            >
+              <Filters isDrawer />
+            </Suspense>
           </div>
         </div>
         <Sort />
@@ -40,16 +53,18 @@ function Explore() {
             <ExploreCard course={item} key={index} />
           ))
         ) : (
-          <EmptyState
+          <CustomEmptyState
             icon={BookOpen}
             title="No Courses Found"
             description={
-              search.length > 0
-                ? "Try refining your search"
-                : "Try adjusting your filters"
+              courses.length === 0
+                ? "Something went wrong"
+                : search.length > 0
+                  ? "Try refining your search"
+                  : "Try adjusting your filters"
             }
             actions={
-              search.length > 0 ? (
+              courses.length === 0 ? null : search.length > 0 ? (
                 <Button variant="outline" onClick={() => setSearch("")}>
                   Clear Search
                 </Button>
@@ -70,6 +85,7 @@ function Explore() {
                 </Button>
               )
             }
+            containerClassName="min-h-[50vh]"
           />
         )}
         {pagination.pages > 1 && (

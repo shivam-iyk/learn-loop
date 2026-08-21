@@ -29,7 +29,7 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen relative">
+    <div className="flex items-center justify-center min-h-screen relative py-10">
       <Form
         className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white animate-step-in"
         onSubmit={handleSubmit}

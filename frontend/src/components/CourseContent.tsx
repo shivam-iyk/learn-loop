@@ -5,7 +5,7 @@ import { formatDuration } from "../lib/helpers";
 import { cn } from "@heroui/styles";
 
 function CourseContent({ className }: { className?: string }) {
-  const { lessons, progress } = useBoundStore();
+  const { course, lessons, progress, user } = useBoundStore();
 
   return (
     <div className={cn("bg-background/70 rounded-lg p-4 h-fit", className)}>
@@ -20,7 +20,7 @@ function CourseContent({ className }: { className?: string }) {
             key={index}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <div className="p-2 bg-accent/50 rounded-lg text-black">
+              <div className="p-2 bg-accent/50 dark:bg-accent/80 rounded-2xl text-black">
                 {lesson.type === "video" ? (
                   <Play />
                 ) : lesson.type === "quiz" ? (
@@ -39,7 +39,7 @@ function CourseContent({ className }: { className?: string }) {
                 </span>
               </div>
             </div>
-            {index + 1 <= progress.completed && (
+            {index + 1 <= progress.completed && course.owner !== user.id && (
               <CheckCircle2 className="text-accent mr-2" size={20} />
             )}
           </Link>

@@ -26,7 +26,7 @@ import Lesson from "./pages/Lesson";
 
 function App() {
   return (
-    <div className="min-h-screen w-full font-lora">
+    <div className="min-h-screen w-full">
       <Routes>
         <Route element={<AuthLayout />}>
           <Route element={<Login />} path="/login" />
@@ -59,7 +59,7 @@ function App() {
           <Route element={<Settings />} path="/settings" />
         </Route>
       </Routes>
-      <Toast.Provider className="font-lora" />
+      <Toast.Provider />
     </div>
   );
 }
