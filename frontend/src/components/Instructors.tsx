@@ -67,7 +67,7 @@ function Instructors() {
         </div>
       </div>
       <div
-        className="flex items-center gap-2 snap-x overflow-x-auto"
+        className="flex items-center gap-2 snap-x overflow-x-auto scrollbar-thin"
         ref={containerRef}
       >
         {instructors.map((item, index) => (

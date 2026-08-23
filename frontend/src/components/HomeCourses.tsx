@@ -61,7 +61,7 @@ function HomeCourses({ variant, title, path }: Props) {
         )}
       </div>
       {variant === "category" && (
-        <div className="flex items-center gap-2 mb-3 overflow-auto max-w-full">
+        <div className="flex items-center gap-2 mb-3 overflow-auto max-w-full p-1">
           {categories.map((item, index) => (
             <Button
               variant={item === current ? "primary" : "outline"}
@@ -75,7 +75,7 @@ function HomeCourses({ variant, title, path }: Props) {
         </div>
       )}
       {variant === "skills" && (
-        <div className="flex items-center gap-2 mb-3 overflow-auto max-w-full">
+        <div className="flex items-center gap-2 mb-3 overflow-auto max-w-full p-1">
           {skills.map((item, index) => (
             <Button
               variant={item === current ? "primary" : "outline"}

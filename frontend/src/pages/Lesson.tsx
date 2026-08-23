@@ -2,15 +2,16 @@ import { useParams } from "react-router-dom";
 import useBoundStore from "../store";
 import Reviews from "../components/Reviews";
 import CourseContent from "../components/CourseContent";
-import { Button } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Maximize,
   Sliders,
 } from "lucide-react";
 import RateCourse from "../components/RateCourse";
+import { Suspense } from "react";
+import ReportModal from "../components/ReportModal";
 
 function Lesson() {
   const params = useParams<{ lessonId?: string }>();
@@ -19,14 +20,14 @@ function Lesson() {
 
   return (
     <div className="flex flex-col gap-6 py-6">
-      <div className="flex flex-col aspect-video overflow-hidden w-full bg-background rounded-2xl relative col-span-3">
+      <div className="flex-1 max-h-[80vh] aspect-video overflow-hidden w-full bg-background rounded-2xl relative col-span-3">
         {lesson.video && (
           <iframe
             width="100%"
             height="100%"
-            src={`https://youtube.com/embed/${lesson.video.split("/").pop()}`}
-            title="Cigarettes After Sex - Apocalypse (Sub. Español + Lyrics)"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            src={`https://youtube.com/embed/${lesson.video.split("/").pop()}?fs=1&autoplay=1&enablejsapi=1&loop=1&playsInline=1`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share;"
+            allowFullScreen
           ></iframe>
         )}
       </div>
@@ -46,10 +47,21 @@ function Lesson() {
                       Mark Complete
                     </Button>
                   )}
-                  <Button variant="secondary">
-                    <Maximize />
-                    Fullscreen
-                  </Button>
+                  <Suspense fallback={<Skeleton className="" />}>
+                    <ReportModal
+                      heading="Report Issue"
+                      issues={[
+                        "Video not playing",
+                        "Audio problem",
+                        "Incorrect content",
+                        "Missing content",
+                        "Broken link/resource",
+                        "Quiz/assessment issue",
+                        "Typo or grammatical error",
+                        "Other",
+                      ]}
+                    />
+                  </Suspense>
                 </div>
                 <div className="flex items-center gap-2">
                   {parseInt(params?.lessonId || "0") > progress.completed && (

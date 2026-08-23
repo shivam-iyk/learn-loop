@@ -39,7 +39,7 @@ function Course({ course }: { course: CourseI }) {
           </span>
           <RatingChip
             rating={course.rating_sum / course.rating_count}
-            className="bg-warning"
+            className="text-black bg-warning"
             starClassName="text-black"
           />
         </div>
@@ -59,7 +59,7 @@ function Instructor() {
             <Avatar.Fallback>{instructor.name[0]}</Avatar.Fallback>
           </Avatar>
           <div className="flex flex-col gap-2">
-            <Chip className="w-fit bg-accent text-white rounded-full font-huninn uppercase tracking-tight">
+            <Chip className="w-fit bg-accent-soft text-accent-soft-foreground rounded-full font-huninn uppercase tracking-tight">
               Instructor
             </Chip>
             <h3 className="text-3xl tracking-tighter font-bold">
@@ -77,7 +77,7 @@ function Instructor() {
             <div className="flex items-center mt-1 gap-2">
               {instructor.skills.map((skill, index) => (
                 <Chip
-                  className="capitalize border border-accent bg-transparent text-accent rounded-full"
+                  className="capitalize bg-accent text-white rounded-full"
                   key={index}
                 >
                   {skill}

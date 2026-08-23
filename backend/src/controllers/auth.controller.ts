@@ -112,6 +112,30 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, userWithoutSensitiveInfo, "Login successful"));
 });
 
+const handleSocialLogin = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not verified");
+  }
+  const { id } = req.user;
+
+  const { rows: user } = await query("SELECT * FROM users WHERE id = $1", [id]);
+  if (!user[0]) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const token = await generateToken(user[0].id.toString());
+
+  return res
+    .status(200)
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: parseInt(process.env.COOKIE_EXPIRY || "31536000"),
+      sameSite: "lax",
+    })
+    .redirect(`${process.env.CLIENT_SSO_REDIRECT_URL || "/"}?token=${token}`);
+});
+
 const verifyMail = asyncHandler(async (req: Request, res: Response) => {
   const parsed = verifyMailSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -128,7 +152,7 @@ const verifyMail = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "User not found");
   }
 
-  console.log(user[0]?.verify_code)
+  console.log(user[0]?.verify_code);
   if (user[0]?.verify_code.toString() !== code.toString()) {
     throw new ApiError(400, "Invalid verification code");
   }
@@ -259,6 +283,7 @@ export {
   login,
   verifyMail,
   resendVerificationCode,
+  handleSocialLogin,
   forgotPassword,
   logout,
 };

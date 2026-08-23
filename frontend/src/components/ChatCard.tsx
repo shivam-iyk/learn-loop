@@ -165,7 +165,7 @@ function ChatCard() {
           ))}
         </InfiniteScroll>
       </div>
-      <div className="flex items-center gap-2 p-3 h-18 border-t max-md:w-full max-md:fixed bottom-0 left-0 bg-default/50">
+      <div className="flex items-center gap-2 p-3 h-18 border-t max-md:w-full max-md:fixed bottom-0 left-0 bg-background/50">
         <Suspense
           fallback={<Skeleton className="size-9 md:size-8 rounded-xl" />}
         >

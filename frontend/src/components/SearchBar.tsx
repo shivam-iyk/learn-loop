@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 function SearchBar({
   value,
   setValue,
-  placeholder = "",
+  placeholder = "Search for courses",
   className = "",
   inputClassName = "",
   buttonClassName = "",
@@ -22,7 +22,7 @@ function SearchBar({
     <div className={cn("flex items-center gap-2 w-full", className)}>
       <Input
         name="course search"
-        placeholder={placeholder ?? "Search for Courses"}
+        placeholder={placeholder}
         className={cn("bg-background/50 md:w-3/5 w-full", inputClassName)}
         value={value}
         onChange={(e) => setValue(e.target.value)}

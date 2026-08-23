@@ -8,7 +8,9 @@ function InstructorOverview() {
 
   return (
     <div className="p-4 bg-background/50 rounded-lg">
-      <h4 className="text-xl font-semibold tracking-tight font-outfit">Instructor</h4>
+      <h4 className="text-xl font-semibold tracking-tight font-outfit">
+        Instructor
+      </h4>
       <div className="flex flex-col gap-4 mt-4 w-full">
         <div className="flex items-center gap-4">
           <Avatar className="rounded-full size-24">
@@ -16,7 +18,10 @@ function InstructorOverview() {
             <Avatar.Fallback>{instructor.name}</Avatar.Fallback>
           </Avatar>
           <div className="flex flex-col justify-between gap-1">
-            <Link to={`/instructor/${instructor.id}`} className="ring-visible p-1 rounded">
+            <Link
+              to={`/instructor/${instructor.id}`}
+              className="ring-visible p-1 rounded"
+            >
               <h5 className="text-xl text-accent tracking-tight font-semibold">
                 {instructor.name}
               </h5>
@@ -38,7 +43,7 @@ function InstructorOverview() {
         <div className="flex items-center gap-2">
           {instructor.skills.map((item, index) => (
             <Chip
-              className="capitalize rounded-full border border-accent bg-background text-accent"
+              className="capitalize rounded-full bg-accent text-white"
               key={index}
             >
               {item}
