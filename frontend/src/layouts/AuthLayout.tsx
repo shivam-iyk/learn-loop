@@ -1,10 +1,9 @@
 import { Link, Outlet } from "react-router-dom";
 import Logo from "../components/Logo";
-import { useEffect } from "react";
 
 function Navbar() {
   return (
-    <nav className="border-b p-2 sticky top-0 left-0 backdrop-blur-sm bg-white/50 z-50">
+    <nav className="border-b p-2 sticky top-0 left-0 backdrop-blur-sm bg-white/50 dark:bg-black/50 z-50">
       <div className="flex items-center gap-2 max-w-7xl mx-auto">
         <Link to="/" className="flex items-center gap-2">
           <Logo />
@@ -87,17 +86,6 @@ function Footer() {
 }
 
 function AuthLayout() {
-  
-  useEffect(() => {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.classList.add("light");
-    const theme =
-      document.documentElement.attributes.getNamedItem("data-theme");
-    if (!theme) return;
-    theme.value = "light";
-    document.documentElement.attributes.setNamedItem(theme);
-  }, []);
-
   return (
     <div>
       <Navbar />

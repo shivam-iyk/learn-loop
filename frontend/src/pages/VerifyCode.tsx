@@ -72,7 +72,7 @@ function VerifyCode() {
   return (
     <div className="flex items-center justify-center min-h-screen relative">
       <Form
-        className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white animate-step-in"
+        className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white dark:bg-black animate-step-in"
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-4">

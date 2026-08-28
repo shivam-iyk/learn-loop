@@ -1,0 +1,16 @@
+export const ChatEventEnum = Object.freeze({
+  SOCKET_ERROR: "socket-error",
+  ONLINE_USERS: "users-online",
+  USER_DISCONNECTED: "user-joined",
+  USER_OFFLINE: "user-left",
+  TYPING_STARTED: "typing-started",
+  TYPING_ENDED: "typing-ended",
+  MESSAGE_SENT: "message-sent",
+  MESSAGE_RECIEVED: "message-received",
+  EDIT_MESSAGE: "edit-message",
+  EDITED_MESSAGE: "edited-message",
+  REACTION_ADDED: "reaction-added",
+  REACTION_REMOVED: "reaction-removed",
+  DELETE_MESSAGE: "delete-message",
+  DELETED_MESSAGE: "deleted-message",
+});

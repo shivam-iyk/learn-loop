@@ -109,6 +109,9 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
     },
   ],
   login: () => {},
+  setUser: (user) => {
+    set({ user });
+  },
   becomeInstructor: () => {
     const { user } = get();
     set({ user: { ...user, role: "instructor" } });

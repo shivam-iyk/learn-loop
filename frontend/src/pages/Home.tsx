@@ -1,8 +1,9 @@
-import { Alert, Button, Skeleton } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 import CourseCarousel from "../components/CourseCarousel";
 import useBoundStore from "../store";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import UpgradeAlert from "../components/UpgradeAlert";
 
 const HomeCourses = lazy(() => import("../components/HomeCourses"));
 const Instructors = lazy(() => import("../components/Instructors"));
@@ -78,17 +79,10 @@ function InstructorsFallback() {
 }
 
 function Home() {
-  const navigate = useNavigate();
-
-  const { user, becomeInstructor } = useBoundStore();
+  const { user } = useBoundStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [upgrade, setUpgrade] = useState(false);
-
-  const handleUpgrade = () => {
-    becomeInstructor();
-    navigate("/dashboard");
-  };
 
   useEffect(() => {
     const upgrade = searchParams.get("upgrade");
@@ -104,36 +98,7 @@ function Home() {
       <h3 className="font-cal-sans tracking-tight sm:text-3xl text-2xl">
         Welcome <span className="text-accent">{user.name}</span>
       </h3>
-      {upgrade && (
-        <Alert status="accent" className="bg-accent-soft">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title className="font-outfit font-bold text-lg tracking-tight">
-              Are you an instructor?
-            </Alert.Title>
-            <Alert.Description>
-              Start creating and publishing courses on LearnLoop. This action is
-              irreversible.
-            </Alert.Description>
-            <Button
-              size="sm"
-              variant="primary"
-              className="mt-2 sm:hidden"
-              onClick={handleUpgrade}
-            >
-              Continue
-            </Button>
-          </Alert.Content>
-          <Button
-            size="sm"
-            variant="primary"
-            className="hidden sm:block"
-            onClick={handleUpgrade}
-          >
-            Continue
-          </Button>
-        </Alert>
-      )}
+      {upgrade && <UpgradeAlert />}
       <CourseCarousel />
       <Suspense fallback={<HomeCoursesFallback />}>
         <HomeCourses

@@ -23,43 +23,54 @@ import AuthLayout from "./layouts/AuthLayout";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyCode from "./pages/VerifyCode";
 import Lesson from "./pages/Lesson";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 10,
+      },
+    },
+  });
+
   return (
     <div className="min-h-screen w-full">
-      <Routes>
-        <Route element={<AuthLayout />}>
-          <Route element={<Login />} path="/login" />
-          <Route element={<Register />} path="/register" />
-          <Route element={<ForgotPassword />} path="/forgot-password" />
-          <Route element={<VerifyCode />} path="/verify-code" />
-        </Route>
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route element={<AuthLayout />}>
+            <Route element={<Login />} path="/login" />
+            <Route element={<Register />} path="/register" />
+            <Route element={<ForgotPassword />} path="/forgot-password" />
+            <Route element={<VerifyCode />} path="/verify-code" />
+          </Route>
 
-        <Route element={<LandingLayout />}>
-          <Route element={<Landing />} path="/" />
-          <Route element={<InstructorLanding />} path="/instructor" />
-        </Route>
-        <Route element={<AppLayout />}>
-          <Route element={<CreateCourse />} path="/create-course" />
-          <Route element={<Course />} path="/course/:courseId" />
-          <Route
-            element={<Lesson />}
-            path="/course/:courseId/lesson/:lessonId"
-          />
-          <Route element={<Courses />} path="/courses" />
-          <Route element={<Dashboard />} path="/dashboard" />
-          <Route element={<Earnings />} path="/earnings" />
-          <Route element={<Explore />} path="/explore" />
-          <Route element={<Home />} path="/home" />
-          <Route element={<MyCourses />} path="/my-courses" />
-          <Route element={<Profile />} path="/profile" />
-          <Route element={<Connect />} path="/connect" />
-          <Route element={<Connect />} path="/connect/:chatId" />
-          <Route element={<Instructor />} path="/instructor/:instructorId" />
-          <Route element={<Settings />} path="/settings" />
-        </Route>
-      </Routes>
-      <Toast.Provider />
+          <Route element={<LandingLayout />}>
+            <Route element={<Landing />} path="/" />
+            <Route element={<InstructorLanding />} path="/instructor" />
+          </Route>
+          <Route element={<AppLayout />}>
+            <Route element={<CreateCourse />} path="/create-course" />
+            <Route element={<Course />} path="/course/:courseId" />
+            <Route
+              element={<Lesson />}
+              path="/course/:courseId/lesson/:lessonId"
+            />
+            <Route element={<Courses />} path="/courses" />
+            <Route element={<Dashboard />} path="/dashboard" />
+            <Route element={<Earnings />} path="/earnings" />
+            <Route element={<Explore />} path="/explore" />
+            <Route element={<Home />} path="/home" />
+            <Route element={<MyCourses />} path="/my-courses" />
+            <Route element={<Profile />} path="/profile" />
+            <Route element={<Connect />} path="/connect" />
+            <Route element={<Connect />} path="/connect/:chatId" />
+            <Route element={<Instructor />} path="/instructor/:instructorId" />
+            <Route element={<Settings />} path="/settings" />
+          </Route>
+        </Routes>
+        <Toast.Provider />
+      </QueryClientProvider>
     </div>
   );
 }

@@ -17,20 +17,20 @@ function Hero() {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+        className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full opacity-50 dark:opacity-80 blur-3xl"
         style={{
           background:
             "radial-gradient(circle, oklch(60.92% 0.214 256.89 / 0.5), transparent 60%)",
         }}
       />
       <div className="flex flex-col items-center justify-center gap-6 sm:min-h-[90vh] min-h-[80vh] relative max-w-7xl mx-auto">
-        <Chip className="border text-muted rounded-full text-xs bg-white z-10">
+        <Chip className="border text-muted rounded-full text-xs bg-surface z-10">
           <Stars size={12} className="mr-2 text-accent" /> Teach with confidence
         </Chip>
         <h1 className="md:text-7xl sm:text-5xl text-4xl font-extrabold tracking-tighter text-center font-kaushan-script">
           Build
           <br />
-          <span className="bg-linear-to-b from-accent-soft via-accent/50 to-accent bg-clip-text font-limelight text-transparent">
+          <span className="bg-linear-to-b from-accent-soft via-accent/50 to-accent dark:from-[#D6E8FF] dark:via-[#60A5FA] dark:to-accent bg-clip-text font-limelight text-transparent">
             Courses
           </span>
           <br />

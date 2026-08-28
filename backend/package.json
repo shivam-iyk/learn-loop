@@ -19,6 +19,7 @@
     "paytmchecksum": "^1.5.1",
     "pg": "^8.21.0",
     "resend": "^6.12.4",
+    "socket.io": "^4.8.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

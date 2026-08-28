@@ -49,7 +49,7 @@ function Connect({ role }: { role: "student" | "instructor" }) {
     >
       <div className="grid md:grid-cols-2 gap-16 py-20 max-w-7xl mx-auto">
         <div>
-          <span className="font-huninn uppercase text-black tracking-tighter">
+          <span className="font-huninn uppercase text-foreground tracking-tighter">
             {role === "student" ? "Learning Together" : "Build your Community"}
           </span>
           <h2 className="text-3xl tracking-tighter font-bold font-outfit text-background">
@@ -57,14 +57,14 @@ function Connect({ role }: { role: "student" | "instructor" }) {
               ? "Learn Beyond the Classroom"
               : "Turn Students into a Community"}
           </h2>
-          <p className="text-black mt-4">
+          <p className="text-background mt-4">
             Bring your learners together in one place. Encourage discussions,
             answer questions, and build an active learning community beyond your
             course content.
           </p>
           <ul className="flex flex-col gap-2 mt-6">
             {highlights.map((item, index) => (
-              <li className="flex items-center gap-1" key={index}>
+              <li className="flex items-center gap-1 text-foreground" key={index}>
                 <CircleCheck className="text-green-400" size={20} /> {item}
               </li>
             ))}

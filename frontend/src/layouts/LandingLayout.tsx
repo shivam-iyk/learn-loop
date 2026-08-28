@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ListBox, ListBoxItem, Select } from "@heroui/react";
 import { Check, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Logo from "../components/Logo";
 
 const Navbar = () => {
@@ -35,7 +35,7 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="border-b p-2 sticky top-0 left-0 backdrop-blur-sm bg-white/50 z-50">
+    <nav className="border-b p-2 sticky top-0 left-0 backdrop-blur-sm bg-white/50 dark:bg-black/50 z-50">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <Link
@@ -240,18 +240,8 @@ const Footer = () => {
 };
 
 function LandingLayout() {
-  useEffect(() => {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.classList.add("light");
-    const theme =
-      document.documentElement.attributes.getNamedItem("data-theme");
-    if (!theme) return;
-    theme.value = "light";
-    document.documentElement.attributes.setNamedItem(theme);
-  }, []);
-
   return (
-    <div data-theme="light" className="light">
+    <div>
       <Navbar />
       <div className="relative">
         <div className="min-h-screen w-full">

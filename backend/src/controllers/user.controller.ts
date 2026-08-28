@@ -13,7 +13,7 @@ import { generateToken } from "../utils/token";
 
 const getUser = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request");
 
   const { rows: user } = await query("SELECT * FROM users WHERE id = $1", [id]);
 
