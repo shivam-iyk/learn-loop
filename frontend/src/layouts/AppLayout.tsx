@@ -5,6 +5,8 @@ import { useCurrentUser } from "../hooks/auth";
 import { useEffect } from "react";
 import useBoundStore from "../store";
 import { toast } from "@heroui/react";
+import { logOut } from "../services/auth";
+import { instructorPages, studentPages } from "../lib/helpers";
 
 function AppLayout() {
   const navigate = useNavigate();
@@ -14,45 +16,52 @@ function AppLayout() {
 
   useEffect(() => {
     if (isPending) return;
-    if (isError) {
-      console.log("isError");
-      if (error.message === "User not found") {
-        toast.danger("Please login again to continue");
+
+    const isInstructorPage = instructorPages.some((item) =>
+      location.pathname.includes(item),
+    );
+    const isStudentPage = studentPages.includes(location.pathname);
+    const isProtectedPage = isInstructorPage || isStudentPage;
+    console.log(
+      isError && isProtectedPage,
+      isError,
+      isInstructorPage,
+      isStudentPage,
+    );
+
+    if (isError && isProtectedPage) {
+      switch (error?.errors?.[0]) {
+        case "TOKEN_REQUIRED":
+          navigate("/login");
+          break;
+        case "INVALID_TOKEN":
+          logOut().then(() => navigate("/login"));
+          break;
+        case "UNAUTHORIZED":
+          navigate("/login");
+          break;
+        case "USER_NOT_FOUND":
+          logOut().then(() => navigate("/login"));
+          break;
+        case "EMAIL_NOT_VERIFIED":
+          navigate("/verify-code" + `?email=${error.errors[1] || ""}`);
+          break;
+        default:
+          toast.danger(error.message);
       }
-      if (!location.pathname.includes("/login")) navigate("/login");
       return;
     }
-    setUser(data);
-    const isLoggedIn = data.id;
-    const isProtectedPage = [
-      "/connect",
-      "/profile",
-      "/settings",
-      "/dashboard",
-      "/earnings",
-      "/courses",
-      "/create-course",
-      "/my-courses",
-    ].includes(location.pathname);
-    if (!isLoggedIn && isProtectedPage) {
-      console.log("isLoggedIn", isLoggedIn, "isProtectedPage", isProtectedPage);
-      navigate("/login");
-    }
-    const instructorsPage = [
-      "/dashboard",
-      "/earnings",
-      "/create-course",
-      "/courses",
-    ].some((item) => location.pathname.includes(item));
-    const studentsPage = location.pathname.includes("/my-courses");
-    if (data?.role === "instructor" && studentsPage) {
-      console.log(data?.role, studentsPage);
+
+    if (!isError) setUser(data);
+
+    if (data?.role === "instructor" && isStudentPage) {
+      console.log(data?.role, isStudentPage);
       navigate("/dashboard");
-    } else if (data?.role === "student" && instructorsPage) {
-      console.log(data?.role, instructorsPage);
+    } else if (data?.role === "student" && isInstructorPage) {
+      console.log(data?.role, isInstructorPage);
       navigate("/home");
     }
-  }, [data]);
+  }, [isPending, data, isError, error]);
 
   return (
     <div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import "../utils/zod";
 
 const getCoursesSchema = z.object({
   category: z.string().optional(),
@@ -37,7 +38,7 @@ const createCourseSchema = z.object({
     .string()
     .min(2, "Category must be at least 2 characters long")
     .max(255, "Category must be at most 255 characters long"),
-  skills: z.array(z.string().min(2).max(50)).optional(),
+  skills: z.array(z.string().min(2).max(50), "Invalid skills").optional(),
   status: z
     .string()
     .refine((data) => ["published", "draft", "archived"].includes(data), {

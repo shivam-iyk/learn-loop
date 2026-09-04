@@ -9,8 +9,8 @@ const router = Router();
 
 router.use(verifyJWT);
 
-router.post("/initiate/:courseId", initiatePayment); // ✅
+router.post("/initiate/:courseId", initiatePayment);
 
-router.post("/verify", verifyPayment); // ✅
+router.post("/verify", verifyPayment);
 
 export default router;

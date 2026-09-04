@@ -1,8 +1,10 @@
-import { EmptyState, Table } from "@heroui/react";
+import { EmptyState, Skeleton, Table } from "@heroui/react";
 import { Layers, Package2 } from "lucide-react";
-import EditCourseModal from "./EditCourseModal";
 import DeleteCourseModal from "./DeleteCourseModal";
 import PublishCourseModal from "./PublishCourseModal";
+import { lazy, Suspense } from "react";
+
+const EditCourseModal = lazy(() => import("./EditCourseModal"));
 
 function DraftCourses() {
   const drafts = [
@@ -62,10 +64,16 @@ function DraftCourses() {
                 <Table.Cell>
                   <div className="flex items-center gap-2">
                     <PublishCourseModal courseId={item.id} />
-                    <EditCourseModal
-                      courseId={item.id}
-                      buttonClassName="bg-warning-soft text-warning-soft-foreground"
-                    />
+                    <Suspense
+                      fallback={
+                        <Skeleton className="button button--sm min-w-8 rounded-2xl" />
+                      }
+                    >
+                      <EditCourseModal
+                        courseId={item.id}
+                        buttonClassName="bg-warning-soft text-warning-soft-foreground"
+                      />
+                    </Suspense>
                     <DeleteCourseModal courseId={item.id} />
                   </div>
                 </Table.Cell>

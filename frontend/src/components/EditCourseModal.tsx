@@ -3,10 +3,10 @@ import { Pen } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CourseDetailsFormI } from "../types/course";
 import CourseDetailsForm from "./CourseDetailsForm";
-import LessonsForm from "./LessonsForm";
 import type { LessonFormI } from "../types/lesson";
 import useBoundStore from "../store";
 import CustomEmptyState from "./CustomEmptyState";
+import LessonsForm from "./LessonsForm";
 
 function EditCourseModal({
   courseId,
@@ -81,8 +81,7 @@ function EditCourseModal({
     }
   }, [lessonsStore]);
 
-  if(notFound) {
-    
+  if (notFound) {
   }
 
   return (

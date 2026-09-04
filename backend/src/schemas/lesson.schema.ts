@@ -1,4 +1,5 @@
 import { z } from "zod";
+import "../utils/zod";
 
 const createLessonSchema = z.object({
   name: z
@@ -12,7 +13,7 @@ const createLessonSchema = z.object({
       "Invalid lesson type",
     ),
   video: z
-    .url()
+    .url("Invalid video url")
     .max(255, "Video url cannot be more than 255 charaters")
     .optional(),
   notes: z.string().optional(),
@@ -35,7 +36,7 @@ const updateLessonSchema = z
       )
       .optional(),
     video: z
-      .url()
+      .url("Invalid video url")
       .max(255, "Video url cannot be more than 255 charaters")
       .optional(),
     notes: z.string().optional(),
@@ -53,6 +54,7 @@ const reorderLessonsSchema = z.object({
         id: z.coerce.number().int("Lesson ID must be an integer"),
         sequence: z.coerce.number().int("Sequence must be an integer"),
       }),
+      "Invalid lessons",
     )
     .min(2, "At least two lessons are required to reorder")
     .refine(

@@ -7,11 +7,11 @@ import { postReviewSchema } from "../schemas/review.schema";
 
 const getReviews = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { courseId } = req.params;
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Course ID is required");
+    throw new ApiError(400, "Course ID is required", ["COURSE_ID_REQUIRED"]);
   }
 
   const { rows: reviews } = await query(
@@ -23,7 +23,7 @@ const getReviews = asyncHandler(async (req: Request, res: Response) => {
     [courseId],
   );
   if (!reviews[0]) {
-    throw new ApiError(404, "No reviews found for this course");
+    throw new ApiError(404, "No reviews found for this course", ["NOT_FOUND"]);
   }
 
   return res
@@ -33,7 +33,7 @@ const getReviews = asyncHandler(async (req: Request, res: Response) => {
 
 const postReview = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const parsed = postReviewSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -48,7 +48,7 @@ const postReview = asyncHandler(async (req: Request, res: Response) => {
     [courseId, id],
   );
   if (duplicateReview[0]) {
-    throw new ApiError(400, "You have already reviewed this course");
+    throw new ApiError(400, "You have already reviewed this course", ["ALREADY_SATISFIED"]);
   }
 
   await query(
@@ -65,7 +65,7 @@ const postReview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!review[0]) {
-    throw new ApiError(500, "Failed to post review, Please try again later!");
+    throw new ApiError(500, "Failed to post review, Please try again later!", ["ACTION_FAILED"]);
   }
 
   return res
@@ -75,7 +75,7 @@ const postReview = asyncHandler(async (req: Request, res: Response) => {
 
 const editReview = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { reviewId } = req.params;
   if (!reviewId || typeof reviewId !== "string" || isNaN(parseInt(reviewId))) {
@@ -101,7 +101,7 @@ const editReview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!reviewExists[0]) {
-    throw new ApiError(404, "Review not found");
+    throw new ApiError(404, "Review not found", ["NOT_FOUND"]);
   }
 
   const { rows: review } = await query(
@@ -131,11 +131,11 @@ const editReview = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteReview = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { reviewId } = req.params;
   if (!reviewId || typeof reviewId !== "string" || isNaN(parseInt(reviewId))) {
-    throw new ApiError(400, "Review ID is required");
+    throw new ApiError(400, "Review ID is required", ["REVIEW_ID_REQUIRED"]);
   }
 
   const { rows: review } = await query(
@@ -144,11 +144,11 @@ const deleteReview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!review[0]) {
-    throw new ApiError(404, "Review not found");
+    throw new ApiError(404, "Review not found", ["NOT_FOUND"]);
   }
 
   if (review[0]?.user_id !== id) {
-    throw new ApiError(401, "You are not authorized to delete this review");
+    throw new ApiError(401, "You are not authorized to delete this review", ["UNAUTHORIZED"]);
   }
 
   await query("BEGIN");

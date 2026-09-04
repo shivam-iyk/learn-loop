@@ -233,5 +233,9 @@ input[type="file"]::file-selector-button {
 }
 
 .ring-visible-offset {
-  @apply ring-accent focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-offset-2 ring-offset-white;
+  @apply ring-accent focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-offset-2 ring-offset-background;
+}
+
+.button-linear {
+  @apply bg-linear-to-b bg-transparent from-accent-soft via-accent/50 to-accent dark:from-accent/40 dark:via-accent/80;
 }

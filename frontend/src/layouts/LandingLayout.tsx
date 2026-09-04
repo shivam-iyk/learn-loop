@@ -3,10 +3,16 @@ import { ListBox, ListBoxItem, Select } from "@heroui/react";
 import { Check, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import Logo from "../components/Logo";
+import { useCurrentUser } from "../hooks/auth";
+import { AvatarDropdown } from "../components/AvatarDropdown";
+import useBoundStore from "../store";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const {} = useCurrentUser();
+  const { user } = useBoundStore();
 
   const menu = location.pathname.includes("/instructor")
     ? [
@@ -94,20 +100,24 @@ const Navbar = () => {
             </a>
           ))}
         </div>
-        <div className="flex gap-2">
-          <Link
-            to="/login"
-            className="button button--sm button--outline ring-visible-offset"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="button button--sm button--primary ring-visible-offset"
-          >
-            Start Free <ChevronRight />
-          </Link>
-        </div>
+        {user?.id ? (
+          <AvatarDropdown />
+        ) : (
+          <div className="flex gap-2">
+            <Link
+              to="/login"
+              className="button button--sm button--outline ring-visible-offset"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="button button--sm button--primary ring-visible-offset"
+            >
+              Start Free <ChevronRight />
+            </Link>
+          </div>
+        )}
       </div>
     </nav>
   );
@@ -221,7 +231,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="border-t border-footer-border p-4">
-        <div className="flex items-center justify-between text-xs text-background-secondary max-w-7xl mx-auto">
+        <div className="flex items-center justify-between text-xs text-muted max-w-7xl mx-auto">
           <span>&copy; Copyright Reserved</span>
           <span>
             Made with ❤️ by{" "}
@@ -241,7 +251,7 @@ const Footer = () => {
 
 function LandingLayout() {
   return (
-    <div>
+    <>
       <Navbar />
       <div className="relative">
         <div className="min-h-screen w-full">
@@ -249,7 +259,7 @@ function LandingLayout() {
         </div>
       </div>
       <Footer />
-    </div>
+    </>
   );
 }
 

@@ -1,11 +1,13 @@
-import { Button, Table, Tooltip } from "@heroui/react";
+import { Button, Skeleton, Table, Tooltip } from "@heroui/react";
 import useBoundStore from "../store";
 import { Eye, Layers, Star, Users } from "lucide-react";
 import RatingStars from "../components/RatingStars";
-import EditCourseModal from "./EditCourseModal";
 import CustomEmptyState from "./CustomEmptyState";
 import ArchiveCourseModal from "./ArchiveCourseModal";
 import { Link } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
+const EditCourseModal = lazy(() => import("./EditCourseModal"));
 
 function ManageCourses() {
   const { courses } = useBoundStore();
@@ -88,7 +90,13 @@ function ManageCourses() {
                         <p className="font-outfit">View Course</p>
                       </Tooltip.Content>
                     </Tooltip>
-                    <EditCourseModal courseId={item.id} />
+                    <Suspense
+                      fallback={
+                        <Skeleton className="button button--sm min-w-8 rounded-2xl" />
+                      }
+                    >
+                      <EditCourseModal courseId={item.id} />
+                    </Suspense>
                     <ArchiveCourseModal courseId={item.id} />
                   </div>
                 </Table.Cell>

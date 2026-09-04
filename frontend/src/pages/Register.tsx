@@ -6,8 +6,9 @@ import {
   Label,
   Separator,
   TextField,
+  toast,
 } from "@heroui/react";
-import { Eye, EyeOff, Key, Mail, User } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Key, Mail, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -16,6 +17,10 @@ import {
   nameSchema,
   passwordSchema,
 } from "../schema/auth";
+import { useMutation } from "@tanstack/react-query";
+import type { ApiError } from "../services/api";
+import type { UserI } from "../types/user";
+import { register } from "../services/auth";
 
 function Register() {
   const navigate = useNavigate();
@@ -28,15 +33,49 @@ function Register() {
     confirm: "",
   });
 
+  const registerMutation = useMutation<UserI, ApiError>({
+    mutationFn: () => register(creds),
+    onSuccess: (data) => {
+      navigate(`/verify-code?email=${data?.email}`);
+    },
+    onError: (error) => {
+      let message = "Something went wrong";
+      let description: string | undefined = undefined;
+      const errorCode = error?.errors?.[0];
+
+      if (error.message === "Validation Error") {
+        message = error?.errors?.[0] || message;
+      } else {
+        switch (errorCode) {
+          case "EMAIL_ALREADY_REGISTERED":
+            message = "Email is already used";
+            description = "Please try another email";
+            break;
+          case "MAIL_SEND_FAILED":
+            message = "Something went wrong, while sending mail";
+            description = "Please try again later";
+            break;
+          default:
+            break;
+        }
+      }
+
+      toast.danger(message, {
+        indicator: <AlertTriangle size={16} />,
+        description,
+      });
+    },
+  });
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate({ pathname: "/verify-code", search: `?email=${creds.email}` });
+    registerMutation.mutate();
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen relative py-10">
       <Form
-        className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white dark:bg-black animate-step-in"
+        className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white! dark:bg-black! animate-step-in"
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-4">
@@ -186,11 +225,14 @@ function Register() {
           </button>
           <div className="relative">
             <Separator />
-            <span className="absolute text-muted bg-white dark:bg-black font-huninn uppercase tracking-tight text-xs left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 px-2">
+            <span className="absolute text-muted [&]:bg-white! dark:[&]:bg-black! font-huninn uppercase tracking-tight text-xs left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 px-2">
               or
             </span>
           </div>
-          <button className="w-full button button--outline ring-visible-offset">
+          <button
+            type="button"
+            className="w-full button button--outline ring-visible-offset"
+          >
             <img src="/google-icon.svg" className="size-5" /> Continue with
             Google
           </button>

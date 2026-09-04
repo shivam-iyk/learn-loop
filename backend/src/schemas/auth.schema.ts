@@ -1,4 +1,5 @@
 import z from "zod";
+import "../utils/zod";
 
 const registerSchema = z.object({
   name: z
@@ -28,10 +29,14 @@ const verifyMailSchema = z.object({
     .max(999999, "Verification code must be 6 digits"),
 });
 
+const resendMailSchema = z.object({
+  email: registerSchema.shape.email,
+});
+
 const forgotPasswordSchema = z.object({
   email: registerSchema.shape.email,
   code: verifyMailSchema.shape.code,
   newPassword: registerSchema.shape.password,
 });
 
-export { registerSchema, loginSchema, verifyMailSchema, forgotPasswordSchema };
+export { registerSchema, loginSchema, verifyMailSchema, resendMailSchema, forgotPasswordSchema };

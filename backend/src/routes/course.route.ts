@@ -13,20 +13,20 @@ import upload from "../middlewares/multer.middleware";
 
 const router = Router();
 
-router.get("/", getCourses); // ✅
+router.get("/", getCourses);
 
 router.use(verifyJWT);
 
-router.get("/enrolled", getEnrolledCourses); // ✅
+router.get("/enrolled", getEnrolledCourses);
 
-router.get("/owned", getOwnedCourses); // ✅
+router.get("/owned", getOwnedCourses);
 
-router.route("/create").post(upload.single("cover"), createCourse); // ✅
+router.route("/create").post(upload.single("cover"), createCourse);
 
-router.route("/edit/:courseId").put(upload.single("cover"), editCourse); // ✅
+router.route("/edit/:courseId").put(upload.single("cover"), editCourse);
 
-router.post("/enroll/:courseId", enrollFreeCourse); // ✅
+router.post("/enroll/:courseId", enrollFreeCourse);
 
-router.get("/:courseId", getCourse); // ✅
+router.get("/:courseId", getCourse);
 
 export default router;

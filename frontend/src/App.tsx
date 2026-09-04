@@ -1,6 +1,6 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import { Toast } from "@heroui/react";
+import { Toast, useTheme } from "@heroui/react";
 import Home from "./pages/Home";
 import AppLayout from "./layouts/AppLayout";
 import Courses from "./pages/Courses";
@@ -24,8 +24,11 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyCode from "./pages/VerifyCode";
 import Lesson from "./pages/Lesson";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Banned from "./pages/Banned";
 
 function App() {
+  useTheme();
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -43,6 +46,7 @@ function App() {
             <Route element={<Register />} path="/register" />
             <Route element={<ForgotPassword />} path="/forgot-password" />
             <Route element={<VerifyCode />} path="/verify-code" />
+            <Route element={<Banned />} path="/banned" />
           </Route>
 
           <Route element={<LandingLayout />}>
@@ -69,7 +73,7 @@ function App() {
             <Route element={<Settings />} path="/settings" />
           </Route>
         </Routes>
-        <Toast.Provider />
+        <Toast.Provider placement="bottom end" />
       </QueryClientProvider>
     </div>
   );

@@ -11,12 +11,12 @@ const router = Router();
 
 router.use(verifyJWT);
 
-router.get("/overview", getOverview); // ✅
+router.get("/overview", getOverview);
 
-router.get("/popular", getPopularInstructors); // ✅
+router.get("/popular", getPopularInstructors);
 
-router.get("/", getInstructors); // ✅
+router.get("/", getInstructors);
 
-router.get("/:instructorId", getInstructor); // ✅
+router.get("/:instructorId", getInstructor);
 
 export default router;

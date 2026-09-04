@@ -10,7 +10,7 @@ import ApiResponse from "../utils/ApiResponse";
 
 const getChats = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: chats } = await query(
     `SELECT e.course, c.id, c.name, c.cover, c.tagline,
@@ -35,7 +35,7 @@ const getChats = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!chats) {
-    throw new ApiError(404, "You are not enrolled in any course");
+    throw new ApiError(404, "No chats found", ["NOT_FOUND"]);
   }
 
   return res
@@ -45,11 +45,11 @@ const getChats = asyncHandler(async (req: Request, res: Response) => {
 
 const getMessages = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { course } = req.params;
   if (!course || typeof course !== "string" || isNaN(parseInt(course))) {
-    throw new ApiError(400, "Course ID is required");
+    throw new ApiError(400, "Course ID is required", ["COURSE_ID_REQUIRED"]);
   }
 
   const { rows: messages } = await query(
@@ -61,7 +61,7 @@ const getMessages = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!messages) {
-    throw new ApiError(404, "No messages found");
+    throw new ApiError(404, "No messages found",["NOT_FOUND"]);
   }
 
   return res
@@ -71,7 +71,7 @@ const getMessages = asyncHandler(async (req: Request, res: Response) => {
 
 const sendMessage = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const parsed = newMessageSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -93,6 +93,7 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
       throw new ApiError(
         500,
         "Failed to save attachment, Please try again later",
+        ["UPLOAD_FAILED"]
       );
     }
     attachment.url = url;
@@ -104,7 +105,7 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
       attachment.type = fileType;
     }
   } else if (!attachmentFile && !content) {
-    throw new ApiError(400, "Message is required");
+    throw new ApiError(400, "Message is required", ["MESSAGE_REQUIRED"]);
   }
 
   const { rows: message } = await query(
@@ -113,7 +114,7 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!message) {
-    throw new ApiError(500, "Failed to send message");
+    throw new ApiError(500, "Failed to send message", ["ACTION_FAILED"]);
   }
 
   const { rows: users } = await query(
@@ -133,7 +134,7 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
 
 const editMessage = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const parsed = newMessageSchema.partial("content").safeParse(req.body);
   if (!parsed.success) {
@@ -147,7 +148,7 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
     typeof messageId !== "string" ||
     isNaN(parseInt(messageId))
   ) {
-    throw new ApiError(400, "Message ID is required");
+    throw new ApiError(400, "Message ID is required", ["MESSAGE_ID_REQUIRED"]);
   }
 
   const { message: content } = parsed.data;
@@ -157,11 +158,11 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
     [messageId],
   );
   if (!message) {
-    throw new ApiError(404, "Message not found");
+    throw new ApiError(404, "Message not found", ["NOT_FOUND"]);
   }
 
   if (message[0]?.sender.toString() !== id.toString()) {
-    throw new ApiError(401, "You are not authorized to edit this message");
+    throw new ApiError(401, "You are not authorized to edit this message", ["UNAUTHORIZED"]);
   }
 
   await query(
@@ -191,7 +192,7 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { messageId } = req.params;
   if (
@@ -199,7 +200,7 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
     typeof messageId !== "string" ||
     isNaN(parseInt(messageId))
   ) {
-    throw new ApiError(400, "Message ID is required");
+    throw new ApiError(400, "Message ID is required", ["MESSAGE_ID_REQUIRED"]);
   }
 
   const { rows: message } = await query(
@@ -208,11 +209,11 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!message) {
-    throw new ApiError(404, "Message not found");
+    throw new ApiError(404, "Message not found",["NOT_FOUND"]);
   }
 
   if (message[0]?.sender !== id) {
-    throw new ApiError(400, "You are not authorized to delete this message");
+    throw new ApiError(400, "You are not authorized to delete this message", ["UNAUTHORIZED"]);
   }
 
   await query("DELETE FROM messages WHERE id = $1", [messageId]);

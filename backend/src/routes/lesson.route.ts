@@ -12,14 +12,14 @@ const router = Router();
 
 router.use(verifyJWT);
 
-router.post("/", createLesson); // ✅
+router.post("/", createLesson);
 
-router.get("/:courseId", getLessons); // ✅
+router.get("/:courseId", getLessons);
 
-router.put("/reorder", reorderLessons); // ✅
+router.put("/reorder", reorderLessons);
 
-router.put("/:lessonId", updateLesson); // ✅
+router.put("/:lessonId", updateLesson);
 
-router.delete("/:lessonId", deleteLesson); // ✅
+router.delete("/:lessonId", deleteLesson);
 
 export default router;

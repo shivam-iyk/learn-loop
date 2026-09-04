@@ -13,7 +13,6 @@ export interface UserI {
   ban_reason: string | null;
   avatar: string | null;
   is_deleted: boolean;
-  cover: string | null;
 }
 
 export interface Instructor {
@@ -34,6 +33,7 @@ export interface UserSlice {
   instructors: Instructor[];
   user: UserI;
   login: (user: UserI) => void;
+  logOut: () => void;
   setUser: (user: UserI) => void;
   becomeInstructor: () => void;
   updateAvatar: (avatar: string) => void;

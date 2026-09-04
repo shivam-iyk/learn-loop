@@ -40,3 +40,20 @@ export const getPageNumbers = (pagination: CourseSlice["pagination"]) => {
   }
   return pages;
 };
+
+export const instructorPages = [
+  "/dashboard",
+  "/earnings",
+  "/create-course",
+  "/connect",
+  "/courses",
+  "/profile",
+  "/settings",
+];
+
+export const studentPages = [
+  "/my-courses",
+  "/connect",
+  "/profile",
+  "/settings",
+];

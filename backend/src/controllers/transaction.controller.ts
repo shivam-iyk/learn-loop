@@ -8,11 +8,11 @@ import PaytmConfig from "../config/paytm.config";
 
 const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { courseId } = req.params;
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course id");
+    throw new ApiError(400, "Invalid course id", ["COURSE_ID_REQUIRED"]);
   }
 
   const { rows: course } = await query(
@@ -20,11 +20,11 @@ const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
     [courseId],
   );
   if (!course[0]) {
-    throw new ApiError(404, "Course not found");
+    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
   }
 
   if (course[0]?.price === 0) {
-    throw new ApiError(400, "Payment not required");
+    throw new ApiError(400, "Payment not required", ["PAYMENT_NOT_REQUIRED"]);
   }
 
   const { rows: enrollment } = await query(
@@ -32,7 +32,7 @@ const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
     [id, courseId],
   );
   if (enrollment[0]) {
-    throw new ApiError(400, "You are already enrolled to this course");
+    throw new ApiError(400, "You are already enrolled to this course", ["ALREADY_SATISFIED"]);
   }
 
   const paytmParams: PaytmParams = {
@@ -108,7 +108,7 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   // }
 
   if (!ORDERID || !RESPMSG) {
-    throw new ApiError(400, "Order Id and Response message is required");
+    throw new ApiError(400, "Order Id and Response message is required", ["ORDER_ID_AND_RESPONSE_REQUIRED"]);
   }
 
   if (RESPMSG !== "Txn Successful") {
@@ -124,7 +124,7 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   if (!transaction[0]) {
     await query("ROLLBACK");
     throw new ApiError(500, "Failed to verify payment", [
-      "Transaction not updated",
+      "TRANSACTION_NOT_UPDATED",
     ]);
   }
 
@@ -135,7 +135,7 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   if (!instructor[0]) {
     await query("ROLLBACK");
     throw new ApiError(500, "Failed to verify payment", [
-      "Instructor wallet not updated",
+      "INSTRUCTOR_WALLET_NOT_UPDATED",
     ]);
   }
 
@@ -145,7 +145,7 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   );
   if (!course[0]) {
     await query("ROLLBACK");
-    throw new ApiError(500, "Failed to verify payment", ["Course not updated"]);
+    throw new ApiError(500, "Failed to verify payment", ["COURSE_NOT_UPDATED"]);
   }
 
   const { rows: enrollment } = await query(
@@ -155,7 +155,7 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   if (!enrollment[0]) {
     await query("ROLLBACK");
     throw new ApiError(500, "Failed to verify payment", [
-      "Enrollment not created",
+      "ENROLLMENT_NOT_CREATED",
     ]);
   }
 

@@ -11,12 +11,12 @@ const router = Router();
 
 router.use(verifyJWT);
 
-router.get("/:courseId", getReviews); // ✅
+router.get("/:courseId", getReviews);
 
-router.post("/", postReview); // ✅
+router.post("/", postReview);
 
-router.put("/:reviewId", editReview); // ✅
+router.put("/:reviewId", editReview);
 
-router.delete("/:reviewId", deleteReview); // ✅
+router.delete("/:reviewId", deleteReview);
 
 export default router;

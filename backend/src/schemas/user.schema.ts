@@ -1,5 +1,6 @@
 import z from "zod";
 import { registerSchema } from "./auth.schema";
+import "../utils/zod";
 
 const onboardUserSchema = z
   .object({
@@ -9,6 +10,7 @@ const onboardUserSchema = z
         .min(2, "Skill must be at least 2 characters long")
         .max(100, "Skill must be at most 100 characters")
         .optional(),
+      "Invalid skills",
     ),
     bio: z
       .string()

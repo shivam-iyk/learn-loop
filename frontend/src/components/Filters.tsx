@@ -285,7 +285,7 @@ function FiltersModular({ isDrawer = false }: { isDrawer?: boolean }) {
     <Drawer>
       <Button
         variant="secondary"
-        className="md:hidden max-sm:w-full text-black"
+        className="md:hidden max-sm:w-full text-foreground"
       >
         <Funnel /> Filters
       </Button>

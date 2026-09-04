@@ -44,7 +44,7 @@ function Hero() {
         <div className="flex items-center sm:gap-4 gap-2 mt-6">
           <Link
             to="/register"
-            className="button bg-linear-to-t from-accent to-accent/50 text-white ring-visible-offset"
+            className="button button-linear ring-visible-offset"
           >
             Start Learning
           </Link>

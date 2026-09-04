@@ -12,14 +12,14 @@ import { uploadToCloudinary } from "../utils/cloudinary";
 
 const getReports = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: reports } = await query(
     "SELECT * FROM reports WHERE user_id = $1",
     [id],
   );
   if (!reports) {
-    throw new ApiError(400, "No reports found");
+    throw new ApiError(400, "No reports found", ["NOT_FOUND"]);
   }
 
   return res
@@ -29,7 +29,7 @@ const getReports = asyncHandler(async (req: Request, res: Response) => {
 
 const createReport = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const parsed = createReportSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -43,7 +43,13 @@ const createReport = asyncHandler(async (req: Request, res: Response) => {
   let url: string | null = null;
   if (image) {
     const imageUrl = await uploadToCloudinary(image.path, "reports");
-    if (imageUrl) url = imageUrl;
+    if (!imageUrl)
+      throw new ApiError(
+        500,
+        "Failed to upload image, Please try again later",
+        ["UPLOAD_FAILED"],
+      );
+    url = imageUrl;
   }
 
   const { rows: report } = await query(
@@ -59,13 +65,13 @@ const createReport = asyncHandler(async (req: Request, res: Response) => {
 const addComment = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id || req.user?.role !== "admin") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { reportId } = req.params;
 
   if (!reportId || typeof reportId !== "string" || isNaN(parseInt(reportId))) {
-    throw new ApiError(400, "Report ID is required");
+    throw new ApiError(400, "Report ID is required", ["REPORT_ID_REQUIRED"]);
   }
 
   const parsed = addCommentSchema.safeParse(req.body);
@@ -88,13 +94,13 @@ const addComment = asyncHandler(async (req: Request, res: Response) => {
 const updateStatus = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id || req.user?.role !== "admin") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { reportId } = req.params;
 
   if (!reportId || typeof reportId !== "string" || isNaN(parseInt(reportId))) {
-    throw new ApiError(400, "Report ID is required");
+    throw new ApiError(400, "Report ID is required", ["REPORT_ID_REQUIRED"]);
   }
 
   const parsed = updateStatusSchema.safeParse(req.body);

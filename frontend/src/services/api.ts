@@ -9,11 +9,13 @@ const api = axios.create({
 
 export class ApiError extends Error {
   status?: number;
+  errors?: string[];
 
-  constructor(message: string, status?: number) {
+  constructor(message: string, status?: number, errors?: string[]) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.errors = errors;
   }
 }
 
@@ -27,7 +29,11 @@ api.interceptors.response.use(
         error.message ||
         "Something went wrong";
 
-      throw new ApiError(message, error.response?.status);
+      throw new ApiError(
+        message,
+        error.response?.status,
+        error.response?.data?.errors,
+      );
     }
 
     throw error;

@@ -70,8 +70,12 @@ function Hero() {
           </div>
         </div>
         <button
-          tabIndex={-1}
           className="animate-bounce absolute bottom-10 left-1/2 -translate-x-1/2 hover:border p-2 rounded-full"
+          onClick={() =>
+            window.scrollTo({
+              top: document.querySelector("#home")?.scrollHeight,
+            })
+          }
         >
           <ChevronDown strokeWidth={1.5} />
         </button>

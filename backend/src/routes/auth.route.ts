@@ -10,16 +10,16 @@ import {
 
 const router = Router();
 
-router.post("/register", register); // ✅
+router.post("/register", register);
 
-router.post("/login", login); // ✅
+router.post("/login", login);
 
-router.put("/verify-mail", verifyMail); // ✅
+router.put("/verify-mail", verifyMail);
 
-router.put("/resend-code", resendVerificationCode); // ✅
+router.put("/resend-code", resendVerificationCode);
 
-router.put("/forgot-password", forgotPassword); // ✅
+router.put("/forgot-password", forgotPassword);
 
-router.get("/logout", logout); // ✅
+router.get("/logout", logout);
 
 export default router;

@@ -99,7 +99,7 @@ function ForgotPassword() {
     <div className="flex items-center justify-center min-h-screen relative">
       {step === 1 && (
         <Form
-          className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl  bg-white dark:bg-black animate-step-in"
+          className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl  bg-white! dark:bg-black! animate-step-in"
           onSubmit={handleContinue}
           key="email"
         >
@@ -188,7 +188,7 @@ function ForgotPassword() {
       )}
       {step === 2 && (
         <Form
-          className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white dark:bg-black animate-step-in"
+          className="p-10 lg:w-1/3 sm:w-1/2 min-w-96 border rounded-4xl bg-white! dark:bg-black! animate-step-in"
           onSubmit={handleUpdate}
           key="password"
         >

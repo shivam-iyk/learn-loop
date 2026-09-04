@@ -13,12 +13,20 @@ import { generateToken } from "../utils/token";
 
 const getUser = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: user } = await query("SELECT * FROM users WHERE id = $1", [id]);
 
   if (!user[0]) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found", ["USER_NOT_FOUND"]);
+  }
+
+  if (!user[0]?.is_verified) {
+    throw new ApiError(
+      401,
+      "Email is not verified, Please verify your email to login",
+      ["EMAIL_NOT_VERIFIED", user[0]?.email],
+    );
   }
 
   const {
@@ -44,11 +52,13 @@ const becomeInstructor = asyncHandler(async (req: Request, res: Response) => {
   const role = req.user?.role;
 
   if (role === "instructor") {
-    throw new ApiError(400, "You are already an instructor");
+    throw new ApiError(400, "You are already an instructor", [
+      "ALREADY_AN_INSTRUCTOR",
+    ]);
   }
 
   if (!id || role !== "student") {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { rows: user } = await query(
@@ -61,6 +71,7 @@ const becomeInstructor = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(
       500,
       "Failed to become instructor, Please try again later!",
+      ["ACTION_FAILED"],
     );
   }
 
@@ -86,7 +97,7 @@ const becomeInstructor = asyncHandler(async (req: Request, res: Response) => {
 
 const onboardUser = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const parsed = onboardUserSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -106,7 +117,9 @@ const onboardUser = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!user[0]) {
-    throw new ApiError(500, "Failed to onboard user, Please try again later!");
+    throw new ApiError(500, "Failed to onboard user, Please try again later!", [
+      "ACTION_FAILED",
+    ]);
   }
 
   return res
@@ -116,16 +129,22 @@ const onboardUser = asyncHandler(async (req: Request, res: Response) => {
 
 const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const avatar = req?.file;
   if (!avatar?.path) {
-    throw new ApiError(400, "Avatar image is required");
+    throw new ApiError(400, "Avatar image is required", [
+      "AVATAR_FILE_REQUIRED",
+    ]);
   }
 
   const avatarUrl = await uploadToCloudinary(avatar.path, "users");
   if (!avatarUrl) {
-    throw new ApiError(500, "Failed to upload avatar, Please try again later!");
+    throw new ApiError(
+      500,
+      "Failed to upload avatar, Please try again later!",
+      ["UPLOAD_FAILED"],
+    );
   }
 
   const { rows: user } = await query("SELECT avatar FROM users WHERE id = $1", [
@@ -133,7 +152,7 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
   ]);
 
   if (!user[0]) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found", ["USER_NOT_FOUND"]);
   }
 
   if (typeof user[0]?.avatar === "string") {
@@ -159,19 +178,23 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
 
 const removeAvatar = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: user } = await query("SELECT avatar FROM users WHERE id = $1", [
     id,
   ]);
   if (!user[0]) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found", ["USER_NOT_FOUND"]);
   }
 
   const publicId = user[0]?.avatar?.split("lms")[1]?.split(".")[0];
   const result = await deleteFromCloudinary(publicId);
   if (!result) {
-    throw new ApiError(500, "Failed to delete avatar, Please try again later!");
+    throw new ApiError(
+      500,
+      "Failed to delete avatar, Please try again later!",
+      ["UPLOAD_FAILED"],
+    );
   }
 
   await query("UPDATE users SET avatar = $1 WHERE id = $2", [null, id]);
@@ -184,7 +207,7 @@ const removeAvatar = asyncHandler(async (req: Request, res: Response) => {
 const updatePassword = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id) {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const parsed = updatePasswordSchema.safeParse(req.body);
@@ -201,7 +224,7 @@ const updatePassword = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!user[0]) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found", ["USER_NOT_FOUND"]);
   }
 
   const isCurrentPasswordCorrect = await bcrypt.compare(
@@ -210,7 +233,9 @@ const updatePassword = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!isCurrentPasswordCorrect) {
-    throw new ApiError(400, "Current password is incorrect");
+    throw new ApiError(400, "Current password is incorrect", [
+      "PASSWORD_INCORRECT",
+    ]);
   }
 
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);

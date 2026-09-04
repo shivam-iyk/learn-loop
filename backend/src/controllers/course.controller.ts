@@ -8,10 +8,9 @@ import { deleteFromCloudinary, uploadToCloudinary } from "../utils/cloudinary";
 
 const getCourses = asyncHandler(async (req: Request, res: Response) => {
   const parsed = getCoursesSchema.safeParse(req.query);
+  console.log(req.query);
   if (!parsed.success) {
-    const errors = parsed.error.issues.map(
-      (err) => `${err.path.join(".")}: ${err.message}`,
-    );
+    const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
@@ -72,7 +71,7 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!courses[0]) {
-    throw new ApiError(400, "No courses found");
+    throw new ApiError(400, "No courses found", ["NOT_FOUND"]);
   }
 
   return res.status(200).json(
@@ -94,19 +93,11 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
 const getCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { courseId } = req.params;
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Course Id is required");
-  }
-
-  const { rows: enrollment } = await query(
-    "SELECT * FROM enrollments WHERE course = $1 AND user_id = $2",
-    [courseId, id],
-  );
-  if (!enrollment[0] && role === "student") {
-    throw new ApiError(404, "You are not enrolled to this course");
+    throw new ApiError(400, "Course Id is required", ["COURSE_ID_REQUIRED"]);
   }
 
   const { rows: course } = await query(`
@@ -116,11 +107,11 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
       WHERE c.id = 2`);
 
   if (!course[0]) {
-    throw new ApiError(404, "Course not found");
+    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
   }
 
   if (role === "instructor" && course[0]?.owner !== id) {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   return res
@@ -130,7 +121,7 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
 
 const getEnrolledCourses = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(401, "Unauthorized request");
+  if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: courses } = await query(
     `SELECT c.* 
@@ -140,7 +131,7 @@ const getEnrolledCourses = asyncHandler(async (req: Request, res: Response) => {
     [id],
   );
   if (!courses[0]) {
-    throw new ApiError(404, "No enrolled courses found");
+    throw new ApiError(404, "No enrolled courses found", ["NOT_FOUND"]);
   }
 
   return res
@@ -152,7 +143,7 @@ const getOwnedCourses = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { rows: courses } = await query(
@@ -160,7 +151,7 @@ const getOwnedCourses = asyncHandler(async (req: Request, res: Response) => {
     [id],
   );
   if (!courses[0]) {
-    throw new ApiError(404, "No owned courses found");
+    throw new ApiError(404, "No owned courses found", ["NOT_FOUND"]);
   }
 
   return res
@@ -172,14 +163,12 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const parsed = createCourseSchema.safeParse(req.body);
   if (!parsed.success) {
-    const errors = parsed.error.issues.map(
-      (err) => `${err.path.join(".")}: ${err.message}`,
-    );
+    const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
@@ -188,7 +177,9 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
 
   const coverImage = req.file;
   if (!coverImage?.path) {
-    throw new ApiError(400, "Cover image is required");
+    throw new ApiError(400, "Cover image is required", [
+      "COVER_IMAGE_REQUIRED",
+    ]);
   }
 
   const coverImageUrl = await uploadToCloudinary(coverImage.path, "course");
@@ -196,6 +187,7 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(
       500,
       "Failed to upload cover image, Please try again later!",
+      ["UPLOAD_FAILED"],
     );
   }
 
@@ -218,7 +210,11 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!course[0]) {
-    throw new ApiError(500, "Failed to create course, Please try again later!");
+    throw new ApiError(
+      500,
+      "Failed to create course, Please try again later!",
+      ["ACTION_FAILED"],
+    );
   }
 
   return res
@@ -230,7 +226,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const coverImage = req.file;
@@ -245,9 +241,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     )
     .safeParse(req.body);
   if (!parsed.success) {
-    const errors = parsed.error.issues.map(
-      (err) => `${err.path.join(".")}: ${err.message}`,
-    );
+    const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
@@ -256,14 +250,16 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
   const { courseId } = req.params;
 
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course ID");
+    throw new ApiError(400, "Invalid course ID", ["INVALID_COURSE_ID"]);
   }
 
   let coverImageUrl: string | undefined = undefined;
   if (coverImage) {
     coverImageUrl = await uploadToCloudinary(coverImage?.path, "course");
     if (!coverImageUrl) {
-      throw new ApiError(400, "Failed to upload cover image");
+      throw new ApiError(400, "Failed to upload cover image", [
+        "UPLOAD_FAILED",
+      ]);
     }
   }
 
@@ -272,11 +268,13 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     [courseId],
   );
   if (!courseExists[0]) {
-    throw new ApiError(404, "Course not found");
+    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
   }
 
   if (courseExists[0]?.owner !== id) {
-    throw new ApiError(403, "You are not the owner of this course");
+    throw new ApiError(401, "You are not the owner of this course", [
+      "UNAUTHORIZED",
+    ]);
   }
 
   if (coverImageUrl) {
@@ -310,7 +308,11 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     ],
   );
   if (!course[0]) {
-    throw new ApiError(500, "Failed to update course, Please try again later!");
+    throw new ApiError(
+      500,
+      "Failed to update course, Please try again later!",
+      ["ACTION_FAILED"],
+    );
   }
 
   return res
@@ -322,12 +324,12 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "student") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { courseId } = req.params;
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course id");
+    throw new ApiError(400, "Invalid course id", ["INVALID_COURSE_ID"]);
   }
 
   const { rows: enrollmentExists } = await query(
@@ -335,7 +337,9 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
     [courseId, id],
   );
   if (enrollmentExists[0]) {
-    throw new ApiError(400, "You are already enrolled to this course");
+    throw new ApiError(400, "You are already enrolled to this course", [
+      "ALREADY_ENROLLED",
+    ]);
   }
 
   const { rows: course } = await query(
@@ -344,7 +348,9 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (course[0]?.price !== 0) {
-    throw new ApiError(400, "You cannot enroll to this course");
+    throw new ApiError(400, "You cannot enroll to this course", [
+      "CANNOT_ENROLL",
+    ]);
   }
 
   await query("BEGIN");
@@ -356,7 +362,9 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
 
   if (!enrollment[0]) {
     await query("ROLLBACK");
-    throw new ApiError(500, "Failed to enroll into the course");
+    throw new ApiError(500, "Failed to enroll into the course", [
+      "ACTION_FAILED",
+    ]);
   }
 
   await query("UPDATE courses SET students_enrolled = students_enrolled + 1");

@@ -1,4 +1,5 @@
 import z from "zod";
+import "../utils/zod";
 
 const getInstructorsSchema = z
   .object({

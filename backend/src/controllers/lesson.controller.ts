@@ -13,7 +13,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const parsed = createLessonSchema.safeParse(req.body);
@@ -30,7 +30,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!lesson[0]) {
-    throw new ApiError(500, "Failed to create lesson, Please try again later!");
+    throw new ApiError(500, "Failed to create lesson, Please try again later!", ["ACTION_FAILED"]);
   }
 
   await query(
@@ -46,7 +46,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 const getLessons = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { courseId } = req.params;
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
@@ -89,7 +89,7 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const parsed = reorderLessonsSchema.safeParse(req.body);
@@ -113,11 +113,11 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
   const validOwner = validation.every((item) => item?.owner === id);
 
   if (courseIds.size > 1) {
-    throw new ApiError(401, "Some lessons belong to other courses");
+    throw new ApiError(401, "Some lessons belong to other courses", ["LESSONS_BELONG_TO_OTHER_COURSES"]);
   }
 
   if (!validOwner) {
-    throw new ApiError(401, "Some lessons do not belong your courses");
+    throw new ApiError(401, "Some lessons do not belong your courses", ["LESSONS_NOT_OWNED_BY_USER"]);
   }
 
   const values = lessons
@@ -137,6 +137,7 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(
       500,
       "Failed to reorder lessons, Please try again later!",
+      ["ACTION_FAILED"]
     );
   }
 
@@ -151,7 +152,7 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role === "student") {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const parsed = updateLessonSchema.safeParse(req.body);
@@ -163,7 +164,7 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   const { name, type, duration, notes, video } = parsed.data;
   const { lessonId } = req.params;
   if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Lesson ID is required and must be a valid number");
+    throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
   }
 
   const { rows: lessonExists } = await query(
@@ -175,7 +176,7 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (lessonExists[0]?.owner !== id && role === "instructor") {
-    throw new ApiError(401, "You are not authorized to update this lesson");
+    throw new ApiError(401, "You are not authorized to update this lesson", ["UNAUTHORIZED"]);
   }
 
   const { rows: lesson } = await query(
@@ -191,7 +192,7 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!lesson[0]) {
-    throw new ApiError(500, "Failed to update lesson");
+    throw new ApiError(500, "Failed to update lesson", ["ACTION_FAILED"]);
   }
 
   if (lessonExists[0]?.duration !== lesson[0]?.duration) {
@@ -210,12 +211,12 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role === "student") {
-    throw new ApiError(400, "Unauthorized request");
+    throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { lessonId } = req.params;
   if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Lesson ID is required and must be a valid number");
+    throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
   }
 
   const { rows: lesson } = await query(
@@ -226,11 +227,11 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
     [lessonId],
   );
   if (!lesson[0]) {
-    throw new ApiError(404, "Lesson not found");
+    throw new ApiError(404, "Lesson not found", ["NOT_FOUND"]);
   }
 
   if (lesson[0]?.owner !== id && role === "instructor") {
-    throw new ApiError(403, "You are not allowed to delete this lesson");
+    throw new ApiError(401, "You are not allowed to delete this lesson", ["UNAUTHORIZED"]);
   }
 
   await query("BEGIN");
@@ -247,7 +248,7 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
 
   if (!deletedLesson[0]) {
     await query("ROLLBACK");
-    throw new ApiError(500, "Failed to delete lesson, Please try again later!");
+    throw new ApiError(500, "Failed to delete lesson, Please try again later!", ["ACTION_FAILED"]);
   }
 
   await query("COMMIT");

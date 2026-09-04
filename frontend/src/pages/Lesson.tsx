@@ -1,17 +1,13 @@
 import { useParams } from "react-router-dom";
 import useBoundStore from "../store";
-import Reviews from "../components/Reviews";
-import CourseContent from "../components/CourseContent";
 import { Button, Skeleton } from "@heroui/react";
-import {
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Sliders,
-} from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Sliders } from "lucide-react";
 import RateCourse from "../components/RateCourse";
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import ReportModal from "../components/ReportModal";
+import CourseContent from "../components/CourseContent";
+
+const Reviews = lazy(() => import("../components/Reviews"));
 
 function Lesson() {
   const params = useParams<{ lessonId?: string }>();
@@ -88,7 +84,13 @@ function Lesson() {
         <div className="flex flex-col gap-4">
           <CourseContent />
           <RateCourse />
-          <Reviews />
+          <Suspense
+            fallback={
+              <Skeleton className="border border-default rounded-lg p-4 sm:h-80 h-60" />
+            }
+          >
+            <Reviews />
+          </Suspense>
         </div>
       </div>
     </div>

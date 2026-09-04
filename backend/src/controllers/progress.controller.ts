@@ -6,15 +6,15 @@ import asyncHandler from "../utils/AsyncHandler";
 
 const markLessonComplete = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request");
+  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { lessonId, courseId } = req.body;
   if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Lesson ID is required and must be a number");
+    throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
   }
 
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Course ID is required and must be a number");
+    throw new ApiError(400, "Course ID is required", ["COURSE_ID_REQUIRED"]);
   }
 
   const { rows: progressExists } = await query(
@@ -23,7 +23,9 @@ const markLessonComplete = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!progressExists[0]?.completed) {
-    throw new ApiError(200, "Lesson already marked as complete");
+    throw new ApiError(200, "Lesson already marked as complete", [
+      "ALREADY_SATISFIED",
+    ]);
   } else if (progressExists[0]?.id) {
     const { rows: progress } = await query(
       "UPDATE lesson_progress SET completed = true, completed_at = $1 WHERE id = $2 RETURNING *",
@@ -33,6 +35,7 @@ const markLessonComplete = asyncHandler(async (req: Request, res: Response) => {
       throw new ApiError(
         500,
         "Failed to mark lesson as complete, Please try again later!",
+        ["ACTION_FAILED"],
       );
     }
 
@@ -61,7 +64,7 @@ const markLessonComplete = asyncHandler(async (req: Request, res: Response) => {
 const markLessonIncomplete = asyncHandler(
   async (req: Request, res: Response) => {
     const id = req.user?.id;
-    if (!id) throw new ApiError(400, "Unauthorized request");
+    if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
     const { lessonId, courseId } = req.body;
     const { progressId } = req.params;
@@ -69,15 +72,16 @@ const markLessonIncomplete = asyncHandler(
       throw new ApiError(
         400,
         "Progress ID or both Lesson ID and Course ID are required",
+        ["PROGRESS_ID_OR_LESSON_AND_COURSE_ID_REQUIRED"],
       );
     }
 
     if (lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-      throw new ApiError(400, "Lesson ID is required and must be a number");
+      throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
     }
 
     if (courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-      throw new ApiError(400, "Course ID is required and must be a number");
+      throw new ApiError(400, "Course ID is required", ["COURSE_ID_REQUIRED"]);
     }
 
     if (
@@ -85,7 +89,9 @@ const markLessonIncomplete = asyncHandler(
       typeof progressId !== "string" ||
       isNaN(parseInt(progressId))
     ) {
-      throw new ApiError(400, "Progress ID is required and must be a number");
+      throw new ApiError(400, "Progress ID is required", [
+        "PROGRESS_ID_REQUIRED",
+      ]);
     }
 
     const { rows: lessonProgress } = await query(
@@ -97,7 +103,7 @@ const markLessonIncomplete = asyncHandler(
       user_id = $4`,
     );
     if (!lessonProgress[0]) {
-      throw new ApiError(404, "Lesson progress not found");
+      throw new ApiError(404, "Lesson progress not found", ["NOT_FOUND"]);
     }
 
     return res

@@ -15,15 +15,19 @@ import {
 import { AvatarDropdown } from "./AvatarDropdown";
 import { Drawer, Button, Avatar, Accordion } from "@heroui/react";
 import Logo from "./Logo";
+import { useMutation } from "@tanstack/react-query";
+import type { ApiError } from "../services/api";
+import { logOut } from "../services/auth";
+import { instructorPages, studentPages } from "../lib/helpers";
 
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { role, avatar, name } = useBoundStore((state) => state.user);
+  const { user, logOut: clearSession } = useBoundStore();
 
   const menu =
-    role === "student"
+    user?.role === "student"
       ? [
           {
             icon: Home,
@@ -69,9 +73,18 @@ function Navbar() {
           },
         ];
 
-  const handleLogOut = () => {
-    navigate("/login");
-  };
+  const logOutMutation = useMutation<{} | ApiError>({
+    mutationFn: logOut,
+    onSuccess: () => {
+      clearSession();
+      const isProtectedPage = [...studentPages, ...instructorPages].some(
+        (item) => location.pathname.includes(item),
+      );
+      if (isProtectedPage) {
+        navigate("/login");
+      }
+    },
+  });
 
   return (
     <div
@@ -85,7 +98,7 @@ function Navbar() {
               <PanelLeft className="hidden group-hover:inline" size={30} />
             </Button>
             <Link
-              to={role === "student" ? "/home" : "/dashboard"}
+              to={user?.role === "student" ? "/home" : "/dashboard"}
               className="flex justify-center items-center gap-2 p-2 ring-visible ring-background-secondary rounded-lg text-xl font-cal-sans font-semibold"
             >
               LearnLoop
@@ -130,12 +143,14 @@ function Navbar() {
                       <Accordion.Heading>
                         <Accordion.Trigger className="rounded-lg hover:bg-hover px-2 py-1 gap-2">
                           <Avatar size="sm" className="rounded-full">
-                            <Avatar.Image src={avatar ?? "/avatar-small.png"} />
+                            <Avatar.Image
+                              src={user?.avatar ?? "/avatar-small.png"}
+                            />
                             <Avatar.Fallback delayMs={600}>
-                              {name[0]}
+                              {user?.name[0]}
                             </Avatar.Fallback>
                           </Avatar>
-                          <span className="w-full text-left">{name}</span>
+                          <span className="w-full text-left">{user?.name}</span>
                           <Accordion.Indicator />
                         </Accordion.Trigger>
                       </Accordion.Heading>
@@ -174,7 +189,7 @@ function Navbar() {
                             size="sm"
                             className="w-full"
                             slot="close"
-                            onClick={handleLogOut}
+                            onClick={() => logOutMutation.mutate()}
                           >
                             <LogOut />
                             <span className="w-full text-left">Log Out</span>
@@ -189,7 +204,7 @@ function Navbar() {
           </Drawer.Backdrop>
         </Drawer>
         <Link
-          to={role === "student" ? "/home" : "/dashboard"}
+          to={user?.role === "student" ? "/home" : "/dashboard"}
           className="flex justify-center items-center gap-2 p-2 ring-visible rounded-lg max-sm:hidden"
         >
           <Logo />
@@ -208,7 +223,7 @@ function Navbar() {
             </Link>
           ))}
         </div>
-        <AvatarDropdown handleLogOut={handleLogOut} />
+        <AvatarDropdown />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const getOverview = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
   if (!id || role !== "instructor") {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
   const { rows: overview } = await query(
@@ -24,7 +24,7 @@ const getOverview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!overview[0]) {
-    throw new ApiError(500, "Failed to get overview, Please try again later!");
+    throw new ApiError(500, "Failed to get overview, Please try again later!", ["ACTION_FAILED"]);
   }
 
   return res
@@ -35,7 +35,7 @@ const getOverview = asyncHandler(async (req: Request, res: Response) => {
 const getPopularInstructors = asyncHandler(
   async (req: Request, res: Response) => {
     const id = req.user?.id;
-    if (!id) throw new ApiError(400, "Unauthorized request");
+    if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
     const { rows: instructors } = await query(`
       SELECT 
@@ -54,7 +54,7 @@ const getPopularInstructors = asyncHandler(
       LIMIT 10`);
 
     if (!instructors[0]) {
-      throw new ApiError(400, "No instructors found");
+      throw new ApiError(400, "No instructors found", ["NOT_FOUND"]);
     }
 
     return res
@@ -70,7 +70,7 @@ const getInstructor = asyncHandler(async (req: Request, res: Response) => {
     typeof instructorId !== "string" ||
     isNaN(parseInt(instructorId))
   ) {
-    throw new ApiError(400, "Instructor Id is required");
+    throw new ApiError(400, "Instructor Id is required", ["INSTRUCTOR_ID_REQUIRED"]);
   }
 
   const { rows: instructor } = await query(
@@ -85,7 +85,7 @@ const getInstructor = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!instructor[0]) {
-    throw new ApiError(404, "Instructor not found");
+    throw new ApiError(404, "Instructor not found", ["NOT_FOUND"]);
   }
 
   return res
@@ -122,7 +122,7 @@ const getInstructors = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!instructors[0]) {
-    throw new ApiError(404, "No instructors found");
+    throw new ApiError(404, "No instructors found", ["NOT_FOUND"]);
   }
 
   return res

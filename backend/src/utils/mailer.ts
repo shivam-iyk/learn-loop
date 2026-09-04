@@ -4,9 +4,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendMail(name: string, otp: number, email: string) {
   const { data, error } = await resend.emails.send({
-    from: "no-reply@lms.dev-shivam.in",
+    from: "account@learnloop.dev-shivam.in",
     to: [email],
-    subject: "Lumio - Your Verification Code",
+    subject: "LearnLoop - Your Verification Code",
     template: {
       id: "otp-verification",
       variables: {
