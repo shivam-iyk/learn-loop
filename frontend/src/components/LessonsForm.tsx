@@ -68,6 +68,7 @@ function LessonsForm({
     questions: [
       {
         id: 1,
+        type: "single_choice",
         question: "",
         options: [
           {

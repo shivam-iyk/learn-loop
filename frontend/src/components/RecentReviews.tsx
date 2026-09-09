@@ -3,7 +3,7 @@ import useBoundStore from "../store";
 import RatingStars from "./RatingStars";
 import { formatDistance } from "date-fns";
 import type { Review as ReviewI } from "../types/review";
-import SearchBar from "./SearchBar";
+// import SearchBar from "./SearchBar";
 import { useMemo, useState } from "react";
 import CustomEmptyState from "./CustomEmptyState";
 import { Search } from "lucide-react";
@@ -71,13 +71,13 @@ function RecentReviews() {
                 <Modal.CloseTrigger />
                 <Modal.Header>
                   <h4 className="text-xl font-outfit font-semibold">Reviews</h4>
-                  <SearchBar
+                  {/* <SearchBar
                     value={search}
                     setValue={(value) => setSearch(value)}
                     inputClassName="flex-1 bg-black"
                     buttonTextClassName="hidden"
                     placeholder="Search for reviews"
-                  />
+                  /> */}
                 </Modal.Header>
                 <Modal.Body className="min-h-[75vh]">
                   <div className="flex flex-col max-h-[75vh] gap-2">

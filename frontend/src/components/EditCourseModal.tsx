@@ -23,7 +23,6 @@ function EditCourseModal({
     name: "",
     tagline: "",
     description: "",
-    level: "beginner",
     category: "",
     skills: [],
     price: "",
@@ -42,7 +41,6 @@ function EditCourseModal({
       name: "",
       tagline: "",
       description: "",
-      level: "beginner",
       category: "",
       skills: [],
       price: "",
@@ -56,14 +54,12 @@ function EditCourseModal({
     if (!course) {
       setNotFound(true);
     } else {
-      const { name, category, tagline, description, level, price, skills } =
-        course;
+      const { name, category, tagline, description, price, skills } = course;
       setForm({
         name,
         tagline,
         category,
         description,
-        level,
         price: price.toString(),
         skills: skills ?? [],
       });

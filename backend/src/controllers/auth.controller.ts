@@ -92,6 +92,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     id: user[0]?.id,
     name: user[0]?.name,
     email: user[0]?.email,
+    avatar: user[0]?.avatar,
     role: user[0]?.role,
     is_verified: user[0]?.is_verified,
     is_banned: user[0]?.is_banned,
@@ -132,7 +133,7 @@ const handleSocialLogin = asyncHandler(async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: parseInt(process.env.COOKIE_EXPIRY || "31536000"),
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
     })
     .redirect(`${process.env.CLIENT_SSO_REDIRECT_URL || "/"}?token=${token}`);
 });
@@ -184,6 +185,7 @@ const verifyMail = asyncHandler(async (req: Request, res: Response) => {
     id: updatedUser[0]?.id,
     name: updatedUser[0]?.name,
     email: updatedUser[0]?.email,
+    avatar: user[0]?.avatar,
     role: updatedUser[0]?.role,
     is_verified: updatedUser[0]?.is_verified,
     is_banned: updatedUser[0]?.is_banned,

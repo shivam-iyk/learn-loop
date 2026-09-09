@@ -8,7 +8,7 @@ import {
   Label,
   TextField,
 } from "@heroui/react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import {
   categorySchema,
   coverSchema,
@@ -28,6 +28,7 @@ function CourseDetailsForm({
   setForm,
   setCover,
   handleNext,
+  isLoading = false,
   headerClassName = "",
   formClassName = "",
   editorClassName = "",
@@ -37,6 +38,7 @@ function CourseDetailsForm({
   setCover: (cover: { file: File | null; uri: string }) => void;
   form: CourseDetailsFormI;
   setForm: (form: CourseDetailsFormI) => void;
+  isLoading?: boolean;
   handleNext: () => void;
   headerClassName?: string;
   formClassName?: string;
@@ -194,8 +196,14 @@ function CourseDetailsForm({
       </TextField>
       <div className="flex justify-end gap-2">
         <Button type="submit">
-          Next
-          <ChevronRight />
+          {isLoading ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <>
+              Next
+              <ChevronRight />
+            </>
+          )}
         </Button>
       </div>
     </Form>

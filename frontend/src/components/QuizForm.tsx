@@ -5,7 +5,8 @@ import {
   FieldError,
   Input,
   Label,
-  Modal,
+  ListBox,
+  Select,
   Skeleton,
   TextField,
 } from "@heroui/react";
@@ -13,13 +14,40 @@ import {
   instructionSchema,
   optionSchema,
   passMarksSchema,
-  questionSchema,
 } from "../schema/quiz";
 import RichTextField from "./RichTextField";
 import { GripVertical, Plus, Trash } from "lucide-react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import type { QuizFormI } from "../types/quiz";
 import { lazy, Suspense } from "react";
+import QuestionInput from "./QuestionInput";
+
+const quizTypes = [
+  {
+    name: "Single Choice",
+    value: "single_choice",
+  },
+  {
+    name: "Multiple Choice",
+    value: "multiple_choice",
+  },
+  {
+    name: "True/False",
+    value: "true_false",
+  },
+  {
+    name: "Match the following",
+    value: "match",
+  },
+  {
+    name: "Fill in the blanks",
+    value: "fill",
+  },
+  {
+    name: "Arrange in correct Order",
+    value: "order",
+  },
+];
 
 const QuizGuidelines = lazy(() => import("../components/QuizGuidelines"));
 
@@ -69,7 +97,7 @@ function Option({
             onChange={() => handleOptionChange(correct)}
           >
             <Checkbox.Content>
-              <Checkbox.Control className="size-4 rounded-xl border border-muted data-[selected=true]:border-accent! before:rounded-none">
+              <Checkbox.Control className="size-4 rounded-xl">
                 <Checkbox.Indicator />
               </Checkbox.Control>
             </Checkbox.Content>
@@ -97,7 +125,7 @@ function Option({
     </div>
   );
 }
-
+// TODO: Fix the different types of questions
 function QuizForm({
   quiz,
   setQuiz,
@@ -156,90 +184,59 @@ function QuizForm({
       <div className="flex flex-col gap-3">
         {quiz.questions.map((item, index) => (
           <div className="flex flex-col gap-2" key={index}>
-            <RichTextField
-              label={
-                <div className="flex items-center justify-between">
-                  <div className="font-huninn uppercase text-muted tracking-tight text-xs">
-                    Question {index + 1}
-                    <span className="text-danger"> *</span>
-                  </div>
-                  <Modal>
-                    <Modal.Trigger
-                      className={`size-fit ${quiz.questions.length === 1 ? "hidden" : ""}`}
-                    >
-                      <button
-                        type="button"
-                        className="text-xs text-danger hover:underline underline-offset-2 uppercase font-huninn"
+            <div className="flex max-sm:flex-col gap-2 items-end">
+              <Select value={item.type}>
+                <Label className="font-huninn uppercase tracking-tight text-xs text-muted mb-1">
+                  Type
+                </Label>
+                <Select.Trigger>
+                  <Select.Value className="max-w-30 w-30 truncate" />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {quizTypes.map((item, index) => (
+                      <ListBox.Item
+                        id={item.value}
+                        textValue={item.name}
+                        key={index}
                       >
-                        Delete
-                      </button>
-                    </Modal.Trigger>
-                    <Modal.Backdrop>
-                      <Modal.Container>
-                        <Modal.Dialog className="sm:max-w-[360px]">
-                          <Modal.Header className="items-center text-center">
-                            <Modal.Heading className="tracking-tight text-lg font-semibold">
-                              Delete Question
-                            </Modal.Heading>
-                          </Modal.Header>
-                          <Modal.Body>
-                            <p>
-                              Changes you made will be lost. Are you sure you
-                              want to delete this question?
-                            </p>
-                          </Modal.Body>
-                          <Modal.Footer className="flex-col">
-                            <Button
-                              variant="danger"
-                              className="w-full"
-                              slot="close"
-                              onClick={() =>
-                                setQuiz({
-                                  ...quiz,
-                                  questions: quiz.questions.filter(
-                                    (question) => item.id !== question.id,
-                                  ),
-                                })
-                              }
-                            >
-                              Delete
-                            </Button>
-                            <Button
-                              className="w-full"
-                              slot="close"
-                              variant="tertiary"
-                            >
-                              Cancel
-                            </Button>
-                          </Modal.Footer>
-                        </Modal.Dialog>
-                      </Modal.Container>
-                    </Modal.Backdrop>
-                  </Modal>
-                </div>
-              }
-              placeholder="Your question here"
-              value={item.question}
-              onChange={(value) =>
-                setQuiz({
-                  ...quiz,
-                  questions: quiz.questions.map((question) => {
-                    if (item.id === question.id) {
-                      return {
-                        ...question,
-                        question: value,
-                      };
-                    }
-                    return question;
-                  }),
-                })
-              }
-              validate={(value) => {
-                const result = questionSchema.safeParse(value);
-                return result.success ? null : result.error.issues[0].message;
-              }}
-              invalid={invalid}
-            />
+                        {item.name}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              <QuestionInput
+                label={`Question ${index + 1}`}
+                invalid={invalid}
+                question={item.question}
+                setQuestion={(value) =>
+                  setQuiz({
+                    ...quiz,
+                    questions: quiz.questions.map((question) => {
+                      if (item.id === question.id) {
+                        return {
+                          ...question,
+                          question: value,
+                        };
+                      }
+                      return question;
+                    }),
+                  })
+                }
+                deleteVisible={quiz.questions.length >= 0}
+                onDelete={() =>
+                  setQuiz({
+                    ...quiz,
+                    questions: quiz.questions.filter(
+                      (question) => item.id !== question.id,
+                    ),
+                  })
+                }
+                placeholder="Your Question here"
+              />
+            </div>
             <span className="font-huninn uppercase text-xs text-muted">
               Options
             </span>
@@ -310,6 +307,7 @@ function QuizForm({
                         ...quiz.questions,
                         {
                           id: quiz.questions[quiz.questions.length - 1].id + 1,
+                          type: "single_choice",
                           question: "",
                           options: [
                             {
@@ -364,6 +362,7 @@ function QuizForm({
         placeholder="Instructions to solve the quiz"
         validate={(value) => {
           const result = instructionSchema.safeParse(value);
+          console.log(result.error);
           return result.success ? null : result.error.issues[0].message;
         }}
       />

@@ -68,7 +68,7 @@ function EditorToolbar({
       aria-label="Formatting Toolbar"
     >
       <div
-        className="flex flex-wrap flex-1 gap-2 border-none! p-0! px-1! py-2! max-lg:flex-nowrap max-lg:overflow-x-scroll"
+        className="flex flex-wrap flex-1 gap-2 border-none! p-0! px-1! py-2! max-lg:flex-nowrap max-lg:overflow-x-auto"
         aria-label="Text Formatting"
         onKeyDown={handleToolbarKeys}
       >

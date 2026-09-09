@@ -1,58 +1,31 @@
 import {
-  Checkbox,
   Chip,
   Label,
   ListBox,
-  Slider,
   Select,
   Drawer,
   Button,
   cn,
 } from "@heroui/react";
-import { useMemo } from "react";
 import useBoundStore from "../store";
 import { Funnel } from "lucide-react";
 import StarsSelector from "./StarsSelector";
+import PriceSlider from "./PriceSlider";
 
-const durations = [
-  { label: "0-2 hours", value: [0, 120] },
-  { label: "2-5 hours", value: [120, 300] },
-  { label: "5-10 hours", value: [300, 600] },
-  { label: "10+ hours", value: [600, Infinity] },
-];
+interface FilterProps {
+  maxPrice: number;
+  maxLessons: number;
+  categories: string[];
+  className?: string;
+}
 
-function Filters({ className = "" }: { className?: string }) {
-  const { courses, filters, setFilters } = useBoundStore();
-
-  const maxPrice = useMemo(() => {
-    let max = courses[0]?.price || -1;
-    courses.map(({ price }) => {
-      if (price > max) {
-        max = price;
-      }
-    });
-    if (Array.isArray(filters.price) && filters.price[1] === -1) {
-      const price = [filters.price[0], max];
-      setFilters({ ...filters, price });
-    }
-    return max;
-  }, [courses]);
-
-  const maxLessons = useMemo(() => {
-    let max = courses[0]?.lessons || -1;
-    courses.map((item) => {
-      if (item.lessons > max) {
-        max = item.lessons;
-      }
-    });
-    return max;
-  }, [courses]);
-
-  const categories = useMemo(
-    () =>
-      Array.from(new Set(courses.map((item) => item.category).filter(Boolean))),
-    [courses],
-  );
+function Filters({
+  maxPrice,
+  categories,
+  maxLessons,
+  className = "",
+}: FilterProps) {
+  const { filters, setFilters } = useBoundStore();
 
   return (
     <div
@@ -65,50 +38,11 @@ function Filters({ className = "" }: { className?: string }) {
         Filters
       </h5>
       <div className="flex flex-col gap-4 py-4">
-        <Slider
-          aria-label="Price"
-          className="w-full"
-          value={filters.price}
-          onChange={(value) => setFilters({ ...filters, price: value })}
-          formatOptions={{
-            currency: "INR",
-            style: "currency",
-            maximumFractionDigits: 0,
-          }}
-          minValue={0}
-          maxValue={maxPrice}
-          isDisabled={Array.isArray(filters.price) && filters.price[1] === -1}
-          step={1}
-        >
-          <div className="flex flex-col">
-            <span className="label font-huninn uppercase text-base mb-2">
-              Price
-            </span>
-            <Slider.Track className="w-full border-x-0 h-2 bg-accent-soft">
-              {({ state }) => (
-                <>
-                  <Slider.Fill />
-                  {state.values.map((_, i) => (
-                    <Slider.Thumb
-                      className="size-4 after:rounded-full after:border after:border-accent bg-transparent"
-                      key={i}
-                      index={i}
-                    />
-                  ))}
-                </>
-              )}
-            </Slider.Track>
-            <Slider.Output className="flex justify-between w-full">
-              {({ state }) =>
-                state.values.map((_, i) => (
-                  <span className="font-light text-sm mt-2" key={i}>
-                    {state.getThumbValueLabel(i)}
-                  </span>
-                ))
-              }
-            </Slider.Output>
-          </div>
-        </Slider>
+        <PriceSlider
+          maxPrice={maxPrice}
+          defaultPrice={filters.price}
+          setFilterPrice={(price) => setFilters({ ...filters, price })}
+        />
         <div className="flex flex-col gap-2">
           <span className="label font-huninn uppercase text-base">
             Category
@@ -146,40 +80,6 @@ function Filters({ className = "" }: { className?: string }) {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <span className="label font-huninn uppercase text-base">
-            Duration
-          </span>
-          <div className="flex flex-col gap-2">
-            {durations.map((item, index) => (
-              <Checkbox
-                name="duration"
-                isSelected={filters.duration.has(item.label)}
-                onChange={() =>
-                  filters.duration.has(item.label)
-                    ? setFilters({
-                        ...filters,
-                        duration: new Set(
-                          [...filters.duration].filter((d) => d !== item.label),
-                        ),
-                      })
-                    : setFilters({
-                        ...filters,
-                        duration: filters.duration.add(item.label),
-                      })
-                }
-                key={index}
-              >
-                <Checkbox.Content className="flex-row items-center gap-2">
-                  <Checkbox.Control>
-                    <Checkbox.Indicator />
-                  </Checkbox.Control>
-                  {item.label}
-                </Checkbox.Content>
-              </Checkbox>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
           <span className="label font-huninn uppercase text-base">Ratings</span>
           <StarsSelector
             value={filters.rating}
@@ -194,16 +94,18 @@ function Filters({ className = "" }: { className?: string }) {
             placeholder="Min Lessons"
             value={filters.lessons[0]}
             onChange={(value) =>
-              setFilters({
-                ...filters,
-                lessons: [
-                  parseInt(value?.toString() || "0"),
-                  filters.lessons[1],
-                ],
-              })
+              value === filters.lessons[0]
+                ? setFilters({ ...filters, lessons: [0, filters.lessons[1]] })
+                : setFilters({
+                    ...filters,
+                    lessons: [
+                      parseInt(value?.toString() || "0"),
+                      filters.lessons[1],
+                    ],
+                  })
             }
           >
-            <Label>
+            <Label className="text-muted">
               Min<span className="max-lg:hidden">imum</span>:
             </Label>
             <Select.Trigger className="flex-1 max-w-60">
@@ -238,16 +140,21 @@ function Filters({ className = "" }: { className?: string }) {
             placeholder="Max Lessons"
             value={filters.lessons[1]}
             onChange={(value) =>
-              setFilters({
-                ...filters,
-                lessons: [
-                  filters.lessons[0],
-                  parseInt(value?.toString() || "0"),
-                ],
-              })
+              value === filters.lessons[1]
+                ? setFilters({
+                    ...filters,
+                    lessons: [filters.lessons[0], maxLessons],
+                  })
+                : setFilters({
+                    ...filters,
+                    lessons: [
+                      filters.lessons[0],
+                      parseInt(value?.toString() || "0"),
+                    ],
+                  })
             }
           >
-            <Label>
+            <Label className="text-muted">
               Max<span className="max-lg:hidden">imum</span>:
             </Label>
             <Select.Trigger className="flex-1 max-w-60">
@@ -279,8 +186,12 @@ function Filters({ className = "" }: { className?: string }) {
   );
 }
 
-function FiltersModular({ isDrawer = false }: { isDrawer?: boolean }) {
-  if (!isDrawer) return <Filters />;
+function FiltersModular(
+  props: FilterProps & {
+    isDrawer?: boolean;
+  },
+) {
+  if (!props.isDrawer) return <Filters {...props} />;
   return (
     <Drawer>
       <Button
@@ -294,7 +205,7 @@ function FiltersModular({ isDrawer = false }: { isDrawer?: boolean }) {
           <Drawer.Dialog>
             <Drawer.Handle />
             <Drawer.Body>
-              <Filters className="block!" />
+              <Filters {...props} className="block!" />
             </Drawer.Body>
           </Drawer.Dialog>
         </Drawer.Content>

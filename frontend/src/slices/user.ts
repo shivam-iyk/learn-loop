@@ -5,7 +5,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
   loading: false,
   user: {
     id: 0,
-    role: "instructor",
+    role: "student",
     avatar: "",
     wallet: 0,
     skills: null,
@@ -108,7 +108,9 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
       courses: 2,
     },
   ],
-  login: () => {},
+  login: (user) => {
+    set({ user });
+  },
   logOut: () => {
     set({
       user: {

@@ -114,7 +114,6 @@ function PublishCourse({
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <span className="text-accent uppercase font-huninn">Level</span>
               <p className="md:text-4xl sm:text-3xl text-2xl font-merriweather capitalize truncate">
-                {course.level}
               </p>
             </div>
             <div className="flex flex-col gap-4 p-4 border rounded-lg">

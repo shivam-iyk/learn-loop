@@ -3,29 +3,69 @@ import ApiError from "../utils/ApiError";
 import asyncHandler from "../utils/AsyncHandler";
 import { query } from "../db";
 import ApiResponse from "../utils/ApiResponse";
-import { createCourseSchema, getCoursesSchema } from "../schemas/course.schema";
+import {
+  createCourseSchema,
+  getCoursesSchema,
+  getSuggestionsSchema,
+} from "../schemas/course.schema";
 import { deleteFromCloudinary, uploadToCloudinary } from "../utils/cloudinary";
+
+const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
+  const parsed = getSuggestionsSchema.safeParse(req.query);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
+  }
+
+  const { search } = parsed.data;
+
+  const { rows: courses } = await query(
+    `SELECT DISTINCT term
+      FROM (
+          SELECT category AS term
+          FROM courses
+
+          UNION ALL
+
+          SELECT unnest(skills) AS term
+          FROM courses
+
+          UNION ALL
+
+          SELECT name AS term
+          FROM courses
+      ) AS suggestions
+      WHERE term ILIKE $1 || '%'
+      ORDER BY term
+      LIMIT 10;`,
+    [search],
+  );
+
+  if (!courses) {
+    throw new ApiError(400, "No suggestions found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, courses, "Suggestions found"));
+});
 
 const getCourses = asyncHandler(async (req: Request, res: Response) => {
   const parsed = getCoursesSchema.safeParse(req.query);
-  console.log(req.query);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
   const {
-    category,
+    categories,
     page,
     limit,
     search,
+    rating,
     sort,
     minPrice,
     maxPrice,
-    minRatings,
-    maxRatings,
-    minDuration,
-    maxDuration,
     minLessons,
     maxLessons,
   } = parsed.data;
@@ -40,35 +80,37 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
   const orderBy = orderByMap[sort];
 
   const { rows: courses } = await query(
-    `SELECT id, name, description, owner, level, is_banned, status, students_enrolled, ban_reason, skills, cover, category, price, rating_sum, rating_count, duration, lessons, created_at,
+    `SELECT id, name, description, tagline, owner, is_banned, status, students_enrolled, ban_reason, skills, cover, category, price, rating_sum, rating_count, lessons, created_at,
      COUNT(*) OVER() AS total_count
      FROM courses
-     WHERE ($1::text IS NULL OR category = $1)
+     WHERE ($1::text[] IS NULL OR category = ANY($1::text[]))
      AND ($2::int IS NULL OR price >= $2)
      AND ($3::int IS NULL OR price <= $3)
      AND ($4::numeric IS NULL OR (rating_sum::numeric / NULLIF(rating_count, 0)) >= $4)
-     AND ($5::numeric IS NULL OR (rating_sum::numeric / NULLIF(rating_count, 0)) <= $5)
-     AND ($6::int IS NULL OR duration >= $6)
-     AND ($7::int IS NULL OR duration <= $7)
-     AND ($8::int IS NULL OR lessons >= $8)
-     AND ($9::int IS NULL OR lessons <= $9)
-     AND ($10::text IS NULL OR name ILIKE '%' || $10 || '%')
+     AND ($5::int IS NULL OR lessons >= $5)
+     AND ($6::int IS NULL OR lessons <= $6)
+     AND ($7::text IS NULL OR name ILIKE '%' || $7 || '%')
      ORDER BY ${orderBy}
-     SKIP ${page * limit}
+     OFFSET ${(page - 1) * limit} ROWS
      LIMIT ${limit}`,
     [
-      category ?? null,
+      categories?.split(",") ?? null,
       minPrice ?? null,
       maxPrice ?? null,
-      minRatings ?? null,
-      maxRatings ?? null,
-      minDuration ?? null,
-      maxDuration ?? null,
+      rating ?? null,
       minLessons ?? null,
       maxLessons ?? null,
       search ?? null,
     ],
   );
+
+  const { rows: filters } = await query(`
+    SELECT
+      MAX(price) AS "max_price",
+      MAX(lessons) AS "max_lessons",
+      ARRAY_AGG(DISTINCT category ORDER BY category) FILTER (WHERE category IS NOT NULL) AS categories
+    FROM courses
+    WHERE status = 'published'`);
 
   if (!courses[0]) {
     throw new ApiError(400, "No courses found", ["NOT_FOUND"]);
@@ -84,6 +126,7 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
           total: courses[0]?.total_count,
           pages: Math.ceil(courses[0]?.total_count / limit),
         },
+        filters: filters[0],
       },
       "Courses found successfully",
     ),
@@ -101,7 +144,7 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { rows: course } = await query(`
-      SELECT c.id, c.name, c.cover, c.level, c.description, c.students_enrolled, c.owner, c.duration, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
+      SELECT c.id, c.name, c.cover, c.description, c.students_enrolled, c.owner, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
       FROM courses c
       JOIN users i ON c.owner = i.id
       WHERE c.id = 2`);
@@ -166,14 +209,15 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
+  console.log(req.body?.skills);
+
   const parsed = createCourseSchema.safeParse(req.body);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
-  const { name, description, category, level, price, skills, status } =
-    parsed.data;
+  const { name, tagline, description, category, price, skills, status } = parsed.data;
 
   const coverImage = req.file;
   if (!coverImage?.path) {
@@ -192,21 +236,11 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { rows: course } = await query(
-    `INSERT INTO courses(name, description, cover, category, level, owner, price, skills, status)
+    `INSERT INTO courses(name, tagline, description, cover, category, owner, price, skills, status)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
   `,
-    [
-      name,
-      description,
-      coverImageUrl,
-      category,
-      level,
-      id,
-      price,
-      skills,
-      status,
-    ],
+    [name, tagline, description, coverImageUrl, category, id, price, skills, status],
   );
 
   if (!course[0]) {
@@ -245,8 +279,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Validation error", errors);
   }
 
-  const { name, description, category, level, price, skills, status } =
-    parsed.data;
+  const { name, description, category, price, skills, status } = parsed.data;
   const { courseId } = req.params;
 
   if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
@@ -291,7 +324,6 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
         price = COALESCE($4::int, price),
         skills = COALESCE($5::text[], skills),
         status = COALESCE($6::text, status),
-        level = COALESCE($7::text, level),
         cover = COALESCE($8::text, cover)
     WHERE id = $9
     RETURNING *`,
@@ -302,7 +334,6 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
       price ?? null,
       skills ?? null,
       status ?? null,
-      level ?? null,
       coverImageUrl ?? null,
       courseId,
     ],
@@ -376,6 +407,7 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export {
+  getSuggestions,
   getCourses,
   getCourse,
   getEnrolledCourses,

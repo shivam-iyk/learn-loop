@@ -1,10 +1,11 @@
 {
-  "name": "lms-backend",
+  "name": "backend",
   "version": "1.0.0",
   "scripts": {
     "start": "node --env-file=../.env dist/index.js",
     "dev": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "config:db": "node --env-file=../.env -r ts-node/register src/db/config.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

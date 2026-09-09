@@ -1,7 +1,6 @@
 import { Chip } from "@heroui/react";
 import type { Course } from "../types/course";
 import { Link } from "react-router-dom";
-import { formatDuration } from "../lib/helpers";
 import RatingChip from "./RatingChip";
 
 function ExploreCard({ course }: { course: Course }) {
@@ -20,11 +19,9 @@ function ExploreCard({ course }: { course: Course }) {
           <h5 className="sm:text-2xl text-lg tracking-tight font-outfit font-semibold truncate">
             {course.name}
           </h5>
-          <p className="sm:text-base text-sm text-muted">
-            {course.tagline}
-          </p>
+          <p className="sm:text-base text-sm text-muted">{course.tagline}</p>
           <p className="sm:text-sm text-xs text-muted">
-            {formatDuration(course.duration)} · {course.lessons} lessons
+            {course.lessons} lessons
           </p>
           <div className="flex gap-2">
             {course?.skills?.map((item, index) => (

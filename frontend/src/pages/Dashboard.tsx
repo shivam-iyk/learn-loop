@@ -25,7 +25,7 @@ function Dashboard() {
         </Link>
       </div>
       <InstructorStats />
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
         <div className="flex flex-col gap-6 md:col-span-2">
           <DashboardCourses />
           <RecentReviews />

@@ -7,6 +7,7 @@ import {
   getCourses,
   getEnrolledCourses,
   getOwnedCourses,
+  getSuggestions,
 } from "../controllers/course.controller";
 import verifyJWT from "../middlewares/auth.middleware";
 import upload from "../middlewares/multer.middleware";
@@ -14,6 +15,8 @@ import upload from "../middlewares/multer.middleware";
 const router = Router();
 
 router.get("/", getCourses);
+
+router.get("/suggestions", getSuggestions);
 
 router.use(verifyJWT);
 

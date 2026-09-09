@@ -19,7 +19,7 @@ function RatingChip({
   if (rating <= 0 || isNaN(rating)) return null;
 
   return (
-    <Chip className={cn("flex items-center rounded-full", className)}>
+    <Chip className={cn("flex items-center rounded-full flex-nowrap h-fit", className)}>
       {rating.toLocaleString("en-IN", {
         style: "decimal",
         maximumFractionDigits: 1,

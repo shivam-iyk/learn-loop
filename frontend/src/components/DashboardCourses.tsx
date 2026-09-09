@@ -23,7 +23,7 @@ function DashboardCourses() {
           />
         </Link>
       </div>
-      <div className="grid md:grid-cols-2 gap-2 md:col-span-2">
+      <div className="grid md:grid-cols-2 grid-cols-1 gap-2 md:col-span-2">
         {courses.map((item, index) => (
           <div
             className="flex items-center gap-4 rounded-lg p-3 border border-default bg-background/50 relative"
@@ -31,7 +31,7 @@ function DashboardCourses() {
           >
             <img src={item.cover} className="size-24 object-cover rounded-sm" />
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <p className="font-medium font-outfit tracking-tight">
+              <p className="font-medium font-outfit truncate tracking-tight">
                 {item.name}
               </p>
               <span className="text-muted text-sm truncate">

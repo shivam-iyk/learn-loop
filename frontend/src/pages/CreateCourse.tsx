@@ -5,6 +5,8 @@ import type { LessonFormI } from "../types/lesson";
 import type { CourseDetailsFormI } from "../types/course";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { createCourse } from "../services/courses";
 
 const LessonsForm = lazy(() => import("../components/LessonsForm"));
 const PublishCourse = lazy(() => import("../components/PublishCourse"));
@@ -61,38 +63,41 @@ function CreateCourse() {
     tagline: "",
     description: "",
     category: "",
-    level: "beginner",
     skills: [],
     price: "",
   });
   const [lessons, setLessons] = useState<LessonFormI[]>([]);
+  const [maxStep, setMaxStep] = useState(1);
 
-  const handleSubmit = () => {
-    localStorage.removeItem("course-draft");
-    localStorage.setItem("courses", JSON.stringify({ details, lessons }));
-    toast.success("Course saved successfully");
-    navigate("/dashboard");
+  const createCourseMutation = useMutation({
+    mutationFn: (formData: FormData) => createCourse(formData),
+    onSuccess: () => {
+      setStep(2);
+      setMaxStep(2);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.danger(error?.message || "Something went wrong");
+    },
+  });
+
+  const handleSaveCourse = () => {
+    const formData = new FormData();
+    formData.append("name", details.name);
+    formData.append("tagline", details.tagline);
+    formData.append("category", details.category);
+    formData.append("description", details.description);
+    formData.append("price", details.price);
+    details.skills.map((item) => {
+      formData.append("skills", item);
+    });
+    if (cover.file) formData.append("cover", cover.file);
+    createCourseMutation.mutate(formData);
   };
 
-  useEffect(() => {
-    const course = JSON.parse(localStorage.getItem("course-draft") || "null");
-    if (course) {
-      toast.success("Continue where you left off?", {
-        actionProps: {
-          children: "Restore",
-          onPress: () => {
-            if (course?.details) setDetails(course.details);
-            if (course?.lessons) setLessons(course.lessons);
-            toast.clear();
-          },
-          size: "sm",
-          className: "bg-accent-soft text-accent rounded-full text-sm",
-        },
-        timeout: 1000,
-        onClose: () => localStorage.removeItem("course-draft"),
-      });
-    }
-  }, []);
+  const handleSubmit = () => {
+    navigate("/dashboard");
+  };
 
   useEffect(() => {
     window.scrollTo({
@@ -121,7 +126,7 @@ function CreateCourse() {
                   if (step <= index && !cover && lessons.length === 0) return;
                   setStep((index + 1) as 1 | 2 | 3);
                 }}
-                disabled={step <= index && !cover && lessons.length === 0}
+                disabled={index + 1 > maxStep}
                 key={index}
               >
                 <span
@@ -147,13 +152,8 @@ function CreateCourse() {
               form={details}
               setCover={setCover}
               setForm={(value) => setDetails(value)}
-              handleNext={() => {
-                localStorage.setItem(
-                  "course-draft",
-                  JSON.stringify({ details }),
-                );
-                setStep(2);
-              }}
+              handleNext={handleSaveCourse}
+              isLoading={createCourseMutation.isPending}
             />
           )}
           {step === 2 && (
@@ -163,11 +163,8 @@ function CreateCourse() {
                 setLessons={setLessons}
                 handleBack={() => setStep(1)}
                 handleNext={() => {
-                  localStorage.setItem(
-                    "course-draft",
-                    JSON.stringify({ details, lessons }),
-                  );
                   setStep(3);
+                  setMaxStep(3);
                 }}
               />
             </Suspense>

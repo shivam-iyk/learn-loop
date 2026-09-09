@@ -20,11 +20,11 @@ function EnrollmentCard({
           <Avatar.Fallback>{name[0]}</Avatar.Fallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h6 className="font-medium truncate tracking-tight">{name}</h6>
+          <h6 className="text-foreground font-medium truncate tracking-tight">{name}</h6>
           <p className="text-muted text-xs truncate">{course}</p>
         </div>
       </div>
-      <span className="text-xs text-muted">
+      <span className="text-xs text-muted truncate">
         {formatDistance(new Date(created_at), new Date(), {
           addSuffix: true,
         })?.replace("about ", "")}

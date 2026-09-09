@@ -1,5 +1,8 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import { useCurrentUser } from "../hooks/auth";
+import { useEffect } from "react";
+import useBoundStore from "../store";
 
 function Navbar() {
   return (
@@ -86,6 +89,29 @@ function Footer() {
 }
 
 function AuthLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { setUser } = useBoundStore();
+  const { data, isPending, isError, error } = useCurrentUser();
+
+  useEffect(() => {
+    if (isPending || isError) return;
+
+    setUser(data);
+
+    const authPages = [
+      "/login",
+      "/register",
+      "/verify-code",
+      "/forgot-password",
+    ];
+
+    if (authPages && data?.id) {
+      navigate(data?.role === "student" ? "/home" : "/dashboard");
+    }
+  }, [isPending, data, isError, error, location]);
+
   return (
     <div>
       <Navbar />

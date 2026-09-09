@@ -6,13 +6,12 @@ export const createCourseSlice: StateCreator<CourseSlice> = (set, get) => ({
   sort: "latest",
   pagination: {
     page: 1,
-    setPage: (page) => {
-      const { pagination } = get();
-      set({ pagination: { ...pagination, page } });
-    },
     pages: 10,
     limit: 10,
     total: 100,
+  },
+  setPagination: (pagination) => {
+    set({ pagination });
   },
   setSort: (sort) => {
     set({ sort });
@@ -20,7 +19,7 @@ export const createCourseSlice: StateCreator<CourseSlice> = (set, get) => ({
   search: "",
   setSearch: (search) => set({ search }),
   filters: {
-    price: [0, -1],
+    price: [0, 100_000],
     categories: [],
     duration: new Set(),
     rating: 0,

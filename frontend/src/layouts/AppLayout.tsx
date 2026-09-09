@@ -11,25 +11,25 @@ import { instructorPages, studentPages } from "../lib/helpers";
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useBoundStore();
+  const { user, setUser } = useBoundStore();
   const { data, isPending, isError, error } = useCurrentUser();
 
   useEffect(() => {
     if (isPending) return;
 
-    const isInstructorPage = instructorPages.some((item) =>
-      location.pathname.includes(item),
-    );
-    const isStudentPage = studentPages.includes(location.pathname);
-    const isProtectedPage = isInstructorPage || isStudentPage;
-    console.log(
-      isError && isProtectedPage,
-      isError,
-      isInstructorPage,
-      isStudentPage,
-    );
+    const pathname = location.pathname;
 
-    if (isError && isProtectedPage) {
+    const isInstructorPage = instructorPages.some((item) =>
+      pathname.includes(item),
+    );
+    const isStudentPage = studentPages.includes(pathname);
+    const isCommonPage =
+      studentPages.some((item) => pathname.includes(item)) &&
+      instructorPages.some((item) => pathname.includes(item));
+
+    if (isError) {
+      if (!isInstructorPage && !isStudentPage) return;
+
       switch (error?.errors?.[0]) {
         case "TOKEN_REQUIRED":
           navigate("/login");
@@ -52,16 +52,15 @@ function AppLayout() {
       return;
     }
 
-    if (!isError) setUser(data);
+    if (user?.id !== data?.id) setUser(data);
+    if (isCommonPage) return;
 
     if (data?.role === "instructor" && isStudentPage) {
-      console.log(data?.role, isStudentPage);
       navigate("/dashboard");
     } else if (data?.role === "student" && isInstructorPage) {
-      console.log(data?.role, isInstructorPage);
       navigate("/home");
     }
-  }, [isPending, data, isError, error]);
+  }, [isPending, data, isError, error, location.pathname]);
 
   return (
     <div>

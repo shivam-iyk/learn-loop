@@ -27,20 +27,48 @@ export function AvatarDropdown() {
 
   if (!user?.id) {
     return (
-      <div className="flex items-center gap-2">
-        <Link
-          to="/login"
-          className="button button--outline ring-visible-offset"
-        >
-          Login
-        </Link>
-        <Link
-          to="/register"
-          className="button button-linear ring-visible-offset"
-        >
-          Register
-        </Link>
-      </div>
+      <>
+        <div className="flex items-center gap-2 max-md:hidden max-sm:flex">
+          <Link
+            to="/login"
+            className="button button--outline ring-visible-offset"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="button button-linear ring-visible-offset"
+          >
+            Register
+          </Link>
+        </div>
+        <Dropdown>
+          <Dropdown.Trigger className="rounded-full md:hidden max-sm:hidden">
+            <Avatar className="rounded-full">
+              <Avatar.Image src={"/avatar-small.png"} />
+              <Avatar.Fallback delayMs={600}>L</Avatar.Fallback>
+            </Avatar>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement="bottom right">
+            <Dropdown.Menu>
+              <Dropdown.Item
+                id="profile"
+                textValue="Profile"
+                onAction={() => navigate("/login")}
+              >
+                <Label className="w-full">Login</Label>
+              </Dropdown.Item>
+              <Dropdown.Item
+                id="settings"
+                textValue="Settings"
+                onAction={() => navigate("/register")}
+              >
+                <Label>Register</Label>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      </>
     );
   }
 
@@ -52,7 +80,7 @@ export function AvatarDropdown() {
           <Avatar.Fallback delayMs={600}>{user?.name[0]}</Avatar.Fallback>
         </Avatar>
       </Dropdown.Trigger>
-      <Dropdown.Popover>
+      <Dropdown.Popover placement="bottom right">
         <div className="px-3 pt-3 pb-1">
           <div className="flex items-center gap-2">
             <Avatar size="sm" className="bg-transparent">

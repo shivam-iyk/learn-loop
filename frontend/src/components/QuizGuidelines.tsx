@@ -12,10 +12,12 @@ function QuizGuidelines() {
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
-              <Modal.Heading>Quiz Creation Guidelines</Modal.Heading>
+              <Modal.Heading className="font-outfit font-semibold tracking-tight text-center text-lg">Quiz Creation Guidelines</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              <ul>
+              <ul
+                className="list-decimal pl-4"
+              >
                 <li>Add a clear and concise question for each quiz item.</li>
                 <li>Every question must have at least two options.</li>
                 <li>

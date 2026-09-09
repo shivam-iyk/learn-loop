@@ -6,10 +6,19 @@ import { Button, Chip } from "@heroui/react";
 import { BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import CustomEmptyState from "../components/CustomEmptyState";
+import { useQuery } from "@tanstack/react-query";
+import { getEnrolledCourses } from "../services/courses";
 
 function MyCourses() {
   const { setSearch, courses } = useBoundStore();
   const search = useBoundStore((state) => state.search);
+
+  const {} = useQuery({
+    queryKey: ["my-courses"],
+    queryFn: getEnrolledCourses,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+  });
 
   const [filter, setFilter] = useState<string[]>([]);
 

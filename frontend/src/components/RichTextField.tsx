@@ -2,7 +2,7 @@ import Editor from "./Editor";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type Quill from "quill";
 
-function DescriptionField({
+function RichTextField({
   label,
   placeholder,
   className = "",
@@ -16,6 +16,7 @@ function DescriptionField({
   label?: string | ReactNode;
   placeholder?: string;
   className?: string;
+  hideToolbar?: boolean;
   toolbarClassName?: string;
   value: string;
   onChange: (description: string) => void;
@@ -40,7 +41,7 @@ function DescriptionField({
   useEffect(() => {
     setTouched(false);
     setError(null);
-  }, [resetKey])
+  }, [resetKey]);
 
   useEffect(() => {
     if (!invalid) return;
@@ -78,4 +79,4 @@ function DescriptionField({
   );
 }
 
-export default DescriptionField;
+export default RichTextField;

@@ -5,9 +5,9 @@ import type { CourseSlice } from "../types/course";
 
 const sorting: { id: CourseSlice["sort"]; title: string }[] = [
   { id: "latest", title: "Latest" },
-  { id: "popularity", title: "Popularity" },
-  { id: "price+", title: "Price - Low to High" },
-  { id: "price-", title: "Price - High to Low" },
+  { id: "popular", title: "Popularity" },
+  { id: "price-low", title: "Price - Low to High" },
+  { id: "price-high", title: "Price - High to Low" },
 ];
 
 function Sorting({ className = "" }: { className?: string }) {

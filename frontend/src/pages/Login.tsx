@@ -174,7 +174,7 @@ function Login() {
               </Label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-muted hover:underline"
+                className="text-sm text-muted hover:underline focus-within:outline-none focus-within:underline  "
               >
                 Forgot password?
               </Link>

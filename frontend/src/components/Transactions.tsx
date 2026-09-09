@@ -5,7 +5,7 @@ import { getPageNumbers } from "../lib/helpers";
 import { useEffect } from "react";
 
 function Transactions() {
-  const { pagination } = useBoundStore();
+  const { pagination, setPagination } = useBoundStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,7 +49,7 @@ function Transactions() {
 
   useEffect(() => {
     const transactions = searchParams.get("transactions");
-    pagination.setPage(parseInt(transactions || "1"));
+    setPagination({ ...pagination, page: parseInt(transactions || "1") });
   }, [searchParams]);
 
   return (
