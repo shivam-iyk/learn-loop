@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useCurrentUser } from "../hooks/auth";
 import { useEffect } from "react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { toast } from "@heroui/react";
 import { logOut } from "../services/auth";
 import { instructorPages, studentPages } from "../lib/helpers";
@@ -11,7 +11,7 @@ import { instructorPages, studentPages } from "../lib/helpers";
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser } = useBoundStore();
+  const { user, setUser } = useAppStore();
   const { data, isPending, isError, error } = useCurrentUser();
 
   useEffect(() => {

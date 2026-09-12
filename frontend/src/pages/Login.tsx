@@ -14,14 +14,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { emailSchema, passwordSchema } from "../schema/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { login, resendVerificationCode } from "../services/auth";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import type { ApiError } from "../services/api";
 import type { UserI } from "../types/user";
 
 function Login() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { login: saveLoginInfo } = useBoundStore();
+  const { login: saveLoginInfo } = useAppStore();
 
   const [showPwd, setShowPwd] = useState(false);
   const [creds, setCreds] = useState({

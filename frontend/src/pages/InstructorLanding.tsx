@@ -2,6 +2,7 @@ import { Chip } from "@heroui/react";
 import { ArrowRight, CheckCircle2, ChevronDown, Stars } from "lucide-react";
 import { lazy } from "react";
 import { Link } from "react-router-dom";
+import useAppStore from "../store";
 
 const Features = lazy(() => import("../components/Features"));
 const Learn = lazy(() => import("../components/Learn"));
@@ -10,6 +11,8 @@ const Flexibility = lazy(() => import("../components/Flexibility"));
 const CTA = lazy(() => import("../components/CTA"));
 
 function Hero() {
+  const { user } = useAppStore();
+
   return (
     <section
       className="relative overflow-hidden sm:px-6 px-4 scroll-mt-16"
@@ -42,7 +45,11 @@ function Hero() {
         </p>
         <div className="flex items-center sm:gap-4 gap-2 mt-6">
           <Link
-            to="/register"
+            to={
+              user?.id && user?.role === "instructor"
+                ? "/dashboard"
+                : "/register"
+            }
             className="button bg-linear-to-t from-accent to-accent/50 text-white ring-visible-offset"
           >
             Start Teaching

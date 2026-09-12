@@ -1,6 +1,6 @@
 import { Avatar, Dropdown, Label } from "@heroui/react";
 import { Cog, LogOut, User } from "lucide-react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import type { ApiError } from "../services/api";
@@ -10,7 +10,7 @@ import { instructorPages, studentPages } from "../lib/helpers";
 export function AvatarDropdown() {
   const navigate = useNavigate();
 
-  const { user, logOut: clearSession } = useBoundStore();
+  const { user, logOut: clearSession } = useAppStore();
 
   const logOutMutation = useMutation<{} | ApiError>({
     mutationFn: logOut,

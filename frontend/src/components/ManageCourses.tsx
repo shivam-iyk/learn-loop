@@ -1,5 +1,5 @@
 import { Button, Skeleton, Table, Tooltip } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Eye, Layers, Star, Users } from "lucide-react";
 import RatingStars from "../components/RatingStars";
 import CustomEmptyState from "./CustomEmptyState";
@@ -10,7 +10,7 @@ import { lazy, Suspense } from "react";
 const EditCourseModal = lazy(() => import("./EditCourseModal"));
 
 function ManageCourses() {
-  const { courses } = useBoundStore();
+  const { courses } = useAppStore();
 
   return (
     <Table>

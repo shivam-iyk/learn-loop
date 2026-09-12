@@ -1,5 +1,5 @@
 import SearchCourses from "../components/SearchBar";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import MyCourseCard from "../components/MyCourseCard";
 import { useMemo, useState } from "react";
 import { Button, Chip } from "@heroui/react";
@@ -10,8 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getEnrolledCourses } from "../services/courses";
 
 function MyCourses() {
-  const { setSearch, courses } = useBoundStore();
-  const search = useBoundStore((state) => state.search);
+  const { setSearch, courses } = useAppStore();
+  const search = useAppStore((state) => state.search);
 
   const {} = useQuery({
     queryKey: ["my-courses"],

@@ -1,7 +1,7 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 function CourseDescription() {
-  const { course } = useBoundStore();
+  const { course } = useAppStore();
   return (
     <div className="p-4 bg-background/50 rounded-lg">
       <h4 className="text-xl font-semibold tracking-tight font-outfit">Description</h4>

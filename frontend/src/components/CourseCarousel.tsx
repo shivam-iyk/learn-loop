@@ -1,5 +1,5 @@
 import { Button, Chip } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -58,7 +58,7 @@ function Slide({
 }
 
 function CourseCarousel() {
-  const { recentCourses, suggestedCourses } = useBoundStore();
+  const { recentCourses, suggestedCourses } = useAppStore();
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
   return (

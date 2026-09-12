@@ -1,5 +1,5 @@
 import type { MessageI } from "../types/message";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { formatDistance } from "date-fns";
 import type { RefObject } from "react";
 import { Avatar, Chip, Modal } from "@heroui/react";
@@ -48,7 +48,7 @@ function MessageBubble({
   message: MessageI;
   ref: RefObject<HTMLDivElement | null> | null;
 }) {
-  const { user } = useBoundStore();
+  const { user } = useAppStore();
 
   return (
     <div

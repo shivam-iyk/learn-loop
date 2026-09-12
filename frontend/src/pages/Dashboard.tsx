@@ -1,5 +1,5 @@
 import InstructorStats from "../components/InstructorStats";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardCourses from "../components/DashboardCourses";
@@ -8,7 +8,7 @@ import TopEarning from "../components/TopEarning";
 import RecentReviews from "../components/RecentReviews";
 
 function Dashboard() {
-  const { name } = useBoundStore((state) => state.user);
+  const { name } = useAppStore((state) => state.user);
 
   return (
     <div className="flex flex-col gap-6 py-6">

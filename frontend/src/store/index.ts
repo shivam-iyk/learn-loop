@@ -8,13 +8,13 @@ import type { CourseSlice } from "../types/course";
 import type { LessonSlice } from "../types/lesson";
 import type { ReviewSlice } from "../types/review";
 
-const useBoundStore = create<
-  UserSlice & CourseSlice & LessonSlice & ReviewSlice
->((...a) => ({
-  ...createUserSlice(...a),
-  ...createCourseSlice(...a),
-  ...createLessonSlice(...a),
-  ...createReviewSlice(...a),
-}));
+const useAppStore = create<UserSlice & CourseSlice & LessonSlice & ReviewSlice>(
+  (...a) => ({
+    ...createUserSlice(...a),
+    ...createCourseSlice(...a),
+    ...createLessonSlice(...a),
+    ...createReviewSlice(...a),
+  }),
+);
 
-export default useBoundStore;
+export default useAppStore;

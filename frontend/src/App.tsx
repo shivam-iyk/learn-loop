@@ -25,6 +25,9 @@ import VerifyCode from "./pages/VerifyCode";
 import Lesson from "./pages/Lesson";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Banned from "./pages/Banned";
+import CreateCourseLayout from "./layouts/CreateCourseLayout";
+import AddLessons from "./pages/AddLessons";
+import PublishCourse from "./pages/PublishCourse";
 
 function App() {
   useTheme();
@@ -54,7 +57,21 @@ function App() {
             <Route element={<InstructorLanding />} path="/instructor" />
           </Route>
           <Route element={<AppLayout />}>
-            <Route element={<CreateCourse />} path="/create-course" />
+            <Route element={<CreateCourseLayout />}>
+              <Route element={<CreateCourse />} path="/create-course" />
+              <Route
+                element={<CreateCourse />}
+                path="/create-course/:courseId"
+              />
+              <Route
+                element={<AddLessons />}
+                path="/create-course/:courseId/lessons"
+              />
+              <Route
+                element={<PublishCourse />}
+                path="/create-course/:courseId/publish"
+              />
+            </Route>
             <Route element={<Course />} path="/course/:courseId" />
             <Route
               element={<Lesson />}

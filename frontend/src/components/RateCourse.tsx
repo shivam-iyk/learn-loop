@@ -1,10 +1,10 @@
 import { Button, Label, TextArea, TextField, toast } from "@heroui/react";
 import { useMemo, useState } from "react";
 import StarsSelector from "./StarsSelector";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 function RateCourse({ courseId }: { courseId?: string }) {
-  const { enrolledCourses } = useBoundStore();
+  const { enrolledCourses } = useAppStore();
 
   const [rating, setRating] = useState(0);
   const [submitted, setSubmitted] = useState(false);

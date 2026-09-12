@@ -8,6 +8,7 @@ import {
   reorderLessonsSchema,
   updateLessonSchema,
 } from "../schemas/lesson.schema";
+import { getVideoDuration, getYouTubeVideoId } from "../utils/youtube";
 
 const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -22,21 +23,38 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Validation failed", errors);
   }
 
-  const { name, type, course, duration, sequence, notes, video } = parsed.data;
+  const { name, type, course, sequence, notes, video } = parsed.data;
+
+  let duration: number | null = null;
+  if (video) {
+    const videoDuration = await getVideoDuration(video);
+    if (typeof videoDuration === "number") {
+      duration = videoDuration;
+    } else if (videoDuration === "VIDEO_NOT_FOUND") {
+      throw new ApiError(404, "Video not found", [videoDuration]);
+    } else if (videoDuration === "INVALID_VIDEO_STATUS") {
+      throw new ApiError(400, "Video must be public or unlisted", [
+        videoDuration,
+      ]);
+    }
+  }
 
   const { rows: lesson } = await query(
-    "INSERT INTO lessons(name, type, course, duration, sequence, notes, video) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-    [name, type, course, duration, sequence, notes, video],
+    "INSERT INTO lessons(name, type, course, sequence, notes, video, duration) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+    [name, type, course, sequence, notes, video, duration],
   );
 
   if (!lesson[0]) {
-    throw new ApiError(500, "Failed to create lesson, Please try again later!", ["ACTION_FAILED"]);
+    throw new ApiError(
+      500,
+      "Failed to create lesson, Please try again later!",
+      ["ACTION_FAILED"],
+    );
   }
 
-  await query(
-    "UPDATE courses SET lessons = lessons + 1, duration = duration + $1 WHERE id = $2",
-    [duration, course],
-  );
+  await query("UPDATE courses SET lessons = lessons + 1 WHERE id = $1", [
+    course,
+  ]);
 
   return res
     .status(201)
@@ -76,10 +94,6 @@ const getLessons = asyncHandler(async (req: Request, res: Response) => {
     [courseId],
   );
 
-  if (!lessons[0]) {
-    throw new ApiError(404, "No lessons found for this course");
-  }
-
   return res
     .status(200)
     .json(new ApiResponse(200, lessons, "Lessons fetched successfully"));
@@ -113,11 +127,15 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
   const validOwner = validation.every((item) => item?.owner === id);
 
   if (courseIds.size > 1) {
-    throw new ApiError(401, "Some lessons belong to other courses", ["LESSONS_BELONG_TO_OTHER_COURSES"]);
+    throw new ApiError(401, "Some lessons belong to other courses", [
+      "LESSONS_BELONG_TO_OTHER_COURSES",
+    ]);
   }
 
   if (!validOwner) {
-    throw new ApiError(401, "Some lessons do not belong your courses", ["LESSONS_NOT_OWNED_BY_USER"]);
+    throw new ApiError(401, "Some lessons do not belong your courses", [
+      "LESSONS_NOT_OWNED_BY_USER",
+    ]);
   }
 
   const values = lessons
@@ -137,7 +155,7 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(
       500,
       "Failed to reorder lessons, Please try again later!",
-      ["ACTION_FAILED"]
+      ["ACTION_FAILED"],
     );
   }
 
@@ -161,14 +179,28 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Validation failed", errors);
   }
 
-  const { name, type, duration, notes, video } = parsed.data;
+  const { name, type, notes, video } = parsed.data;
   const { lessonId } = req.params;
   if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
     throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
   }
 
+  let duration: number | null = null;
+  if (video) {
+    const videoDuration = await getVideoDuration(video);
+    if (typeof videoDuration === "number") {
+      duration = videoDuration;
+    } else if (videoDuration === "VIDEO_NOT_FOUND") {
+      throw new ApiError(404, "Video not found", [videoDuration]);
+    } else if (videoDuration === "INVALID_VIDEO_STATUS") {
+      throw new ApiError(400, "Video must be public or unlisted", [
+        videoDuration,
+      ]);
+    }
+  }
+
   const { rows: lessonExists } = await query(
-    `SELECT c.owner AS owner, l.duration AS duration, c.id AS course
+    `SELECT c.owner AS owner, c.id AS course
      FROM lessons l
      JOIN courses c ON l.course = c.id
      WHERE l.id = $1`,
@@ -176,30 +208,25 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (lessonExists[0]?.owner !== id && role === "instructor") {
-    throw new ApiError(401, "You are not authorized to update this lesson", ["UNAUTHORIZED"]);
+    throw new ApiError(401, "You are not authorized to update this lesson", [
+      "UNAUTHORIZED",
+    ]);
   }
 
   const { rows: lesson } = await query(
     `UPDATE lessons 
      SET name = COALESCE($1::text, name),
      type = COALESCE($2::text, type),
-     duration = COALESCE($3::int, duration),
-     notes = COALESCE($4::text, notes),
-     video = COALESCE($5::text, video)
+     notes = COALESCE($3::text, notes),
+     video = COALESCE($4::text, video),
+     duration = COALESCE($5::int, duration)
      WHERE id = $6
      RETURNING *`,
-    [name, type, duration, notes, video, lessonId],
+    [name, type, notes, video, duration, lessonId],
   );
 
   if (!lesson[0]) {
     throw new ApiError(500, "Failed to update lesson", ["ACTION_FAILED"]);
-  }
-
-  if (lessonExists[0]?.duration !== lesson[0]?.duration) {
-    await query(
-      "UPDATE courses SET duration = duration - $1 + $2 WHERE id = $3",
-      [lessonExists[0]?.duration, lesson[0]?.duration, lessonExists[0]?.course],
-    );
   }
 
   return res
@@ -220,7 +247,7 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { rows: lesson } = await query(
-    `SELECT c.owner AS owner, l.duration AS duration, c.id AS course
+    `SELECT c.owner AS owner, c.id AS course
     FROM lessons l
     JOIN courses c ON c.id = l.course
     WHERE l.id = $1`,
@@ -231,7 +258,9 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (lesson[0]?.owner !== id && role === "instructor") {
-    throw new ApiError(401, "You are not allowed to delete this lesson", ["UNAUTHORIZED"]);
+    throw new ApiError(401, "You are not allowed to delete this lesson", [
+      "UNAUTHORIZED",
+    ]);
   }
 
   await query("BEGIN");
@@ -241,14 +270,13 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
     [lessonId],
   );
 
-  await query("UPDATE courses SET duration = duration - $1 WHERE id = $2", [
-    lesson[0]?.duration,
-    lesson[0]?.course,
-  ]);
-
   if (!deletedLesson[0]) {
     await query("ROLLBACK");
-    throw new ApiError(500, "Failed to delete lesson, Please try again later!", ["ACTION_FAILED"]);
+    throw new ApiError(
+      500,
+      "Failed to delete lesson, Please try again later!",
+      ["ACTION_FAILED"],
+    );
   }
 
   await query("COMMIT");

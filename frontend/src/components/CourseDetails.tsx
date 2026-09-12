@@ -1,4 +1,4 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Chip } from "@heroui/react";
 import { History, Users } from "lucide-react";
 import { formatDuration } from "../lib/helpers";
@@ -7,7 +7,7 @@ import RatingStars from "./RatingStars";
 import type { ReactNode } from "react";
 
 function CourseDetails({ children }: { children: ReactNode }) {
-  const { course } = useBoundStore();
+  const { course } = useAppStore();
 
   return (
     <div className="h-80 w-full">

@@ -2,13 +2,13 @@ import { Button, Label, ListBox, Select, useTheme } from "@heroui/react";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { appearances, currencies, languages } from "../lib/accessibility";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { useNavigate } from "react-router-dom";
 
 function Settings() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme("system");
-  const { becomeInstructor, user } = useBoundStore();
+  const { becomeInstructor, user } = useAppStore();
 
   const [language, setLanguage] = useState("en");
 

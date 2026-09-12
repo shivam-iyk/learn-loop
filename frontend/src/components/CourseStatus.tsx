@@ -1,4 +1,4 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { CheckCircle, CreditCard, Shield } from "lucide-react";
 import { Button, cn } from "@heroui/react";
 import { useMemo } from "react";
@@ -11,7 +11,7 @@ function CourseStatus({
   courseId?: string;
   className?: string;
 }) {
-  const { course, enrolledCourses, progress, user } = useBoundStore();
+  const { course, enrolledCourses, progress, user } = useAppStore();
 
   const benefits = [
     {

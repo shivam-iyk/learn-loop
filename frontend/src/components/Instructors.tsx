@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Button } from "@heroui/react";
 import type { UserSlice } from "../types/user";
 import { useRef } from "react";
@@ -31,7 +31,7 @@ function Instructor({
 }
 
 function Instructors() {
-  const { instructors } = useBoundStore();
+  const { instructors } = useAppStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const slidePrev = () => {

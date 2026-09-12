@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import RatingChip from "./RatingChip";
 import { ArrowRight, Layers, Users } from "lucide-react";
 
 function DashboardCourses() {
-  const { courses } = useBoundStore();
+  const { courses } = useAppStore();
 
   return (
     <div className="flex flex-col gap-4">

@@ -16,14 +16,14 @@ import { useMutation } from "@tanstack/react-query";
 import type { UserI } from "../types/user";
 import type { ApiError } from "../services/api";
 import { resendVerificationCode, verifyCode } from "../services/auth";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 function VerifyCode() {
   const navigate = useNavigate();
   const timeoutRef = useRef<number | null>(null);
   const [searchParams] = useSearchParams();
 
-  const { setUser } = useBoundStore();
+  const { setUser } = useAppStore();
 
   const [error, setError] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);

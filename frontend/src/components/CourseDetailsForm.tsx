@@ -8,7 +8,7 @@ import {
   Label,
   TextField,
 } from "@heroui/react";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Edit2, Loader2 } from "lucide-react";
 import {
   categorySchema,
   coverSchema,
@@ -18,7 +18,7 @@ import {
   taglineSchema,
 } from "../schema/course";
 import RichTextField from "./RichTextField";
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import type { CourseDetailsFormI } from "../types/course";
 import SkillField from "./SkillField";
 
@@ -45,6 +45,8 @@ function CourseDetailsForm({
   editorClassName?: string;
   toolbarClassName?: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [invalid, setInvalid] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -73,12 +75,13 @@ function CourseDetailsForm({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = descriptionSchema.safeParse(form.description);
-    if (!cover) {
+    if (!cover?.uri) {
       setFileError("Cover image is required");
       return;
     }
     if (result.success) {
-      return handleNext();
+      handleNext();
+      return;
     }
     setInvalid(true);
   };
@@ -166,15 +169,32 @@ function CourseDetailsForm({
         <Label htmlFor="cover">
           Cover Image <span className="text-danger">*</span>
         </Label>
+        {cover.uri && (
+          <button
+            className="overflow-hidden rounded-xl group relative cursor-pointer"
+            onClick={() => inputRef.current?.click()}
+            type="button"
+          >
+            <div className="group-hover:flex hidden opacity-0 hover:opacity-100 transition bg-black/50 z-10 w-full h-20 absolute top-0 left-0 items-center justify-center gap-2">
+              <Edit2 /> Edit
+            </div>
+            <img
+              className="w-full h-20 object-cover rounded-xl object-top group-hover:scale-105 transition"
+              src={cover.uri}
+            />
+          </button>
+        )}
         <input
           id="cover"
-          className="input"
+          className={cover.uri ? "opacity-0 w-0 h-0 absolute" : "input"}
           type="file"
           accept="image/png,image/jpeg,image/webp"
+          ref={inputRef}
           onChange={handleFile}
         />
         {fileError && <p className="text-danger text-xs">{fileError}</p>}
       </div>
+
       <SkillField
         skills={form.skills}
         setSkills={(skills) => setForm({ ...form, skills })}

@@ -1,11 +1,10 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Link } from "react-router-dom";
 import { CheckCircle2, FileText, ListChecks, Play } from "lucide-react";
-import { formatDuration } from "../lib/helpers";
 import { cn } from "@heroui/styles";
 
 function CourseContent({ className }: { className?: string }) {
-  const { course, lessons, progress, user } = useBoundStore();
+  const { course, lessons, progress, user } = useAppStore();
 
   return (
     <div className={cn("bg-background/70 rounded-lg p-4 h-fit", className)}>
@@ -34,9 +33,6 @@ function CourseContent({ className }: { className?: string }) {
                   {lesson.type === "quiz" ? "Quiz" : "Lesson"} {index + 1}
                 </span>
                 <h5 className="text-base truncate">{lesson.name}</h5>
-                <span className="text-xs text-muted">
-                  {formatDuration(lesson.duration)}
-                </span>
               </div>
             </div>
             {index + 1 <= progress.completed && course.owner !== user.id && (

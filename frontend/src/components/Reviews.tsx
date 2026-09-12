@@ -1,5 +1,5 @@
 import { Avatar, Button, cn, Modal } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { formatDistance } from "date-fns";
 import RatingStars from "./RatingStars";
 import type { Review as ReviewI } from "../types/review";
@@ -41,7 +41,7 @@ function Review({ review }: { review: ReviewI }) {
 }
 
 function Reviews({ className }: { className?: string }) {
-  const { reviews } = useBoundStore();
+  const { reviews } = useAppStore();
 
   const filteredReviews = useMemo(
     () => reviews.filter((item) => item.review?.length > 0),

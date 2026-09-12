@@ -6,7 +6,7 @@ const EditorInfo = lazy(() => import("./EditorInfo"));
 
 function EditorToolbar({
   ref,
-  className= ""
+  className = "",
 }: {
   ref: React.RefObject<HTMLDivElement | null>;
   className?: string;
@@ -63,12 +63,15 @@ function EditorToolbar({
 
   return (
     <div
-      className={cn("flex! flex-wrap justify-end border-none! w-full! gap-4 max-lg:flex-nowrap", className)}
+      className={cn(
+        "flex! flex-wrap justify-end border-none! w-full! gap-4 max-lg:flex-nowrap",
+        className,
+      )}
       ref={ref}
       aria-label="Formatting Toolbar"
     >
       <div
-        className="flex flex-wrap flex-1 gap-2 border-none! p-0! px-1! py-2! max-lg:flex-nowrap max-lg:overflow-x-auto"
+        className="flex flex-wrap flex-1 gap-2 border-none! p-0! px-1! py-2! max-lg:flex-nowrap max-lg:overflow-x-auto scrollbar-thin"
         aria-label="Text Formatting"
         onKeyDown={handleToolbarKeys}
       >

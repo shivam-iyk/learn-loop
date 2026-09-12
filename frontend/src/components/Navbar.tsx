@@ -1,4 +1,4 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Book,
@@ -24,7 +24,7 @@ function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { user, logOut: clearSession } = useBoundStore();
+  const { user, logOut: clearSession } = useAppStore();
 
   const menu =
     user?.role === "student"

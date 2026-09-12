@@ -2,14 +2,14 @@ import { Alert, Button, toast } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { becomeInstructor } from "../services/user";
 import { useNavigate } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import type { UserI } from "../types/user";
 
 function UpgradeAlert() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { becomeInstructor: upgradeRoleToInstructor } = useBoundStore();
+  const { becomeInstructor: upgradeRoleToInstructor } = useAppStore();
 
   const becomeInstructorMutation = useMutation({
     mutationFn: () => becomeInstructor(),

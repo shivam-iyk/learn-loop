@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useCurrentUser } from "../hooks/auth";
 import { useEffect } from "react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 function Navbar() {
   return (
@@ -92,7 +92,7 @@ function AuthLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { setUser } = useBoundStore();
+  const { setUser } = useAppStore();
   const { data, isPending, isError, error } = useCurrentUser();
 
   useEffect(() => {

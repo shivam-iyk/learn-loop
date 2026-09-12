@@ -15,10 +15,9 @@ const createLessonSchema = z.object({
   video: z
     .url("Invalid video url")
     .max(255, "Video url cannot be more than 255 charaters")
-    .optional(),
+    .nullish(),
   notes: z.string().optional(),
   course: z.coerce.number().int("Course ID must be an integer"),
-  duration: z.coerce.number().int("Time must be an integer"),
   sequence: z.coerce.number().int("Sequence must be an integer"),
 });
 
@@ -38,9 +37,8 @@ const updateLessonSchema = z
     video: z
       .url("Invalid video url")
       .max(255, "Video url cannot be more than 255 charaters")
-      .optional(),
+      .nullish(),
     notes: z.string().optional(),
-    duration: z.number().int("Time must be an integer").optional(),
     sequence: z.number().int("Sequence must be an integer").optional(),
   })
   .refine((data) => Object.values(data).some((v) => v !== undefined), {

@@ -1,10 +1,10 @@
 import { Button, Description, Form, Input, Label, TextField } from "@heroui/react";
 import React, { useState } from "react";
 import { emailSchema } from "../schema/auth";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 function UpdateEmail() {
-  const { user } = useBoundStore();
+  const { user } = useAppStore();
 
   const [email, setEmail] = useState({
     current: "",

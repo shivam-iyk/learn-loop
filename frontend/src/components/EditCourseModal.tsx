@@ -4,18 +4,17 @@ import { useEffect, useState } from "react";
 import type { CourseDetailsFormI } from "../types/course";
 import CourseDetailsForm from "./CourseDetailsForm";
 import type { LessonFormI } from "../types/lesson";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import CustomEmptyState from "./CustomEmptyState";
-import LessonsForm from "./LessonsForm";
 
 function EditCourseModal({
-  courseId,
+  
   buttonClassName = "",
 }: {
   courseId: number;
   buttonClassName?: string;
 }) {
-  const { setCourse, lessons: lessonsStore } = useBoundStore();
+  const { course, lessons: lessonsStore } = useAppStore();
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -27,54 +26,49 @@ function EditCourseModal({
     skills: [],
     price: "",
   });
-  const [lessons, setLessons] = useState<LessonFormI[]>([]);
+  const [_, setLessons] = useState<LessonFormI[]>([]);
   const [cover, setCover] = useState<{ file: File | null; uri: string }>({
     file: null,
     uri: "",
   });
-  const [notFound, setNotFound] = useState(false);
+  const [notFound] = useState(false);
 
-  const handleUpdate = () => {
-    setOpen(false);
-    setStep(1);
-    setForm({
-      name: "",
-      tagline: "",
-      description: "",
-      category: "",
-      skills: [],
-      price: "",
-    });
-    setLessons([]);
-    setCover({ file: null, uri: "" });
-  };
+  // const handleUpdate = () => {
+  //   setOpen(false);
+  //   setStep(1);
+  //   setForm({
+  //     name: "",
+  //     tagline: "",
+  //     description: "",
+  //     category: "",
+  //     skills: [],
+  //     price: "",
+  //   });
+  //   setLessons([]);
+  //   setCover({ file: null, uri: "" });
+  // };
 
   useEffect(() => {
-    const course = setCourse(courseId);
-    if (!course) {
-      setNotFound(true);
-    } else {
-      const { name, category, tagline, description, price, skills } = course;
-      setForm({
-        name,
-        tagline,
-        category,
-        description,
-        price: price.toString(),
-        skills: skills ?? [],
-      });
-      setLessons(
-        lessonsStore.map((item) => {
-          const { course, duration, video, notes, ...lesson } = item;
-          return {
-            ...lesson,
-            video: video || "",
-            notes: notes || "",
-            quiz: null,
-          };
-        }),
-      );
-    }
+    const { name, category, tagline, description, price, skills } = course;
+    setForm({
+      name,
+      tagline,
+      category,
+      description,
+      price: String(price) || "",
+      skills: skills ?? [],
+    });
+    setLessons(
+      lessonsStore.map((item) => {
+        const { course, video, notes, ...lesson } = item;
+        return {
+          ...lesson,
+          video: video || "",
+          notes: notes || "",
+          quiz: null,
+        };
+      }),
+    );
   }, [lessonsStore]);
 
   if (notFound) {
@@ -132,17 +126,7 @@ function EditCourseModal({
                     toolbarClassName="sm:overflow-x-auto sm:flex-nowrap [&>*]:first:overflow-x-scroll [&>*]:first:flex-nowrap"
                   />
                 )}
-                {step === 2 && (
-                  <LessonsForm
-                    lessons={lessons}
-                    setLessons={setLessons}
-                    handleBack={() => setStep(1)}
-                    handleNext={handleUpdate}
-                    headerClassName="hidden"
-                    actionText="Update"
-                    toolbarClassName="sm:flex-nowrap [&>*]:first:overflow-x-scroll [&>*]:first:flex-nowrap"
-                  />
-                )}
+                {/* {step === 2 && <LessonsForm />} */}
               </Modal.Body>
             )}
           </Modal.Dialog>

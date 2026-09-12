@@ -21,7 +21,9 @@ function CTA({ role }: { role: "student" | "instructor" }) {
               to="/login"
               className="flex items-center gap-2 bg-background border pl-4 px-3 py-2 w-44 h-12 rounded-full group relative ring-visible"
             >
-              <span className="absolute">Start Learning</span>
+              <span className="absolute">
+                Start {role === "student" ? "Learning" : "Teaching"}
+              </span>
               <span className="rounded-full size-10 absolute flex items-center justify-center right-[calc(0.25rem-1px)] transition-all bg-linear-to-t from-accent to-accent/50 backdrop-blur-sm text-white group-hover:w-42 group-focus-visible:w-42 z-10">
                 <ChevronRight className="inline" size={20} />
               </span>

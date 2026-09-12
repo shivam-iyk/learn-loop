@@ -7,6 +7,8 @@ export const useCurrentUser = () => {
   return useQuery<UserI, ApiError>({
     queryKey: ["user"],
     queryFn: getUser,
+    staleTime: 15 * 1000 * 60, // 15 minutes
     retry: false,
+    refetchOnWindowFocus: false,
   });
 };

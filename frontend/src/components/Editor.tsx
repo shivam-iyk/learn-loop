@@ -131,7 +131,7 @@ const Editor = forwardRef<Quill, EditorProps>(
             onBlurRef.current?.();
           }}
           aria-label="description"
-          className={cn("editor-container", className)}
+          className={cn("editor-container max-h-[60vh]! overflow-auto scrollbar-thin", className)}
         />
       </div>
     );

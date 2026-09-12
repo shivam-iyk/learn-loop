@@ -1,12 +1,12 @@
 import React, { useRef } from "react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Avatar, Button, Modal, toast } from "@heroui/react";
 import { CircleX, RefreshCcw } from "lucide-react";
 
 function UpdateAvatar() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const { user, updateAvatar } = useBoundStore();
+  const { user, updateAvatar } = useAppStore();
 
   const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;

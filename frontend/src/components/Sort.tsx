@@ -1,6 +1,6 @@
 import { Button, cn, Drawer } from "@heroui/react";
 import { ArrowUpDown } from "lucide-react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import type { CourseSlice } from "../types/course";
 
 const sorting: { id: CourseSlice["sort"]; title: string }[] = [
@@ -11,7 +11,7 @@ const sorting: { id: CourseSlice["sort"]; title: string }[] = [
 ];
 
 function Sorting({ className = "" }: { className?: string }) {
-  const { sort, setSort } = useBoundStore();
+  const { sort, setSort } = useAppStore();
 
   return (
     <div

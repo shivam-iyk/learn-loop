@@ -1,4 +1,4 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import SearchCourses from "../components/SearchBar";
 import Sort from "../components/Sort";
 import ExploreCard from "../components/ExploreCard";
@@ -34,7 +34,7 @@ function Explore() {
     setPagination,
     filters,
     setFilters,
-  } = useBoundStore();
+  } = useAppStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { data, isPending, isLoading } = useQuery<QueryData>({

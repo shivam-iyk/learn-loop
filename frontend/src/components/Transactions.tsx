@@ -1,11 +1,11 @@
 import { Avatar, Pagination } from "@heroui/react";
 import { useSearchParams } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { getPageNumbers } from "../lib/helpers";
 import { useEffect } from "react";
 
 function Transactions() {
-  const { pagination, setPagination } = useBoundStore();
+  const { pagination, setPagination } = useAppStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
 

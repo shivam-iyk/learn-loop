@@ -1,6 +1,6 @@
 import { Skeleton } from "@heroui/react";
 import CourseCarousel from "../components/CourseCarousel";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import UpgradeAlert from "../components/UpgradeAlert";
@@ -79,7 +79,7 @@ function InstructorsFallback() {
 }
 
 function Home() {
-  const { user } = useBoundStore();
+  const { user } = useAppStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [upgrade, setUpgrade] = useState(false);

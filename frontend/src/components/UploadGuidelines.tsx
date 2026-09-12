@@ -12,7 +12,8 @@ function UploadGuidelines() {
       <Modal.Backdrop>
         <Modal.Container size="lg">
           <Modal.Dialog>
-            <Modal.Body className="text-black">
+            <Modal.CloseTrigger />
+            <Modal.Body className="text-foreground">
               <h5 className="text-xl tracking-tight font-outfit font-semibold text-center">
                 Video Guidelines
               </h5>

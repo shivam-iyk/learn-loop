@@ -12,7 +12,7 @@ export const taglineSchema = z
   .min(2, "Sub Description cannot be less than 2 characters")
   .max(100, "Sub description cannot be more than 100 characters");
 
-export const descriptionSchema = z
+export const descriptionSchema = z  
   .string()
   .nonempty("Description is required")
   .transform((html) => {

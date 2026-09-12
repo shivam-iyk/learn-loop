@@ -35,6 +35,6 @@ export const notesSchema = z
     "Notes cannot be less than 10 characters",
   )
   .refine(
-    (text) => text && text.length <= 1000,
-    "Notes cannot be more than 1000 characters",
+    (text) => text && text.length <= 10_000,
+    "Notes cannot be more than 10,000 characters",
   );

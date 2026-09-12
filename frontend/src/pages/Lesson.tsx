@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Button, Skeleton } from "@heroui/react";
 import { CheckCircle2, ChevronLeft, ChevronRight, Sliders } from "lucide-react";
 import RateCourse from "../components/RateCourse";
@@ -12,7 +12,7 @@ const Reviews = lazy(() => import("../components/Reviews"));
 function Lesson() {
   const params = useParams<{ lessonId?: string }>();
 
-  const { course, user, lesson, progress } = useBoundStore();
+  const { course, user, lesson, progress } = useAppStore();
 
   return (
     <div className="flex flex-col gap-6 py-6">

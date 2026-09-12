@@ -1,18 +1,18 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ListBox, ListBoxItem, Select } from "@heroui/react";
 import { Check, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "../components/Logo";
 import { useCurrentUser } from "../hooks/auth";
 import { AvatarDropdown } from "../components/AvatarDropdown";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const {} = useCurrentUser();
-  const { user } = useBoundStore();
+  const { data } = useCurrentUser();
+  const { user, setUser } = useAppStore();
 
   const menu = location.pathname.includes("/instructor")
     ? [
@@ -40,12 +40,17 @@ const Navbar = () => {
     location.pathname.includes("/instructor") ? "/instructor" : "/",
   );
 
+  useEffect(() => {
+    if (!data) return;
+    setUser(data);
+  }, [data]);
+
   return (
     <nav className="border-b p-2 sticky top-0 left-0 backdrop-blur-sm bg-white/50 dark:bg-black/50 z-50">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <Link
-            to="/"
+            to={user?.id && user?.role === "instructor" ? "/instructor" : "/"}
             className="flex items-center gap-2 ring-visible p-1 rounded-lg"
           >
             <Logo />

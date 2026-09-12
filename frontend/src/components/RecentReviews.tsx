@@ -1,5 +1,5 @@
 import { Avatar, Button, Modal } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import RatingStars from "./RatingStars";
 import { formatDistance } from "date-fns";
 import type { Review as ReviewI } from "../types/review";
@@ -39,7 +39,7 @@ function Review({ review }: { review: ReviewI }) {
 }
 
 function RecentReviews() {
-  const { reviews } = useBoundStore();
+  const { reviews } = useAppStore();
 
   const [search, setSearch] = useState("");
 

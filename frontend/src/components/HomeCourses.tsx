@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import HomeCard from "./HomeCard";
 import { Button } from "@heroui/react";
 import { useMemo, useState } from "react";
@@ -12,7 +12,7 @@ interface Props {
 }
 
 function HomeCourses({ variant, title, path }: Props) {
-  const { courses } = useBoundStore();
+  const { courses } = useAppStore();
 
   const [current, setCurrent] = useState("All");
 

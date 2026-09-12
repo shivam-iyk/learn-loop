@@ -15,12 +15,22 @@ export const getCourses = async (filters: FilterParam) => {
   return data?.data;
 };
 
+export const getCourse = async (courseId?: string | number) => {
+  const { data } = await api.get(`/courses/${courseId}`);
+  return data?.data;
+};
+
 export const createCourse = async (formData: FormData) => {
   const { data } = await api.post("/courses/create", formData);
   return data?.data;
 };
 
+export const updateCourse = async (courseId: number, formData: FormData) => {
+  const { data } = await api.put(`/courses/edit/${courseId}`, formData);
+  return data?.data;
+};
+
 export const getEnrolledCourses = async () => {
-    const { data } = await api.get("/courses/enrolled");
-    return data?.data;
-  };
+  const { data } = await api.get("/courses/enrolled");
+  return data?.data;
+};

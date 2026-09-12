@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import type { CourseSlice } from "../types/course";
 
-export const createCourseSlice: StateCreator<CourseSlice> = (set, get) => ({
+export const createCourseSlice: StateCreator<CourseSlice> = (set) => ({
   loading: false,
   sort: "latest",
   pagination: {
@@ -53,24 +53,8 @@ export const createCourseSlice: StateCreator<CourseSlice> = (set, get) => ({
     lessons: 5,
     created_at: "2026-06-09T06:05:01.891Z",
   },
-  setCourse: (courseId: number) => {
-    const { courses } = get();
-    const course = courses.find((item) => item.id === courseId);
-    if (!course) return null;
-    set({
-      course: {
-        ...course,
-        description: "",
-        owner_name: "Shivam",
-        owner_avatar: "/avatar-small.png",
-      },
-    });
-    return {
-      ...course,
-      description: "",
-      owner_name: "Shivam",
-      owner_avatar: "/avatar-small.png",
-    };
+  setCourse: (course) => {
+    set({ course });
   },
   enrolledCourses: [
     {

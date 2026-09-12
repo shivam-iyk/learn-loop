@@ -1,10 +1,10 @@
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Link, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 
 function Footer() {
   const location = useLocation();
-  const { role } = useBoundStore((state) => state.user);
+  const { role } = useAppStore((state) => state.user);
   const portfolio = import.meta.env.PORTFOLIO_URL;
 
   const menu =

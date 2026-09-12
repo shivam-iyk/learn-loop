@@ -1,5 +1,5 @@
 import { BookOpen, Users } from "lucide-react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Avatar, Chip, Separator } from "@heroui/react";
 import type { Course as CourseI } from "../types/course";
 import { Link } from "react-router-dom";
@@ -49,7 +49,7 @@ function Course({ course }: { course: CourseI }) {
 }
 
 function Instructor() {
-  const { courses, instructor } = useBoundStore();
+  const { courses, instructor } = useAppStore();
   return (
     <div>
       <div className="flex flex-col py-6 gap-6">

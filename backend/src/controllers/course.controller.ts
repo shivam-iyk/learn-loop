@@ -143,11 +143,13 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Course Id is required", ["COURSE_ID_REQUIRED"]);
   }
 
-  const { rows: course } = await query(`
-      SELECT c.id, c.name, c.cover, c.description, c.students_enrolled, c.owner, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
+  const { rows: course } = await query(
+    `SELECT c.id, c.name, c.tagline, c.cover, c.description, c.students_enrolled, c.owner, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
       FROM courses c
       JOIN users i ON c.owner = i.id
-      WHERE c.id = 2`);
+      WHERE c.id = $1`,
+    [courseId],
+  );
 
   if (!course[0]) {
     throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
@@ -209,15 +211,14 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  console.log(req.body?.skills);
-
   const parsed = createCourseSchema.safeParse(req.body);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation error", errors);
   }
 
-  const { name, tagline, description, category, price, skills, status } = parsed.data;
+  const { name, tagline, description, category, price, skills, status } =
+    parsed.data;
 
   const coverImage = req.file;
   if (!coverImage?.path) {
@@ -240,7 +241,17 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
   `,
-    [name, tagline, description, coverImageUrl, category, id, price, skills, status],
+    [
+      name,
+      tagline,
+      description,
+      coverImageUrl,
+      category,
+      id,
+      price,
+      skills,
+      status,
+    ],
   );
 
   if (!course[0]) {
@@ -324,8 +335,8 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
         price = COALESCE($4::int, price),
         skills = COALESCE($5::text[], skills),
         status = COALESCE($6::text, status),
-        cover = COALESCE($8::text, cover)
-    WHERE id = $9
+        cover = COALESCE($7::text, cover)
+    WHERE id = $8
     RETURNING *`,
     [
       name ?? null,

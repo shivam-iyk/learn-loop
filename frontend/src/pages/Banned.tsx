@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { useCurrentUser } from "../hooks/auth";
 import { Skeleton } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ function Banned() {
   const navigate = useNavigate();
 
   const { isLoading, isPending, data } = useCurrentUser();
-  const { user } = useBoundStore();
+  const { user } = useAppStore();
 
   useEffect(() => {
     if (isPending) return;

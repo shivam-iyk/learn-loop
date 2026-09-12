@@ -7,7 +7,7 @@ import {
   Button,
   cn,
 } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { Funnel } from "lucide-react";
 import StarsSelector from "./StarsSelector";
 import PriceSlider from "./PriceSlider";
@@ -25,7 +25,7 @@ function Filters({
   maxLessons,
   className = "",
 }: FilterProps) {
-  const { filters, setFilters } = useBoundStore();
+  const { filters, setFilters } = useAppStore();
 
   return (
     <div

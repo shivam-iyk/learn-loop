@@ -1,10 +1,10 @@
 import { Avatar, Chip } from "@heroui/react";
-import useBoundStore from "../store";
+import useAppStore from "../store";
 import { BookOpen, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function InstructorOverview() {
-  const { instructor } = useBoundStore();
+  const { instructor } = useAppStore();
 
   return (
     <div className="p-4 bg-background/50 rounded-lg">
