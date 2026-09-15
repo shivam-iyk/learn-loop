@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createCourse,
+  discardDraft,
   editCourse,
   enrollFreeCourse,
   getCourse,
@@ -23,6 +24,8 @@ router.use(verifyJWT);
 router.get("/enrolled", getEnrolledCourses);
 
 router.get("/owned", getOwnedCourses);
+
+router.delete("/draft/:courseId", discardDraft);
 
 router.route("/create").post(upload.single("cover"), createCourse);
 

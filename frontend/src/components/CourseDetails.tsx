@@ -1,7 +1,6 @@
 import useAppStore from "../store";
 import { Chip } from "@heroui/react";
-import { History, Users } from "lucide-react";
-import { formatDuration } from "../lib/helpers";
+import { Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import RatingStars from "./RatingStars";
 import type { ReactNode } from "react";
@@ -50,10 +49,6 @@ function CourseDetails({ children }: { children: ReactNode }) {
               />
               <span>·</span>
               <div className="flex items-center gap-1">
-                <History size={16} /> {formatDuration(course.duration)}
-              </div>
-              <span>·</span>
-              <div className="flex items-center gap-1">
                 <Users size={16} />{" "}
                 {course.students_enrolled.toLocaleString("en-IN", {
                   style: "decimal",
@@ -67,7 +62,7 @@ function CourseDetails({ children }: { children: ReactNode }) {
                   to={`/instructor/${course.owner}`}
                   className="text-white font-semibold hover:underline ring-visible px-1 rounded underline-offset-2"
                 >
-                  {course.owner_name}
+                  {/* {course.owner_name} */}
                 </Link>
               </div>
             </div>

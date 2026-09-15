@@ -1,24 +1,102 @@
-import { Button, EmptyState, Table, Tooltip } from "@heroui/react";
-import { ArchiveRestore, Layers, Package2, Star, Users } from "lucide-react";
+import { Button, EmptyState, Table, toast, Tooltip } from "@heroui/react";
+import {
+  ArchiveRestore,
+  Layers,
+  Loader2,
+  Package2,
+  Star,
+  Users,
+} from "lucide-react";
 import RatingStars from "./RatingStars";
+import useAppStore from "../store";
+import { useMemo } from "react";
+import CustomEmptyState from "./CustomEmptyState";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateCourse } from "../services/courses";
+import type { Course } from "../types/course";
+import type { ApiError } from "../services/api";
 
-function ArchivedCourses() {
-  const archived = [
-    {
-      name: "Angular Basics",
-      lessons: 12,
-      students_enrolled: 40,
-      rating_sum: 8,
-      rating_count: 2,
+function ArchivedCourses({ loading }: { loading: boolean }) {
+  const queryClient = useQueryClient();
+
+  const { courses, setCourses } = useAppStore();
+
+  const unarchiveCourseMutation = useMutation<
+    Course,
+    ApiError,
+    { id: number; formData: FormData }
+  >({
+    mutationFn: (course) => updateCourse(course.id, course.formData),
+    onSuccess: () => {
+      queryClient.setQueryData(["courses"], (oldData: Course[]) =>
+        oldData.map((item) => {
+          if (item.id === unarchiveCourseMutation.variables?.id) {
+            return { ...item, status: "published" };
+          }
+          return item;
+        }),
+      );
+      setCourses(
+        courses.map((item) => {
+          if (item.id === unarchiveCourseMutation.variables?.id) {
+            return { ...item, status: "published" };
+          }
+          return item;
+        }),
+      );
     },
-    {
-      name: "Remix Guide",
-      lessons: 7,
-      students_enrolled: 23,
-      rating_sum: 14,
-      rating_count: 4,
+    onError: (error) => {
+      let message = error.message || "Something went wrong";
+      let description: string | undefined = undefined;
+
+      const errorCode = error?.errors?.[0];
+      if (error.message === "Validation Error") {
+        message = error.errors?.[0] || message;
+      } else {
+        switch (errorCode) {
+          case "UPLOAD_FAILED":
+            message = "Image cannot be uploaded";
+            description = "Please try again later";
+            break;
+          case "INVALID_COURSE_ID":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UPLOAD_FAILED":
+            message = "Image upload failed";
+            description = "Please try again later";
+            break;
+          case "NOT_FOUND":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UNAUTHORIZED":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            break;
+          case "ACTION_FAILED":
+            [message, description] = error.message?.split(",");
+            break;
+        }
+      }
+      toast.danger(message, {
+        description,
+      });
     },
-  ];
+  });
+
+  const handleUnarchive = (courseId: number) => {
+    const formData = new FormData();
+    formData.append("status", "published");
+    unarchiveCourseMutation.mutate({ id: courseId, formData });
+  };
+
+  const archived = useMemo(() => {
+    return courses.filter((item) => item.status === "archived");
+  }, [courses]);
 
   return (
     <Table>
@@ -42,12 +120,24 @@ function ArchivedCourses() {
             </Table.Column>
           </Table.Header>
           <Table.Body
-            renderEmptyState={() => (
-              <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
-                <Package2 />
-                <span className="text-sm text-muted">No courses found</span>
-              </EmptyState>
-            )}
+            renderEmptyState={() =>
+              loading ? (
+                <CustomEmptyState
+                  title=""
+                  description=""
+                  icon={Loader2}
+                  iconContainerClassName="bg-transparent"
+                  textContainerClassName="hidden"
+                  iconClassName="animate-spin"
+                  containerClassName="bg-background"
+                />
+              ) : (
+                <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
+                  <Package2 />
+                  <span className="text-sm text-muted">No courses found</span>
+                </EmptyState>
+              )
+            }
           >
             {archived.map((item, index) => (
               <Table.Row key={index}>
@@ -67,7 +157,7 @@ function ArchivedCourses() {
                   <div className="flex items-center gap-2 h-full">
                     <Star className="text-warning" size={16} />
                     <RatingStars
-                      stars={item.rating_sum / item.rating_count}
+                      stars={item.rating_sum / item.rating_count || 0}
                       starsClassName="hidden!"
                       size={0}
                     />
@@ -77,13 +167,19 @@ function ArchivedCourses() {
                   <div className="flex items-center gap-2">
                     <Tooltip>
                       <Button
-                        className="bg-warning-soft text-warning-soft-foreground"
+                        className="bg-success-soft text-success-soft-foreground"
                         size="sm"
+                        onClick={() => handleUnarchive(item.id)}
                       >
-                        <ArchiveRestore />
+                        {unarchiveCourseMutation.variables?.id === item.id &&
+                        unarchiveCourseMutation.isPending ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <ArchiveRestore />
+                        )}
                       </Button>
                       <Tooltip.Content>
-                        <p className="font-outfit">Unarchive</p>
+                        <p className="font-outfit">Publish</p>
                       </Tooltip.Content>
                     </Tooltip>
                   </div>

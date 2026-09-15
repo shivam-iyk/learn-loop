@@ -4,15 +4,14 @@ export interface Course {
   cover: string;
   price: number;
   owner: number;
+  description: string;
   status: "draft" | "published" | "archived";
-  level: "beginner" | "intermediate" | "advanced";
   category: string;
   rating_sum: number;
   is_banned: boolean;
   ban_reason: string | null;
   created_at: string;
   skills: string[] | null;
-  duration: number;
   students_enrolled: number;
   rating_count: number;
   tagline: string;
@@ -43,11 +42,8 @@ export interface CourseSlice {
   };
   setFilters: (filters: CourseSlice["filters"]) => void;
   courses: Course[];
-  course: Course & {
-    description: string;
-    owner_name: string;
-    owner_avatar: string;
-  };
+  setCourses: (courses: Course[]) => void;
+  course: Course;
   setCourse: (course: CourseSlice["course"]) => void;
   recentCourses: Course[];
   suggestedCourses: Course[];

@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
 import CourseDetailsForm from "../components/CourseDetailsForm";
 import { toast } from "@heroui/react";
-import type { CourseDetailsFormI, CourseSlice } from "../types/course";
+import type { Course, CourseDetailsFormI, CourseSlice } from "../types/course";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createCourse, getCourse, updateCourse } from "../services/courses";
 import useAppStore from "../store";
+import type { ApiError } from "../services/api";
 
 function CreateCourse() {
-  const { courseId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { courseId } = useParams();
   const { course, setCourse } = useAppStore();
 
   const { data } = useQuery<CourseSlice["course"]>({
-    queryKey: ["draft-course", courseId],
+    queryKey: ["course", courseId],
     queryFn: () => getCourse(courseId),
     enabled: !!courseId && course.id.toString() !== courseId?.toString(),
     retry: 1,
@@ -32,28 +35,105 @@ function CreateCourse() {
     price: "",
   });
 
-  const createCourseMutation = useMutation({
-    mutationFn: (formData: FormData) => createCourse(formData),
+  const createCourseMutation = useMutation<Course, ApiError, FormData>({
+    mutationFn: (formData) => createCourse(formData),
     onSuccess: (data) => {
-      console.log(data);
+      setCourse(data);
+      queryClient.setQueryData(["courses"], (oldData: Course[]) => [
+        ...(oldData || []),
+        data,
+      ]);
+      queryClient.setQueryData(["course", courseId], data);
       navigate(`/create-course/${data?.id}/lessons`);
     },
     onError: (error) => {
-      console.log(error);
-      toast.danger(error?.message || "Something went wrong");
+      let message = error.message || "Something went wrong";
+      let description: string | undefined = undefined;
+
+      const errorCode = error?.errors?.[0];
+      if (error.message === "Validation Error") {
+        message = error.errors?.[0] || message;
+      } else {
+        switch (errorCode) {
+          case "COVER_IMAGE_REQUIRED":
+            message = "Please provide cover image";
+            break;
+          case "COVER_IMAGE_SIZE":
+            description = "Please try with a smaller file";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UPLOAD_FAILED":
+            message = "Image upload failed";
+            description = "Please try again later";
+            break;
+          case "ACTION_FAILED":
+            [message, description] = error.message?.split(",");
+            break;
+        }
+      }
+      toast.danger(message, {
+        description,
+      });
     },
   });
 
-  const updateCourseMutation = useMutation({
-    mutationFn: (data: { courseId: number; formData: FormData }) =>
-      updateCourse(data.courseId, data.formData),
+  const updateCourseMutation = useMutation<
+    Course,
+    ApiError,
+    { courseId: number; formData: FormData }
+  >({
+    mutationFn: (data) => updateCourse(data.courseId, data.formData),
     onSuccess: (data) => {
       setCourse(data);
+      queryClient.setQueryData(["courses"], (oldData: Course[]) =>
+        oldData.map((item) => {
+          if (item.id === data?.id) {
+            return data;
+          }
+          return item;
+        }),
+      );
+      queryClient.setQueryData(["course", courseId], data);
       navigate(`/create-course/${data?.id}/lessons`);
     },
     onError: (error) => {
-      console.log(error);
-      toast.danger(error.message || "Something went wrong");
+      let message = error.message || "Something went wrong";
+      let description: string | undefined = undefined;
+
+      const errorCode = error?.errors?.[0];
+      if (error.message === "Validation Error") {
+        message = error.errors?.[0] || message;
+      } else {
+        switch (errorCode) {
+          case "COVER_IMAGE_REQUIRED":
+            message = "Please provide cover image";
+            break;
+          case "COVER_IMAGE_SIZE":
+            description = "Please try with a smaller file";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UPLOAD_FAILED":
+            message = "Image upload failed";
+            description = "Please try again later";
+            break;
+          case "NOT_FOUND":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UNAUTHORIZED":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            break;
+          case "ACTION_FAILED":
+            [message, description] = error.message?.split(",");
+            break;
+        }
+      }
+      toast.danger(message, {
+        description,
+      });
     },
   });
 

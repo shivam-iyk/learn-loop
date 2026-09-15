@@ -42,6 +42,13 @@ const createReport = asyncHandler(async (req: Request, res: Response) => {
   const image = req.file;
   let url: string | null = null;
   if (image) {
+    if (image.size > 50_000_000) {
+      // File greater than 50MB
+      throw new ApiError(400, "Image cannot be larger than 50MB", [
+        "COVER_IMAGE_SIZE",
+      ]);
+    }
+
     const imageUrl = await uploadToCloudinary(image.path, "reports");
     if (!imageUrl)
       throw new ApiError(

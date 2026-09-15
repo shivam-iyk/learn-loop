@@ -215,7 +215,7 @@ function CourseDetailsForm({
         <FieldError />
       </TextField>
       <div className="flex justify-end gap-2">
-        <Button type="submit">
+        <Button type="submit" isDisabled={isLoading}>
           {isLoading ? (
             <Loader2 className="animate-spin" />
           ) : (

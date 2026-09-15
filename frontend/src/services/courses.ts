@@ -20,6 +20,11 @@ export const getCourse = async (courseId?: string | number) => {
   return data?.data;
 };
 
+export const getOwnedCourses = async () => {
+  const { data } = await api.get("/courses/owned");
+  return data?.data;
+};
+
 export const createCourse = async (formData: FormData) => {
   const { data } = await api.post("/courses/create", formData);
   return data?.data;
@@ -27,6 +32,11 @@ export const createCourse = async (formData: FormData) => {
 
 export const updateCourse = async (courseId: number, formData: FormData) => {
   const { data } = await api.put(`/courses/edit/${courseId}`, formData);
+  return data?.data;
+};
+
+export const discardDraft = async (courseId: number) => {
+  const { data } = await api.delete(`/courses/draft/${courseId}`);
   return data?.data;
 };
 

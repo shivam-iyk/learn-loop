@@ -12,4 +12,5 @@ export interface Review {
 
 export interface ReviewSlice {
   reviews: Review[];
+  setReviews: (reviews: Review[]) => void;
 }

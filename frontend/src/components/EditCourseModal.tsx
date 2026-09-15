@@ -8,7 +8,6 @@ import useAppStore from "../store";
 import CustomEmptyState from "./CustomEmptyState";
 
 function EditCourseModal({
-  
   buttonClassName = "",
 }: {
   courseId: number;
@@ -113,7 +112,7 @@ function EditCourseModal({
                 />
               </Modal.Body>
             ) : (
-              <Modal.Body>
+              <Modal.Body className="text-foreground">
                 {step === 1 && (
                   <CourseDetailsForm
                     form={form}

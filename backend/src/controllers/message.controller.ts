@@ -61,7 +61,7 @@ const getMessages = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!messages) {
-    throw new ApiError(404, "No messages found",["NOT_FOUND"]);
+    throw new ApiError(404, "No messages found", ["NOT_FOUND"]);
   }
 
   return res
@@ -88,12 +88,19 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     url: "",
   };
   if (attachmentFile) {
+    if (attachmentFile.size > 50_000_000) {
+      // File greater than 50MB
+      throw new ApiError(400, "Attachment cannot be larger than 50MB", [
+        "COVER_IMAGE_SIZE",
+      ]);
+    }
+
     const url = await uploadToCloudinary(attachmentFile.path, "attachments");
     if (!url) {
       throw new ApiError(
         500,
         "Failed to save attachment, Please try again later",
-        ["UPLOAD_FAILED"]
+        ["UPLOAD_FAILED"],
       );
     }
     attachment.url = url;
@@ -162,7 +169,9 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (message[0]?.sender.toString() !== id.toString()) {
-    throw new ApiError(401, "You are not authorized to edit this message", ["UNAUTHORIZED"]);
+    throw new ApiError(401, "You are not authorized to edit this message", [
+      "UNAUTHORIZED",
+    ]);
   }
 
   await query(
@@ -209,11 +218,13 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!message) {
-    throw new ApiError(404, "Message not found",["NOT_FOUND"]);
+    throw new ApiError(404, "Message not found", ["NOT_FOUND"]);
   }
 
   if (message[0]?.sender !== id) {
-    throw new ApiError(400, "You are not authorized to delete this message", ["UNAUTHORIZED"]);
+    throw new ApiError(400, "You are not authorized to delete this message", [
+      "UNAUTHORIZED",
+    ]);
   }
 
   await query("DELETE FROM messages WHERE id = $1", [messageId]);

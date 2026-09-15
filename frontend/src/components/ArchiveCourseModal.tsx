@@ -1,9 +1,83 @@
-import { Button, Modal, Tooltip } from "@heroui/react";
-import { Archive } from "lucide-react";
+import { Button, Modal, toast, Tooltip } from "@heroui/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Archive, Loader2 } from "lucide-react";
+import { updateCourse } from "../services/courses";
+import type { Course } from "../types/course";
+import useAppStore from "../store";
+import type { ApiError } from "../services/api";
 
 function ArchiveCourseModal({ courseId }: { courseId: number }) {
+  const queryClient = useQueryClient();
+
+  const { courses, setCourses } = useAppStore();
+
+  const archiveCourseMutation = useMutation<Course, ApiError, FormData>({
+    mutationFn: (formData) => updateCourse(courseId, formData),
+    onSuccess: () => {
+      queryClient.setQueryData(["courses"], (oldData: Course[]) =>
+        oldData.map((item) => {
+          if (item.id === courseId) {
+            return { ...item, status: "archived" };
+          }
+          return item;
+        }),
+      );
+      setCourses(
+        courses.map((item) => {
+          if (item.id === courseId) {
+            return { ...item, status: "archived" };
+          }
+          return item;
+        }),
+      );
+    },
+    onError: (error) => {
+      let message = error.message || "Something went wrong";
+      let description: string | undefined = undefined;
+
+      const errorCode = error?.errors?.[0];
+      if (error.message === "Validation Error") {
+        message = error.errors?.[0] || message;
+      } else {
+        switch (errorCode) {
+          case "UPLOAD_FAILED":
+            message = "Image cannot be uploaded";
+            description = "Please try again later";
+            break;
+          case "INVALID_COURSE_ID":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UPLOAD_FAILED":
+            message = "Image upload failed";
+            description = "Please try again later";
+            break;
+          case "NOT_FOUND":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            break;
+          case "UNAUTHORIZED":
+            message = "Something went wrong";
+            description = "Please try again later";
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            break;
+          case "ACTION_FAILED":
+            [message, description] = error.message?.split(",");
+            break;
+        }
+      }
+      toast.danger(message, {
+        description,
+      });
+    },
+  });
+
   const handleArchive = () => {
-    console.log(courseId);
+    const formData = new FormData();
+    formData.append("status", "archived");
+    archiveCourseMutation.mutate(formData);
   };
 
   return (
@@ -12,10 +86,13 @@ function ArchiveCourseModal({ courseId }: { courseId: number }) {
         <Button
           className="bg-warning-soft text-warning-soft-foreground"
           size="sm"
-          onClick={handleArchive}
           isIconOnly
         >
-          <Archive />
+          {archiveCourseMutation.isPending ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <Archive />
+          )}
         </Button>
         <Tooltip.Content>
           <p className="font-outfit">Archive</p>
@@ -39,7 +116,11 @@ function ArchiveCourseModal({ courseId }: { courseId: number }) {
               </p>
             </Modal.Body>
             <Modal.Footer className="flex-col">
-              <Button className="w-full bg-warning" slot="close">
+              <Button
+                className="w-full bg-warning"
+                slot="close"
+                onClick={handleArchive}
+              >
                 Archive
               </Button>
               <Button className="w-full" slot="close" variant="ghost">

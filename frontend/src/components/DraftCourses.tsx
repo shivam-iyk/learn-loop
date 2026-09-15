@@ -1,26 +1,18 @@
-import { EmptyState, Skeleton, Table } from "@heroui/react";
-import { Layers, Package2 } from "lucide-react";
-import DeleteCourseModal from "./DeleteCourseModal";
+import { EmptyState, Table, toast } from "@heroui/react";
+import { Edit2, Layers, Loader2, Package2 } from "lucide-react";
+import DiscardDraftModal from "./DiscardDraftModal";
 import PublishCourseModal from "./PublishCourseModal";
-import { lazy, Suspense } from "react";
+import { useMemo } from "react";
+import useAppStore from "../store";
+import CustomEmptyState from "./CustomEmptyState";
+import { Link } from "react-router-dom";
 
-const EditCourseModal = lazy(() => import("./EditCourseModal"));
+function DraftCourses({ loading }: { loading: boolean }) {
+  const { courses } = useAppStore();
 
-function DraftCourses() {
-  const drafts = [
-    {
-      id: 1,
-      name: "React.js",
-      lessons: 4,
-      price: 1212,
-    },
-    {
-      id: 2,
-      name: "Vue Fundamentals",
-      lessons: 6,
-      price: 2300,
-    },
-  ];
+  const drafts = useMemo(() => {
+    return courses.filter((item) => item.status === "draft");
+  }, [courses]);
 
   return (
     <Table>
@@ -39,14 +31,26 @@ function DraftCourses() {
             </Table.Column>
           </Table.Header>
           <Table.Body
-            renderEmptyState={() => (
-              <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
-                <Package2 />
-                <span className="text-sm text-muted">No courses found</span>
-              </EmptyState>
-            )}
+            renderEmptyState={() =>
+              loading ? (
+                <CustomEmptyState
+                  title=""
+                  description=""
+                  icon={Loader2}
+                  iconContainerClassName="bg-transparent"
+                  textContainerClassName="hidden"
+                  iconClassName="animate-spin"
+                  containerClassName="bg-background"
+                />
+              ) : (
+                <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
+                  <Package2 />
+                  <span className="text-sm text-muted">No courses found</span>
+                </EmptyState>
+              )
+            }
           >
-            {drafts.map((item, index) => (
+            {drafts?.map((item, index) => (
               <Table.Row key={index}>
                 <Table.Cell className="font-medium">{item.name}</Table.Cell>
                 <Table.Cell>
@@ -63,18 +67,23 @@ function DraftCourses() {
                 </Table.Cell>
                 <Table.Cell>
                   <div className="flex items-center gap-2">
-                    <PublishCourseModal courseId={item.id} />
-                    <Suspense
-                      fallback={
-                        <Skeleton className="button button--sm min-w-8 rounded-2xl" />
+                    <PublishCourseModal
+                      courseId={item.id}
+                      disabled={item.lessons === 0}
+                      handleDisabledClick={() =>
+                        toast.warning("Course cannot be published", {
+                          description:
+                            "Please add one or more lessons to publish",
+                        })
                       }
+                    />
+                    <Link
+                      to={`/create-course/${item.id}`}
+                      className="button button--icon-only bg-warning-soft text-warning-soft-foreground"
                     >
-                      <EditCourseModal
-                        courseId={item.id}
-                        buttonClassName="bg-warning-soft text-warning-soft-foreground"
-                      />
-                    </Suspense>
-                    <DeleteCourseModal courseId={item.id} />
+                      <Edit2 size={16} />
+                    </Link>
+                    <DiscardDraftModal courseId={item.id} />
                   </div>
                 </Table.Cell>
               </Table.Row>

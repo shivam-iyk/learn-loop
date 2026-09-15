@@ -1,12 +1,14 @@
 import type { Course as CourseI } from "../types/course";
 import { Chip } from "@heroui/react";
 import { Link } from "react-router-dom";
-import { formatDuration } from "../lib/helpers";
 import RatingChip from "./RatingChip";
 
 function HomeCard({ course }: { course: CourseI }) {
   return (
-    <Link to={`/course/${course.id}`} className="ring-visible-offset rounded-xl">
+    <Link
+      to={`/course/${course.id}`}
+      className="ring-visible-offset rounded-xl"
+    >
       <div className="border border-background hover:border-background-tertiary rounded-xl overflow-hidden relative group w-full">
         <Chip
           variant="soft"
@@ -29,9 +31,7 @@ function HomeCard({ course }: { course: CourseI }) {
             <p className="text-muted md:text-base text-sm truncate">
               {course.tagline}
             </p>
-            <span className="text-xs text-muted">
-              {formatDuration(course.duration)} · {course.lessons} lessons
-            </span>
+            <span className="text-xs text-muted">{course.lessons} lessons</span>
           </div>
           <div className="flex flex-col gap-1 items-end">
             <RatingChip

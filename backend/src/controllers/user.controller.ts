@@ -136,6 +136,11 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Avatar image is required", [
       "AVATAR_FILE_REQUIRED",
     ]);
+  } else if (avatar.size > 50_000_000) {
+    // File greater than 50MB
+    throw new ApiError(400, "Avatar image cannot be larger than 50MB", [
+      "AVATAR_IMAGE_SIZE",
+    ]);
   }
 
   const avatarUrl = await uploadToCloudinary(avatar.path, "users");

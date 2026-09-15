@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import type { Course } from "../types/course";
-import { formatDuration } from "../lib/helpers";
 import { Chip } from "@heroui/react";
 import RatingChip from "./RatingChip";
 
@@ -33,7 +32,7 @@ function MyCourseCard({ course }: { course: Course }) {
             {course.tagline}
           </p>
           <p className="sm:text-sm text-xs text-muted">
-            {formatDuration(course.duration)} · {course.lessons} lessons
+            {course.lessons} lessons
           </p>
           <div className="flex justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1 mt-1">

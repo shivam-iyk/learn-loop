@@ -90,6 +90,7 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
      AND ($5::int IS NULL OR lessons >= $5)
      AND ($6::int IS NULL OR lessons <= $6)
      AND ($7::text IS NULL OR name ILIKE '%' || $7 || '%')
+     AND status = 'published'
      ORDER BY ${orderBy}
      OFFSET ${(page - 1) * limit} ROWS
      LIMIT ${limit}`,
@@ -201,7 +202,7 @@ const getOwnedCourses = asyncHandler(async (req: Request, res: Response) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, courses, "Owned courses found successfully"));
+    .json(new ApiResponse(200, courses, "Owned courses found"));
 });
 
 const createCourse = asyncHandler(async (req: Request, res: Response) => {
@@ -225,6 +226,11 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Cover image is required", [
       "COVER_IMAGE_REQUIRED",
     ]);
+  } else if (coverImage.size > 50_000_000) {
+    // File greater than 50MB
+    throw new ApiError(400, "Cover image cannot be larger than 50MB", [
+      "COVER_IMAGE_SIZE",
+    ]);
   }
 
   const coverImageUrl = await uploadToCloudinary(coverImage.path, "course");
@@ -239,8 +245,7 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   const { rows: course } = await query(
     `INSERT INTO courses(name, tagline, description, cover, category, owner, price, skills, status)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    RETURNING *
-  `,
+    RETURNING *`,
     [
       name,
       tagline,
@@ -249,7 +254,7 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
       category,
       id,
       price,
-      skills,
+      typeof skills === "string" ? [skills] : skills,
       status,
     ],
   );
@@ -299,6 +304,13 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
 
   let coverImageUrl: string | undefined = undefined;
   if (coverImage) {
+    if (coverImage.size > 50_000_000) {
+      // File greater than 50MB
+      throw new ApiError(400, "Cover image cannot be larger than 50MB", [
+        "COVER_IMAGE_SIZE",
+      ]);
+    }
+
     coverImageUrl = await uploadToCloudinary(coverImage?.path, "course");
     if (!coverImageUrl) {
       throw new ApiError(400, "Failed to upload cover image", [
@@ -362,6 +374,51 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, course[0], "Course updated successfully"));
 });
 
+const discardDraft = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.user?.id;
+  const role = req.user?.role;
+  if (!id || role !== "instructor") {
+    throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
+  }
+
+  const { courseId } = req.params;
+  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
+    throw new ApiError(400, "Invalid course ID", ["INVALID_COURSE_ID"]);
+  }
+
+  const { rows: course } = await query(
+    `SELECT owner FROM courses WHERE id = $1`,
+    [courseId],
+  );
+
+  if (!course) {
+    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
+  }
+
+  if (course[0]?.owner !== id) {
+    throw new ApiError(401, "You are not authorized to discard this draft", [
+      "UNAUTHORIZED",
+    ]);
+  }
+
+  const { rows: discardedDraft } = await query(
+    "DELETE FROM courses WHERE id = $1 RETURNING name",
+    [courseId],
+  );
+
+  if (!discardedDraft) {
+    throw new ApiError(400, "Cannot discard course, Please try again later", [
+      "ACTION_FAILED",
+    ]);
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, discardedDraft[0], "Draft discarded successfully"),
+    );
+});
+
 const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   const role = req.user?.role;
@@ -423,6 +480,7 @@ export {
   getCourse,
   getEnrolledCourses,
   enrollFreeCourse,
+  discardDraft,
   getOwnedCourses,
   createCourse,
   editCourse,

@@ -49,18 +49,17 @@ function RatingStars({
           />
         </div>
       )}
-      {fullStars < 5
-        ? Array.from({ length: 5 - fullStars - (halfStars ? 1 : 0) }).map(
-            (_, index) => (
-              <Star
-                size={size}
-                fill="none"
-                className={starsClassName}
-                key={index}
-              />
-            ),
-          )
-        : null}
+      {fullStars < 5 &&
+        Array.from({ length: 5 - fullStars - (halfStars ? 1 : 0) }).map(
+          (_, index) => (
+            <Star
+              size={size}
+              fill="none"
+              className={starsClassName}
+              key={index}
+            />
+          ),
+        )}
       <span className={cn("text-foreground", subTextClassName)}>
         {stars.toLocaleString("en-IN", {
           style: "decimal",

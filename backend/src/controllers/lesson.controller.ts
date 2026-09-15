@@ -279,6 +279,13 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
+  await query(
+    `UPDATE courses 
+    SET lessons = lessons - 1
+    WHERE course = $1`,
+    [deletedLesson[0]?.course],
+  );
+
   await query("COMMIT");
 
   return res
