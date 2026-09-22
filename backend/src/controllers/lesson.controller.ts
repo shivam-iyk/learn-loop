@@ -9,6 +9,8 @@ import {
   updateLessonSchema,
 } from "../schemas/lesson.schema";
 import { getVideoDuration, getYouTubeVideoId } from "../utils/youtube";
+import getPlaceholderData from "../utils/placeholder";
+import { courseIdSchema, lessonIdSchema } from "../schemas/param.schema";
 
 const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -20,10 +22,11 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const parsed = createLessonSchema.safeParse(req.body);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((issue) => issue.message);
+    console.dir(parsed?.error);
     throw new ApiError(400, "Validation failed", errors);
   }
 
-  const { name, type, course, sequence, notes, video } = parsed.data;
+  const { name, type, course, sequence, notes, video, quiz } = parsed.data;
 
   let duration: number | null = null;
   if (video) {
@@ -39,12 +42,17 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
+  await query("BEGIN");
+
   const { rows: lesson } = await query(
-    "INSERT INTO lessons(name, type, course, sequence, notes, video, duration) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+    `INSERT INTO lessons(name, type, course, sequence, notes, video, duration) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    RETURNING *`,
     [name, type, course, sequence, notes, video, duration],
   );
 
   if (!lesson[0]) {
+    await query("ROLLBACK");
     throw new ApiError(
       500,
       "Failed to create lesson, Please try again later!",
@@ -52,13 +60,95 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
+  const data = lesson[0];
+
+  if (quiz) {
+    const { rows: savedQuiz } = await query(
+      `INSERT INTO quiz(pass_mark, lesson, instructions) 
+      VALUES ($1, $2, $3) 
+      RETURNING *`,
+      [quiz?.pass_mark, lesson[0]?.id, quiz?.instructions],
+    );
+
+    if (!savedQuiz[0]) {
+      await query("ROLLBACK");
+      throw new ApiError(500, "Failed to save quiz, Please try again later!", [
+        "ACTION_FAILED",
+      ]);
+    }
+
+    const options: ((typeof quiz.questions)[number]["options"][number] & {
+      question: number;
+    })[] = [];
+    const questions = quiz.questions.map((item, index) => {
+      const { options: itemOptions, ...rest } = item;
+      options.push(
+        ...itemOptions.map((item) => ({ ...item, question: index })),
+      );
+      return { ...rest, quiz: savedQuiz[0]?.id };
+    });
+
+    const { placeholders: questionPlaceholders, values: questionValues } =
+      getPlaceholderData(questions);
+
+    const { rows: savedQuestions } = await query(
+      `INSERT INTO quiz_questions (question, answer, type, quiz) 
+    VALUES ${questionPlaceholders}
+    RETURNING *`,
+      questionValues,
+    );
+
+    if (savedQuestions?.length === 0) {
+      await query("ROLLBACK");
+      throw new ApiError(
+        500,
+        "Failed to save questions, Please try again later!",
+        ["ACTION_FAILED"],
+      );
+    }
+
+    options.forEach((item) => {
+      item.question = savedQuestions[item.question]?.id;
+    });
+
+    const { placeholders: optionPlaceholders, values: optionValues } =
+      getPlaceholderData(options);
+
+    const { rows: savedOptions } = await query(
+      `INSERT INTO quiz_options (option, correct, correct_order, match_option_id, question)
+      VALUES ${optionPlaceholders}
+      RETURNING *`,
+      optionValues,
+    );
+
+    if (savedOptions?.length === 0) {
+      await query("ROLLBACK");
+      throw new ApiError(500, "Failed to save quiz, Please try again later!", [
+        "ACTION_FAILED",
+      ]);
+    }
+
+    data.quiz = savedQuiz[0];
+    data.quiz.questions = savedQuestions.map((item) => {
+      const options = savedOptions.filter(
+        (option) => option.question === item.id,
+      );
+      return {
+        ...item,
+        options,
+      };
+    });
+  }
+
   await query("UPDATE courses SET lessons = lessons + 1 WHERE id = $1", [
     course,
   ]);
 
+  await query("COMMIT");
+
   return res
     .status(201)
-    .json(new ApiResponse(201, lesson[0], "Lesson created successfully"));
+    .json(new ApiResponse(201, data, "Lesson created successfully"));
 });
 
 const getLessons = asyncHandler(async (req: Request, res: Response) => {
@@ -66,10 +156,13 @@ const getLessons = asyncHandler(async (req: Request, res: Response) => {
   const role = req.user?.role;
   if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const { courseId } = req.params;
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Course ID is required and must be a valid number");
+  const parsed = courseIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { courseId } = parsed.data;
 
   if (role === "student") {
     const { rows: enrollment } = await query(
@@ -180,10 +273,13 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { name, type, notes, video } = parsed.data;
-  const { lessonId } = req.params;
-  if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
+  const parsedLessonId = lessonIdSchema.safeParse(req.params);
+  if (!parsedLessonId.success) {
+    const errors = parsedLessonId.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { lessonId } = parsedLessonId.data;
 
   let duration: number | null = null;
   if (video) {
@@ -241,18 +337,22 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  const { lessonId } = req.params;
-  if (!lessonId || typeof lessonId !== "string" || isNaN(parseInt(lessonId))) {
-    throw new ApiError(400, "Lesson ID is required", ["LESSON_ID_REQUIRED"]);
+  const parsed = lessonIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
 
+  const { lessonId } = parsed.data;
+
   const { rows: lesson } = await query(
-    `SELECT c.owner AS owner, c.id AS course
+    `SELECT c.owner AS owner, c.id AS course, l.type, l.id
     FROM lessons l
     JOIN courses c ON c.id = l.course
     WHERE l.id = $1`,
     [lessonId],
   );
+
   if (!lesson[0]) {
     throw new ApiError(404, "Lesson not found", ["NOT_FOUND"]);
   }
@@ -264,6 +364,31 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   }
 
   await query("BEGIN");
+
+  if (lesson[0]?.type === "quiz") {
+    const { rows: quiz } = await query(
+      `SELECT quiz.id AS quiz_id, question.id AS question_id
+      FROM quizzes 
+      JOIN quiz_questions question ON quiz.id = question.quiz
+      WHERE quiz.lesson = $1::int`,
+      [lesson[0]?.id],
+    );
+    console.log(quiz, lesson[0]?.id);
+
+    const questionIds = quiz?.map(
+      (item: { question_id: number }) => item?.question_id,
+    );
+
+    await query("DELETE FROM options WHERE question = ANY($1::int[])", [
+      questionIds,
+    ]);
+
+    await query("DELETE FROM questions WHERE id = ANY($1::int[])", [
+      questionIds,
+    ]);
+
+    await query("DELETE FROM quizzes WHERE id = $1", [quiz[0]?.quiz_id]);
+  }
 
   const { rows: deletedLesson } = await query(
     "DELETE FROM lessons WHERE id = $1 RETURNING *",
@@ -282,7 +407,7 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   await query(
     `UPDATE courses 
     SET lessons = lessons - 1
-    WHERE course = $1`,
+    WHERE id = $1`,
     [deletedLesson[0]?.course],
   );
 

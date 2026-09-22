@@ -1,5 +1,4 @@
 import z from "zod";
-import "../utils/zod";
 
 const registerSchema = z.object({
   name: z

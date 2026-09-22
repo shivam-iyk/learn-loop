@@ -9,6 +9,7 @@ import path from "path";
 
 import authRoutes from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
+import quizRoutes from "./routes/quiz.route";
 import courseRoutes from "./routes/course.route";
 import reviewRoutes from "./routes/review.route";
 import lessonRoutes from "./routes/lesson.route";
@@ -67,6 +68,7 @@ app.use(express.static("public"));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/quiz", quizRoutes);
 app.use("/api/v1/report", reportRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/reviews", reviewRoutes);

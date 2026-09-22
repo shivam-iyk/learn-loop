@@ -1,5 +1,5 @@
 export interface QuizFormI {
-  passMark: string;
+  pass_mark: string;
   instructions: string;
   questions: {
     id: number;
@@ -11,10 +11,13 @@ export interface QuizFormI {
       | "fill"
       | "order";
     question: string;
+    answer?: string;
     options: {
       id: number;
       option: string;
-      correct: boolean;
+      correct?: boolean;
+      correct_order?: number;
+      match_option_id?: number;
     }[];
   }[];
 }

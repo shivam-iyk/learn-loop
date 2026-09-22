@@ -1,5 +1,4 @@
 import z from "zod";
-import "../utils/zod";
 
 const postReviewSchema = z.object({
   rating: z.coerce

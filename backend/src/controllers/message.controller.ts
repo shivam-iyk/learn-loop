@@ -7,6 +7,7 @@ import { query } from "../db";
 import { emitSocketEvent } from "../socket";
 import { ChatEventEnum } from "../utils/constants";
 import ApiResponse from "../utils/ApiResponse";
+import { messageIdSchema } from "../schemas/param.schema";
 
 const getChats = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -149,15 +150,13 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Validation Error", errors);
   }
 
-  const { messageId } = req.params;
-  if (
-    !messageId ||
-    typeof messageId !== "string" ||
-    isNaN(parseInt(messageId))
-  ) {
-    throw new ApiError(400, "Message ID is required", ["MESSAGE_ID_REQUIRED"]);
+  const parsedMessageId = messageIdSchema.safeParse(req.params);
+  if (!parsedMessageId.success) {
+    const errors = parsedMessageId.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
 
+  const { messageId } = parsedMessageId.data;
   const { message: content } = parsed.data;
 
   const { rows: message } = await query(
@@ -203,14 +202,12 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const { messageId } = req.params;
-  if (
-    !messageId ||
-    typeof messageId !== "string" ||
-    isNaN(parseInt(messageId))
-  ) {
-    throw new ApiError(400, "Message ID is required", ["MESSAGE_ID_REQUIRED"]);
+  const parsed = messageIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
+  const { messageId } = parsed.data;
 
   const { rows: message } = await query(
     "SELECT * FROM messages WHERE id = $1",

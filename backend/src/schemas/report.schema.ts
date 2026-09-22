@@ -1,5 +1,4 @@
 import z from "zod";
-import "../utils/zod";
 
 export const createReportSchema = z.object({
   issue: z

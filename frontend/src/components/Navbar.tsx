@@ -15,7 +15,7 @@ import {
 import { AvatarDropdown } from "./AvatarDropdown";
 import { Drawer, Button, Avatar, Accordion } from "@heroui/react";
 import Logo from "./Logo";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ApiError } from "../services/api";
 import { logOut } from "../services/auth";
 import { instructorPages, studentPages } from "../lib/helpers";
@@ -23,6 +23,7 @@ import { instructorPages, studentPages } from "../lib/helpers";
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { user, logOut: clearSession } = useAppStore();
 
@@ -83,6 +84,7 @@ function Navbar() {
       if (isProtectedPage) {
         navigate("/login");
       }
+      queryClient.clear();
     },
   });
 

@@ -83,9 +83,9 @@ function Lesson({
           {type === "video" ? (
             <Play className="group-hover:hidden" />
           ) : type === "notes" ? (
-            <ListTodo className="group-hover:hidden" />
-          ) : (
             <Notebook className="group-hover:hidden" />
+          ) : (
+            <ListTodo className="group-hover:hidden" />
           )}
         </Button>
         <TextField

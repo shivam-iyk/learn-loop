@@ -1,6 +1,6 @@
 
 function PublishCourse() {
-  return <PublishCourse />;
+  return <>PublishCourse</>;
 }
 
 export default PublishCourse;

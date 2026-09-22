@@ -1,6 +1,5 @@
 import z from "zod";
 import { registerSchema } from "./auth.schema";
-import "../utils/zod";
 
 const onboardUserSchema = z
   .object({

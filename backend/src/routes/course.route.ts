@@ -9,6 +9,7 @@ import {
   getEnrolledCourses,
   getOwnedCourses,
   getSuggestions,
+  getTopEarningCourses,
 } from "../controllers/course.controller";
 import verifyJWT from "../middlewares/auth.middleware";
 import upload from "../middlewares/multer.middleware";
@@ -24,6 +25,8 @@ router.use(verifyJWT);
 router.get("/enrolled", getEnrolledCourses);
 
 router.get("/owned", getOwnedCourses);
+
+router.get("/top-earning", getTopEarningCourses);
 
 router.delete("/draft/:courseId", discardDraft);
 

@@ -5,15 +5,49 @@ import ApiError from "../utils/ApiError";
 import { query } from "../db";
 import ApiResponse from "../utils/ApiResponse";
 import PaytmConfig from "../config/paytm.config";
+import { courseIdSchema } from "../schemas/param.schema";
+
+const getInstructorTransactions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.user?.id;
+    const role = req.user?.role;
+    if (!id || role !== "instructor") {
+      throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
+    }
+
+    const { page, limit } = req.body;
+    if (!parseInt(page) || !parseInt(limit)) {
+      throw new ApiError(400, "Invalid page or limit");
+    }
+
+    const { rows: transactions } = await query(
+      `SELECT t.id, t.created_at, t.transaction_id, t.amount, t.status, u.user_avatar, u.user_name
+      FROM transactions t
+      JOIN users u ON u.id = t.user_id
+      JOIN courses c ON c.id = t.course
+      GROUP BY t.id, t.created_at, t.transaction_id, t.amount, t.status
+      WHERE instructor = $1 AND type = 'enrollment'
+      OFFSET ${(page || 0 - 1) * limit} ROWS
+      LIMIT ${limit || 10}`,
+      [id],
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, transactions, "Transactions found"));
+  },
+);
 
 const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const { courseId } = req.params;
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course id", ["COURSE_ID_REQUIRED"]);
+  const parsed = courseIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
+  const { courseId } = parsed.data;
 
   const { rows: course } = await query(
     "SELECT price, owner FROM courses WHERE id = $1",
@@ -32,7 +66,9 @@ const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
     [id, courseId],
   );
   if (enrollment[0]) {
-    throw new ApiError(400, "You are already enrolled to this course", ["ALREADY_SATISFIED"]);
+    throw new ApiError(400, "You are already enrolled to this course", [
+      "ALREADY_SATISFIED",
+    ]);
   }
 
   const paytmParams: PaytmParams = {
@@ -108,7 +144,9 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   // }
 
   if (!ORDERID || !RESPMSG) {
-    throw new ApiError(400, "Order Id and Response message is required", ["ORDER_ID_AND_RESPONSE_REQUIRED"]);
+    throw new ApiError(400, "Order Id and Response message is required", [
+      "ORDER_ID_AND_RESPONSE_REQUIRED",
+    ]);
   }
 
   if (RESPMSG !== "Txn Successful") {
@@ -175,4 +213,4 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
-export { initiatePayment, verifyPayment };
+export { getInstructorTransactions, initiatePayment, verifyPayment };

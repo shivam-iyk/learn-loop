@@ -9,6 +9,7 @@ import {
   updateStatusSchema,
 } from "../schemas/report.schema";
 import { uploadToCloudinary } from "../utils/cloudinary";
+import { reportIdSchema } from "../schemas/param.schema";
 
 const getReports = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -75,11 +76,12 @@ const addComment = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  const { reportId } = req.params;
-
-  if (!reportId || typeof reportId !== "string" || isNaN(parseInt(reportId))) {
-    throw new ApiError(400, "Report ID is required", ["REPORT_ID_REQUIRED"]);
+  const parsedReportId = reportIdSchema.safeParse(req.params);
+  if (!parsedReportId.success) {
+    const errors = parsedReportId.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
+  const { reportId } = parsedReportId.data;
 
   const parsed = addCommentSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -104,11 +106,12 @@ const updateStatus = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  const { reportId } = req.params;
-
-  if (!reportId || typeof reportId !== "string" || isNaN(parseInt(reportId))) {
-    throw new ApiError(400, "Report ID is required", ["REPORT_ID_REQUIRED"]);
+  const parsedReportId = reportIdSchema.safeParse(req.params);
+  if (!parsedReportId.success) {
+    const errors = parsedReportId.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
+  const { reportId } = parsedReportId.data;
 
   const parsed = updateStatusSchema.safeParse(req.body);
   if (!parsed.success) {

@@ -2,12 +2,13 @@ import { Avatar, Dropdown, Label } from "@heroui/react";
 import { Cog, LogOut, User } from "lucide-react";
 import useAppStore from "../store";
 import { Link, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ApiError } from "../services/api";
 import { logOut } from "../services/auth";
 import { instructorPages, studentPages } from "../lib/helpers";
 
 export function AvatarDropdown() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { user, logOut: clearSession } = useAppStore();
@@ -19,6 +20,7 @@ export function AvatarDropdown() {
       const isProtectedPage = [...studentPages, ...instructorPages].some(
         (item) => location.pathname.includes(item),
       );
+      queryClient.clear();
       if (isProtectedPage) {
         navigate("/login");
       }

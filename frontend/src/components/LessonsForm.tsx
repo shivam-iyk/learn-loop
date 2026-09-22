@@ -20,6 +20,7 @@ import type { LessonFormI } from "../types/lesson";
 import type { QuizFormI } from "../types/quiz";
 import { Link } from "react-router-dom";
 import useAppStore from "../store";
+import QuizSkeleton from "./QuizSkeleton";
 
 const UploadGuidelines = lazy(() => import("./UploadGuidelines"));
 const QuizForm = lazy(() => import("./QuizForm"));
@@ -48,7 +49,7 @@ function LessonsForm({
 
   const [invalid, setInvalid] = useState(false);
   const [quiz, setQuiz] = useState<QuizFormI>({
-    passMark: "",
+    pass_mark: "",
     instructions: "",
     questions: [
       {
@@ -59,12 +60,10 @@ function LessonsForm({
           {
             id: 1,
             option: "",
-            correct: false,
           },
           {
             id: 2,
             option: "",
-            correct: false,
           },
         ],
       },
@@ -93,6 +92,7 @@ function LessonsForm({
         return;
     }
     if (editing) {
+      if (lesson?.quiz) setQuiz(lesson.quiz);
       handleEdit(lesson);
     } else {
       handleAdd(lesson);
@@ -234,26 +234,13 @@ function LessonsForm({
         />
       )}
       {lesson.type === "quiz" && (
-        <Suspense
-          fallback={
-            <div className="flex flex-col gap-4">
-              <Skeleton className="w-28 h-5 rounded-lg" />
-              <Skeleton className="w-20 h-3 rounded-lg" />
-              <Skeleton className="w-full h-32 rounded-lg" />
-              <Skeleton className="w-20 h-3 rounded-lg" />
-              <Skeleton className="w-full h-8 rounded-lg" />
-              <div className="flex justify-between items-center">
-                <Skeleton className="w-32 h-8 rounded-2xl" />
-                <Skeleton className="w-32 h-8 rounded-2xl" />
-              </div>
-              <Skeleton className="w-20 h-3 rounded-lg" />
-              <Skeleton className="w-full h-8 rounded-lg" />
-              <Skeleton className="w-20 h-3 rounded-lg" />
-              <Skeleton className="w-full h-32 rounded-lg" />
-            </div>
-          }
-        >
-          <QuizForm quiz={quiz} setQuiz={setQuiz} invalid={invalid} />
+        <Suspense fallback={<QuizSkeleton />}>
+          <QuizForm
+            lesson={lesson.id}
+            quiz={quiz}
+            setQuiz={setQuiz}
+            invalid={invalid}
+          />
         </Suspense>
       )}
       <div className="flex justify-center gap-4">

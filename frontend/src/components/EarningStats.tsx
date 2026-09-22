@@ -1,21 +1,32 @@
 import { BookOpen, DollarSign, Wallet } from "lucide-react";
+import useAppStore from "../store";
+import { useQuery } from "@tanstack/react-query";
+import { getOverview } from "../services/instructor";
 
 function EarningStats() {
+  const { user } = useAppStore();
+
+  const { data } = useQuery({
+    queryKey: ["instructor-overview"],
+    queryFn: getOverview,
+    staleTime: 10 * 1000 * 60, // 10 minutes
+  });
+
   const earnings = [
     {
       icon: Wallet,
       title: "Wallet",
-      value: 1200,
+      value: user?.wallet,
     },
     {
       icon: BookOpen,
       title: "Courses Sold",
-      value: 54,
+      value: data?.courses_sold,
     },
     {
       icon: DollarSign,
       title: "Earnings",
-      value: 5400,
+      value: parseInt(data?.total_revenue) || 0,
     },
   ];
   return (
@@ -29,7 +40,7 @@ function EarningStats() {
               {title}
             </h4>
             <p className="text-4xl">
-              {value.toLocaleString("en-IN", {
+              {value?.toLocaleString("en-IN", {
                 style: title.toLowerCase().includes("courses sold")
                   ? "decimal"
                   : "currency",

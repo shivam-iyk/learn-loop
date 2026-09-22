@@ -44,3 +44,8 @@ export const getEnrolledCourses = async () => {
   const { data } = await api.get("/courses/enrolled");
   return data?.data;
 };
+
+export const getTopEarningCourses = async () => {
+  const { data } = await api.get("/courses/top-earning");
+  return data?.data;
+};

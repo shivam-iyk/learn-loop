@@ -4,6 +4,7 @@ import {
   getInstructors,
   getOverview,
   getPopularInstructors,
+  getRecentEnrollments,
 } from "../controllers/instructor.controller";
 import verifyJWT from "../middlewares/auth.middleware";
 
@@ -14,6 +15,8 @@ router.use(verifyJWT);
 router.get("/overview", getOverview);
 
 router.get("/popular", getPopularInstructors);
+
+router.get("/recent-enrollments", getRecentEnrollments);
 
 router.get("/", getInstructors);
 

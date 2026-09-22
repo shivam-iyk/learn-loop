@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "../utils/zod";
 
 const getSuggestionsSchema = z.object({
   search: z

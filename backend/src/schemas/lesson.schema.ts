@@ -1,11 +1,12 @@
 import { z } from "zod";
-import "../utils/zod";
+import { quizSchema } from "./quiz.schema";
 
 const createLessonSchema = z.object({
   name: z
     .string()
-    .min(1, "Lesson name is required")
-    .max(255, "Lesson name must be less than 255 characters"),
+    .nonempty("Lesson name is required")
+    .min(1, "Lesson name cannot be less than 1 character")
+    .max(255, "Lesson name cannot be more than 255 characters"),
   type: z
     .string()
     .refine(
@@ -17,8 +18,9 @@ const createLessonSchema = z.object({
     .max(255, "Video url cannot be more than 255 charaters")
     .nullish(),
   notes: z.string().optional(),
-  course: z.coerce.number().int("Course ID must be an integer"),
-  sequence: z.coerce.number().int("Sequence must be an integer"),
+  course: z.coerce.number().int("Course ID cannot be an integer"),
+  sequence: z.coerce.number().int("Sequence cannot be an integer"),
+  quiz: quizSchema.nullable(),
 });
 
 const updateLessonSchema = z
@@ -40,6 +42,7 @@ const updateLessonSchema = z
       .nullish(),
     notes: z.string().optional(),
     sequence: z.number().int("Sequence must be an integer").optional(),
+    quiz: quizSchema.nullable(),
   })
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
     message: "At least one field must be provided",

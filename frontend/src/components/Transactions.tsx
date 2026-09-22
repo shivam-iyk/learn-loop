@@ -3,49 +3,30 @@ import { useSearchParams } from "react-router-dom";
 import useAppStore from "../store";
 import { getPageNumbers } from "../lib/helpers";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getInstructorTransacations } from "../services/transactions";
+
+interface TransactionI {
+  id: number;
+  transaction_id: string;
+  amount: number;
+  status: "pending" | "success" | "failed";
+  user_avatar: string;
+  course_name: string;
+  user_name: string;
+  created_at: string;
+}
 
 function Transactions() {
+  const { data } = useQuery<TransactionI[]>({
+    queryKey: ["transactions"],
+    queryFn: getInstructorTransacations,
+    staleTime: 10 * 1000 * 60, // 10 minutes
+  });
+
   const { pagination, setPagination } = useAppStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const transactions = [
-    {
-      avatar: "/avatar-small.png",
-      name: "Kate Moore",
-      course: "React.js",
-      amount: 1200,
-      created_at: "2026-06-09T06:05:01.891Z",
-    },
-    {
-      avatar: "/avatar-small.png",
-      name: "Kate Moore",
-      course: "React.js",
-      amount: 1200,
-      created_at: "2026-06-09T06:05:01.891Z",
-    },
-    {
-      avatar: "/avatar-small.png",
-      name: "Kate Moore",
-      course: "React.js",
-      amount: 1200,
-      created_at: "2026-06-09T06:05:01.891Z",
-    },
-    {
-      avatar: "/avatar-small.png",
-      name: "Kate Moore",
-      course: "React.js",
-      amount: 1200,
-      created_at: "2026-06-09T06:05:01.891Z",
-    },
-    {
-      avatar: "/avatar-small.png",
-      name: "Kate Moore",
-      course: "React.js",
-      amount: 1200,
-      created_at: "2026-06-09T06:05:01.891Z",
-    },
-  ];
 
   useEffect(() => {
     const transactions = searchParams.get("transactions");
@@ -58,19 +39,19 @@ function Transactions() {
         Transactions
       </h5>
       <div className="flex flex-col">
-        {transactions.map((item, index) => (
+        {data?.map((item, index) => (
           <div
             className="flex items-center justify-between first:border-0 border-t gap-4 py-2"
             key={index}
           >
             <div className="flex items-center gap-2">
               <Avatar className="rounded-full" size="md">
-                <Avatar.Image src={item.avatar} />
-                <Avatar.Fallback>{item.name[0]}</Avatar.Fallback>
+                <Avatar.Image src={item.user_avatar} />
+                <Avatar.Fallback>{item.user_name[0]}</Avatar.Fallback>
               </Avatar>
               <div>
-                <p className="font-medium leading-4">{item.name}</p>
-                <span className="text-muted text-sm">{item.course}</span>
+                <p className="font-medium leading-4">{item.user_name}</p>
+                <span className="text-muted text-sm">{item.course_name}</span>
               </div>
             </div>
             <div className="flex flex-col items-end">

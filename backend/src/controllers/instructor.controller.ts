@@ -4,6 +4,7 @@ import ApiError from "../utils/ApiError";
 import { query } from "../db";
 import ApiResponse from "../utils/ApiResponse";
 import { getInstructorsSchema } from "../schemas/instructor.schema";
+import { instructorIdSchema } from "../schemas/param.schema";
 
 const getOverview = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -13,18 +14,23 @@ const getOverview = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { rows: overview } = await query(
-    `SELECT 
-        SUM(c.students_enrolled) AS total_students,
-        SUM(t.amount) AS total_revenue,
-        ROUND(SUM(c.rating_sum)::numeric / NULLIF(SUM(c.rating_count), 0), 1) AS average_rating
+    `SELECT
+      COALESCE(SUM(c.students_enrolled), 0) AS enrolled_students,
+      COALESCE(SUM(c.students_enrolled * c.price), 0) AS total_revenue,
+      COALESCE(
+        SUM(c.rating_sum)::numeric / NULLIF(SUM(c.rating_count), 0),
+        0
+      ) AS avg_rating,
+      COALESCE(SUM(c.students_enrolled), 0) AS courses_sold
     FROM courses c
-    LEFT JOIN transactions t ON t.course = c.id AND t.type = 'enrollment' AND t.status = 'success'
-    WHERE c.owner = $1;`,
+    WHERE c.owner = $1`,
     [id],
   );
 
   if (!overview[0]) {
-    throw new ApiError(500, "Failed to get overview, Please try again later!", ["ACTION_FAILED"]);
+    throw new ApiError(500, "Failed to get overview, Please try again later!", [
+      "ACTION_FAILED",
+    ]);
   }
 
   return res
@@ -63,15 +69,37 @@ const getPopularInstructors = asyncHandler(
   },
 );
 
+const getRecentEnrollments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.user?.id;
+    const role = req.user?.role;
+    if (!id || role !== "instructor") {
+      throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
+    }
+
+    const { rows: enrollments } = await query(
+      `SELECT e.id AS id, e.enrolled_at, u.name AS user_name, u.avatar AS user_avatar, c.id AS course_id, c.name AS course_name
+    FROM enrollments e
+    JOIN courses c ON c.id = e.course
+    JOIN users u ON u.id = e.user_id
+    WHERE c.owner = $1`,
+      [id],
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, enrollments, "Enrollments found"));
+  },
+);
+
 const getInstructor = asyncHandler(async (req: Request, res: Response) => {
-  const { instructorId } = req.params;
-  if (
-    !instructorId ||
-    typeof instructorId !== "string" ||
-    isNaN(parseInt(instructorId))
-  ) {
-    throw new ApiError(400, "Instructor Id is required", ["INSTRUCTOR_ID_REQUIRED"]);
+  const parsed = instructorIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { instructorId } = parsed.data;
 
   const { rows: instructor } = await query(
     `
@@ -130,4 +158,10 @@ const getInstructors = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, instructors, "Instructors found"));
 });
 
-export { getOverview, getPopularInstructors, getInstructors, getInstructor };
+export {
+  getOverview,
+  getPopularInstructors,
+  getRecentEnrollments,
+  getInstructors,
+  getInstructor,
+};

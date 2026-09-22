@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   Description,
   FieldError,
   Input,
@@ -10,17 +9,16 @@ import {
   Skeleton,
   TextField,
 } from "@heroui/react";
-import {
-  instructionSchema,
-  optionSchema,
-  passMarksSchema,
-} from "../schema/quiz";
+import { instructionSchema, passMarksSchema } from "../schema/quiz";
 import RichTextField from "./RichTextField";
-import { GripVertical, Plus, Trash } from "lucide-react";
-import { useSortable } from "@dnd-kit/react/sortable";
+import { Plus } from "lucide-react";
 import type { QuizFormI } from "../types/quiz";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import QuestionInput from "./QuestionInput";
+import { useQuery } from "@tanstack/react-query";
+import { getQuiz } from "../services/quiz";
+import Option from "./QuizOption";
+import QuizSkeleton from "./QuizSkeleton";
 
 const quizTypes = [
   {
@@ -51,90 +49,92 @@ const quizTypes = [
 
 const QuizGuidelines = lazy(() => import("../components/QuizGuidelines"));
 
-function Option({
-  id,
-  index,
-  option,
-  correct,
-  question,
-  disabled,
-  handleDelete,
-  handleOptionChange,
-}: {
-  id: number;
-  index: number;
-  option: string;
-  correct: boolean;
-  disabled?: boolean;
-  question: number;
-  handleDelete: () => void;
-  handleOptionChange: (value: boolean | string) => void;
-}) {
-  const { ref, handleRef } = useSortable({
-    id,
-    index,
-    type: "item",
-    accept: "item",
-  });
-
-  return (
-    <div className="flex items-center gap-2" ref={ref}>
-      <TextField
-        name={`option-${question}-${index}`}
-        value={option}
-        aria-label="Option"
-        onChange={(value) => handleOptionChange(value)}
-        validate={(value) => {
-          const result = optionSchema.safeParse(value);
-          return result.success ? null : result.error.issues[0].message;
-        }}
-        className="flex-1"
-      >
-        <div className="flex items-center gap-2 flex-1">
-          <Checkbox
-            variant="secondary"
-            value={correct ? "on" : "off"}
-            onChange={() => handleOptionChange(correct)}
-          >
-            <Checkbox.Content>
-              <Checkbox.Control className="size-4 rounded-xl">
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-            </Checkbox.Content>
-          </Checkbox>
-          <Input placeholder="Option value" className="flex-1" />
-        </div>
-        <FieldError />
-      </TextField>
-      <Button
-        variant="tertiary"
-        ref={handleRef}
-        className="hover:cursor-grab"
-        isIconOnly
-      >
-        <GripVertical />
-      </Button>
-      <Button
-        variant="danger-soft"
-        isIconOnly
-        isDisabled={disabled}
-        onClick={handleDelete}
-      >
-        <Trash />
-      </Button>
-    </div>
-  );
-}
 // TODO: Fix the different types of questions
 function QuizForm({
   quiz,
+  lesson,
   setQuiz,
   invalid,
 }: {
   quiz: QuizFormI;
   setQuiz: (quiz: QuizFormI) => void;
+  lesson?: number;
   invalid: boolean;
 }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["quiz", lesson],
+    queryFn: () => getQuiz(lesson ?? 0),
+    enabled: !!lesson,
+  });
+
+  const addOption = (questionId: number) => {
+    setQuiz({
+      ...quiz,
+      questions: quiz.questions.map((question) => {
+        if (question.id === questionId) {
+          return {
+            ...question,
+            options: [
+              ...question.options,
+              {
+                id: question.options[question.options.length - 1].id + 1,
+                option: "",
+                correct: false,
+              },
+            ],
+          };
+        }
+        return question;
+      }),
+    });
+  };
+
+  const addQuestion = (questionId: number) => {
+    const lastOptionId = quiz.questions[questionId]?.options.at(-1)?.id || 1;
+    setQuiz({
+      ...quiz,
+      questions: [
+        ...quiz.questions,
+        {
+          id: quiz.questions[quiz.questions.length - 1].id + 1,
+          type: "single_choice",
+          question: "",
+          options: [
+            {
+              id: lastOptionId + 1,
+              correct: false,
+              option: "",
+            },
+            {
+              id: lastOptionId + 2,
+              correct: false,
+              option: "",
+            },
+          ],
+        },
+      ],
+    });
+  };
+
+  const handleQuestionChange = (
+    target: string,
+    value: string,
+    questionId: number,
+  ) => {
+    setQuiz({
+      ...quiz,
+      questions: quiz.questions.map((question) => {
+        if (questionId === question.id) {
+          return {
+            ...question,
+            [target]: value,
+          };
+        }
+        return question;
+      }),
+    });
+  };
+
   const handleOptionChange = (
     value: boolean | string,
     questionId: number,
@@ -149,7 +149,7 @@ function QuizForm({
     if (!option) return;
 
     if (typeof value === "boolean") {
-      option.correct = !option.correct;
+      option.correct = !option?.correct;
     } else if (typeof value === "string") {
       option.option = value;
     }
@@ -164,6 +164,15 @@ function QuizForm({
       }),
     });
   };
+
+  useEffect(() => {
+    if (!data) return;
+    setQuiz(data);
+  }, [data]);
+
+  if (isLoading) {
+    return <QuizSkeleton />;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -185,7 +194,16 @@ function QuizForm({
         {quiz.questions.map((item, index) => (
           <div className="flex flex-col gap-2" key={index}>
             <div className="flex max-sm:flex-col gap-2 items-end">
-              <Select value={item.type}>
+              <Select
+                value={item.type}
+                onChange={(value) =>
+                  handleQuestionChange(
+                    "type",
+                    value?.toString() || "single_choice",
+                    item.id,
+                  )
+                }
+              >
                 <Label className="font-huninn uppercase tracking-tight text-xs text-muted mb-1">
                   Type
                 </Label>
@@ -212,18 +230,7 @@ function QuizForm({
                 invalid={invalid}
                 question={item.question}
                 setQuestion={(value) =>
-                  setQuiz({
-                    ...quiz,
-                    questions: quiz.questions.map((question) => {
-                      if (item.id === question.id) {
-                        return {
-                          ...question,
-                          question: value,
-                        };
-                      }
-                      return question;
-                    }),
-                  })
+                  handleQuestionChange("question", value, item.id)
                 }
                 deleteVisible={quiz.questions.length >= 0}
                 onDelete={() =>
@@ -237,15 +244,22 @@ function QuizForm({
                 placeholder="Your Question here"
               />
             </div>
+            {item.type === "fill" && (
+              <TextField>
+                <Input placeholder="Answer " />
+              </TextField>
+            )}
             <span className="font-huninn uppercase text-xs text-muted">
               Options
             </span>
             {item.options.map((option, idx) => (
               <Option
                 {...option}
+                type={item.type}
+                correct={option?.correct || false}
                 question={index}
                 index={index}
-                disabled={item.options.length === 2}
+                disabled={item?.options?.length === 2}
                 key={idx}
                 handleDelete={() =>
                   setQuiz({
@@ -272,27 +286,7 @@ function QuizForm({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() =>
-                  setQuiz({
-                    ...quiz,
-                    questions: quiz.questions.map((question) => {
-                      if (question.id === item.id) {
-                        return {
-                          ...item,
-                          options: [
-                            ...item.options,
-                            {
-                              id: item.options[item.options.length - 1].id + 1,
-                              option: "",
-                              correct: false,
-                            },
-                          ],
-                        };
-                      }
-                      return item;
-                    }),
-                  })
-                }
+                onClick={() => addOption(item.id)}
               >
                 <Plus /> Add Option
               </Button>
@@ -300,31 +294,7 @@ function QuizForm({
                 <Button
                   size="sm"
                   variant="tertiary"
-                  onClick={() =>
-                    setQuiz({
-                      ...quiz,
-                      questions: [
-                        ...quiz.questions,
-                        {
-                          id: quiz.questions[quiz.questions.length - 1].id + 1,
-                          type: "single_choice",
-                          question: "",
-                          options: [
-                            {
-                              id: 1,
-                              correct: false,
-                              option: "",
-                            },
-                            {
-                              id: 2,
-                              correct: false,
-                              option: "",
-                            },
-                          ],
-                        },
-                      ],
-                    })
-                  }
+                  onClick={() => addQuestion(item.id)}
                 >
                   <Plus /> Add Question
                 </Button>
@@ -336,8 +306,8 @@ function QuizForm({
       <TextField
         name="max-marks"
         type="number"
-        value={quiz.passMark}
-        onChange={(value) => setQuiz({ ...quiz, passMark: value })}
+        value={quiz.pass_mark}
+        onChange={(value) => setQuiz({ ...quiz, pass_mark: value })}
         validate={(value) => {
           const result = passMarksSchema.safeParse(value);
           if (parseInt(value) > quiz.questions.length) {
@@ -351,7 +321,7 @@ function QuizForm({
         </Label>
         <Input placeholder="Passing Marks" />
         <Description>
-          Make sure marks is less than total no. of questions
+          Make sure marks is less than total number of questions
         </Description>
         <FieldError />
       </TextField>

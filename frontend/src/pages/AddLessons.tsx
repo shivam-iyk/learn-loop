@@ -9,6 +9,7 @@ import type { ApiError } from "../services/api";
 import DraggableLessons from "../components/DraggableLessons";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useAppStore from "../store";
+import type { QuizFormI } from "../types/quiz";
 
 function AddLessons() {
   const { courseId } = useParams();
@@ -37,7 +38,7 @@ function AddLessons() {
 
   const [editing, setEditing] = useState(false);
 
-  const handleEditLesson = (lesson: Lesson) => {
+  const handleEditLesson = (lesson: Lesson & { quiz?: QuizFormI }) => {
     const lessonsForm = document.querySelector("#lessons-form");
     lessonsForm?.scrollIntoView();
     setLesson({
@@ -49,7 +50,6 @@ function AddLessons() {
       type: lesson.type || "notes",
       video: lesson.video || "",
     });
-    // if (lesson.quiz) setQuiz(lesson.quiz);
     setEditing(true);
   };
 
@@ -161,7 +161,7 @@ function AddLessons() {
           </Button>
           <Button
             type="button"
-            isDisabled={lessons.length === 0}
+            isDisabled={lessons?.length === 0}
             onClick={() => {
               if (lessons.length === 0) return;
               navigate(`/create-course/${courseId}/publish`);

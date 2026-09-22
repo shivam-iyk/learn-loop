@@ -4,13 +4,33 @@ import { useState } from "react";
 import { appearances, currencies, languages } from "../lib/accessibility";
 import useAppStore from "../store";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ApiError } from "../services/api";
+import { logOut } from "../services/auth";
+import { instructorPages, studentPages } from "../lib/helpers";
 
 function Settings() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const { theme, setTheme } = useTheme("system");
-  const { becomeInstructor, user } = useAppStore();
+  const { becomeInstructor, user, logOut: clearSession } = useAppStore();
 
   const [language, setLanguage] = useState("en");
+
+  const logOutMutation = useMutation<{} | ApiError>({
+    mutationFn: logOut,
+    onSuccess: () => {
+      clearSession();
+      const isProtectedPage = [...studentPages, ...instructorPages].some(
+        (item) => location.pathname.includes(item),
+      );
+      if (isProtectedPage) {
+        navigate("/login");
+      }
+      queryClient.clear();
+    },
+  });
 
   const handleInstructor = () => {
     becomeInstructor();
@@ -104,7 +124,7 @@ function Settings() {
           </Button>
         </div>
       ) : null}
-      <Button variant="danger-soft">
+      <Button variant="danger-soft" onClick={() => logOutMutation.mutate()}>
         <LogOut />
         Log Out
       </Button>

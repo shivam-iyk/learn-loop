@@ -9,6 +9,7 @@ import {
   getSuggestionsSchema,
 } from "../schemas/course.schema";
 import { deleteFromCloudinary, uploadToCloudinary } from "../utils/cloudinary";
+import { courseIdSchema } from "../schemas/param.schema";
 
 const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
   const parsed = getSuggestionsSchema.safeParse(req.query);
@@ -139,10 +140,13 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
   const role = req.user?.role;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const { courseId } = req.params;
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Course Id is required", ["COURSE_ID_REQUIRED"]);
+  const parsed = courseIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { courseId } = parsed.data;
 
   const { rows: course } = await query(
     `SELECT c.id, c.name, c.tagline, c.cover, c.description, c.students_enrolled, c.owner, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
@@ -204,6 +208,31 @@ const getOwnedCourses = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, courses, "Owned courses found"));
 });
+
+const getTopEarningCourses = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.user?.id;
+    const role = req.user?.role;
+    if (!id || role !== "instructor") {
+      throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
+    }
+
+    const { rows: courses } = await query(
+      `SELECT c.id, c.cover, c.name, c.tagline, c.price, COUNT(e.id) AS enrollments, COUNT(e.id) * c.price AS earnings
+      FROM courses c
+      JOIN enrollments e ON e.course = c.id
+      WHERE c.owner = $1
+      GROUP BY c.id, c.cover, c.name, c.tagline, c.price
+      ORDER BY earnings DESC
+      LIMIT 3`,
+      [id],
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, courses, "Top Earning courses found"));
+  },
+);
 
 const createCourse = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
@@ -296,11 +325,13 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { name, description, category, price, skills, status } = parsed.data;
-  const { courseId } = req.params;
-
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course ID", ["INVALID_COURSE_ID"]);
+  const parsedCourseId = courseIdSchema.safeParse(req.params);
+  if (!parsedCourseId.success) {
+    const errors = parsedCourseId.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { courseId } = parsedCourseId.data;
 
   let coverImageUrl: string | undefined = undefined;
   if (coverImage) {
@@ -381,10 +412,13 @@ const discardDraft = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  const { courseId } = req.params;
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course ID", ["INVALID_COURSE_ID"]);
+  const parsed = courseIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { courseId } = parsed.data;
 
   const { rows: course } = await query(
     `SELECT owner FROM courses WHERE id = $1`,
@@ -426,10 +460,13 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
   }
 
-  const { courseId } = req.params;
-  if (!courseId || typeof courseId !== "string" || isNaN(parseInt(courseId))) {
-    throw new ApiError(400, "Invalid course id", ["INVALID_COURSE_ID"]);
+  const parsed = courseIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation error", errors);
   }
+
+  const { courseId } = parsed.data;
 
   const { rows: enrollmentExists } = await query(
     "SELECT * FROM enrollments WHERE course = $1 AND user_id = $2",
@@ -479,6 +516,7 @@ export {
   getCourses,
   getCourse,
   getEnrolledCourses,
+  getTopEarningCourses,
   enrollFreeCourse,
   discardDraft,
   getOwnedCourses,
