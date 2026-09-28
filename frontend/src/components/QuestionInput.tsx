@@ -36,6 +36,7 @@ function QuestionInput({
               <Modal>
                 <Modal.Trigger
                   className={`size-fit ${deleteVisible ? "" : "hidden"}`}
+                  tabIndex={0}
                 >
                   <button
                     type="button"
@@ -84,7 +85,7 @@ function QuestionInput({
           placeholder={placeholder}
           toolbarClassName="hidden!"
           value={question}
-          className="h-9! overflow-y-hidden!"
+          className="h-9! *:*:scrollbar-none! overflow-y-hidden!"
           onChange={(value) => setQuestion(value)}
           validate={(value) => {
             const result = questionSchema.safeParse(value);
@@ -100,6 +101,7 @@ function QuestionInput({
         <Modal.Backdrop>
           <Modal.Container size="lg">
             <Modal.Dialog>
+              <Modal.CloseTrigger />
               <Modal.Body className="text-foreground">
                 <RichTextField
                   label={

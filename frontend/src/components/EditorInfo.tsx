@@ -163,7 +163,7 @@ function EditorInfo() {
     <Modal>
       <Modal.Trigger
         className="size-fit focus-visible:outline-none"
-        tabIndex={-1}
+        tabIndex={0}
       >
         <button
           type="button"

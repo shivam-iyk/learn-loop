@@ -1,4 +1,4 @@
-import type { QuizFormI } from "./quiz";
+import type { QuizI } from "./quiz";
 
 export interface LessonFormI {
   id: number;
@@ -7,7 +7,7 @@ export interface LessonFormI {
   video: string;
   notes: string;
   sequence: number;
-  quiz: QuizFormI | null;
+  quiz: QuizI | null;
 }
 
 export interface EditLessonI {
@@ -17,7 +17,7 @@ export interface EditLessonI {
   video?: string | null;
   notes?: string | null;
   sequence?: number | null;
-  quiz?: QuizFormI | null | null;
+  quiz?: QuizI | null | null;
 }
 
 export interface Lesson {
@@ -29,6 +29,7 @@ export interface Lesson {
   course: number;
   sequence: number;
   created_at: string;
+  quiz?: QuizI | null;
 }
 
 export interface LessonSlice {

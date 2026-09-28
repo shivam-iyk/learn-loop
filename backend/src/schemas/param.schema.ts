@@ -37,3 +37,11 @@ export const reviewIdSchema = z.object({
 export const transactionIdSchema = z.object({
   transactionId: idSchema,
 });
+
+export const pageSchema = z.object({
+  page: z.number().int().nonnegative().optional().default(1),
+});
+
+export const limitSchema = z.object({
+  limit: z.number().int().nonnegative().optional().default(10),
+});

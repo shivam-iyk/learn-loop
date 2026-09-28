@@ -17,7 +17,6 @@ import RichTextField from "./RichTextField";
 import { lazy, Suspense, useState } from "react";
 import { questionSchema } from "../schema/quiz";
 import type { LessonFormI } from "../types/lesson";
-import type { QuizFormI } from "../types/quiz";
 import { Link } from "react-router-dom";
 import useAppStore from "../store";
 import QuizSkeleton from "./QuizSkeleton";
@@ -45,30 +44,9 @@ function LessonsForm({
   formClassName?: string;
   toolbarClassName?: string;
 }) {
-  const { lessons } = useAppStore();
+  const { lessons, quiz, setQuiz } = useAppStore();
 
   const [invalid, setInvalid] = useState(false);
-  const [quiz, setQuiz] = useState<QuizFormI>({
-    pass_mark: "",
-    instructions: "",
-    questions: [
-      {
-        id: 1,
-        type: "single_choice",
-        question: "",
-        options: [
-          {
-            id: 1,
-            option: "",
-          },
-          {
-            id: 2,
-            option: "",
-          },
-        ],
-      },
-    ],
-  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -198,7 +176,7 @@ function LessonsForm({
             </div>
             <Link
               to="https://youtube.com/upload"
-              className="button button--outline button--icon-only"
+              className="button button--outline button--icon-only ring-visible-offset"
               target="_blank"
             >
               <Upload />
@@ -235,16 +213,16 @@ function LessonsForm({
       )}
       {lesson.type === "quiz" && (
         <Suspense fallback={<QuizSkeleton />}>
-          <QuizForm
-            lesson={lesson.id}
-            quiz={quiz}
-            setQuiz={setQuiz}
-            invalid={invalid}
-          />
+          <QuizForm lesson={lesson.id} invalid={invalid} />
         </Suspense>
       )}
       <div className="flex justify-center gap-4">
-        <Button variant="tertiary" className="min-w-32" type="submit">
+        <Button
+          variant="tertiary"
+          className="min-w-32"
+          type="submit"
+          isDisabled={saving}
+        >
           {saving ? (
             <Loader2 className="animate-spin" />
           ) : lessons.length === 0 ? (

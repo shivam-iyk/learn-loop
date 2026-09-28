@@ -151,7 +151,6 @@
 .ql-container.ql-snow {
   border: none !important;
   font-family: var(--font-lora);
-  min-height: 80px;
 }
 
 .ql-editor:before {

@@ -42,7 +42,7 @@ const updateLessonSchema = z
       .nullish(),
     notes: z.string().optional(),
     sequence: z.number().int("Sequence must be an integer").optional(),
-    quiz: quizSchema.nullable(),
+    quiz: quizSchema.optional().nullable(),
   })
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
     message: "At least one field must be provided",

@@ -9,7 +9,6 @@ import type { ApiError } from "../services/api";
 import DraggableLessons from "../components/DraggableLessons";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useAppStore from "../store";
-import type { QuizFormI } from "../types/quiz";
 
 function AddLessons() {
   const { courseId } = useParams();
@@ -38,7 +37,7 @@ function AddLessons() {
 
   const [editing, setEditing] = useState(false);
 
-  const handleEditLesson = (lesson: Lesson & { quiz?: QuizFormI }) => {
+  const handleEditLesson = (lesson: Lesson) => {
     const lessonsForm = document.querySelector("#lessons-form");
     lessonsForm?.scrollIntoView();
     setLesson({
@@ -53,7 +52,7 @@ function AddLessons() {
     setEditing(true);
   };
 
-  const createLessonMutation = useMutation({
+  const createLessonMutation = useMutation<Lesson, ApiError, LessonFormI>({
     mutationFn: (lesson: LessonFormI) =>
       createLesson({
         ...lesson,
@@ -66,6 +65,7 @@ function AddLessons() {
         ...(oldData || []),
         data,
       ]);
+      if (data?.quiz) queryClient.setQueryData(["quiz", data?.id], data?.quiz);
       setLesson({
         id: 0,
         type: "notes",
@@ -95,6 +95,14 @@ function AddLessons() {
         }),
       );
       setEditing(false);
+      queryClient.setQueryData(["lessons", courseId], (oldData: Lesson[]) =>
+        oldData?.map((item) => {
+          if (item?.id === editLessonMutation.variables?.id) {
+            return data;
+          }
+          return item;
+        }),
+      );
     },
     onError: (error) => {
       console.log(error);
@@ -140,7 +148,9 @@ function AddLessons() {
         />
         <LessonsForm
           saving={
-            createLessonMutation.isPending || editLessonMutation.isPending
+            createLessonMutation.isPending ||
+            (editLessonMutation.isPending &&
+              editLessonMutation.variables.id === lesson.id)
           }
           editing={editing}
           lesson={lesson}

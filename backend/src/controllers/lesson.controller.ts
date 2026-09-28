@@ -64,7 +64,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 
   if (quiz) {
     const { rows: savedQuiz } = await query(
-      `INSERT INTO quiz(pass_mark, lesson, instructions) 
+      `INSERT INTO quizzes(pass_mark, lesson, instructions) 
       VALUES ($1, $2, $3) 
       RETURNING *`,
       [quiz?.pass_mark, lesson[0]?.id, quiz?.instructions],
@@ -92,7 +92,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
       getPlaceholderData(questions);
 
     const { rows: savedQuestions } = await query(
-      `INSERT INTO quiz_questions (question, answer, type, quiz) 
+      `INSERT INTO questions (question, answer, type, quiz) 
     VALUES ${questionPlaceholders}
     RETURNING *`,
       questionValues,
@@ -115,7 +115,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
       getPlaceholderData(options);
 
     const { rows: savedOptions } = await query(
-      `INSERT INTO quiz_options (option, correct, correct_order, match_option_id, question)
+      `INSERT INTO options (option, correct, correct_order, match_option_id, question)
       VALUES ${optionPlaceholders}
       RETURNING *`,
       optionValues,
@@ -269,7 +269,7 @@ const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   const parsed = updateLessonSchema.safeParse(req.body);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((issue) => issue.message);
-    throw new ApiError(400, "Validation failed", errors);
+    throw new ApiError(400, "Validation error", errors);
   }
 
   const { name, type, notes, video } = parsed.data;
@@ -368,12 +368,11 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   if (lesson[0]?.type === "quiz") {
     const { rows: quiz } = await query(
       `SELECT quiz.id AS quiz_id, question.id AS question_id
-      FROM quizzes 
-      JOIN quiz_questions question ON quiz.id = question.quiz
+      FROM quizzes quiz 
+      JOIN questions question ON quiz.id = question.quiz
       WHERE quiz.lesson = $1::int`,
       [lesson[0]?.id],
     );
-    console.log(quiz, lesson[0]?.id);
 
     const questionIds = quiz?.map(
       (item: { question_id: number }) => item?.question_id,

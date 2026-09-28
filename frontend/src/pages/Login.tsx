@@ -8,7 +8,7 @@ import {
   InputGroup,
   FieldError,
 } from "@heroui/react";
-import { Eye, EyeOff, Key, Mail } from "lucide-react";
+import { Eye, EyeOff, Key, Loader2, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { emailSchema, passwordSchema } from "../schema/auth";
@@ -206,8 +206,16 @@ function Login() {
             </InputGroup>
             <FieldError />
           </TextField>
-          <button className="w-full button ring-visible-offset bg-linear-to-b from-accent/50 via-accent to-accent text-white">
-            Login
+          <button
+            className="w-full button ring-visible-offset bg-linear-to-b from-accent/50 via-accent to-accent text-white"
+            type="submit"
+            disabled={loginMutation.isPending}
+          >
+            {loginMutation.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Login"
+            )}
           </button>
 
           <div className="relative">

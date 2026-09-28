@@ -5,6 +5,7 @@ import { getPageNumbers } from "../lib/helpers";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getInstructorTransacations } from "../services/transactions";
+import CustomEmptyState from "./CustomEmptyState";
 
 interface TransactionI {
   id: number;
@@ -22,6 +23,7 @@ function Transactions() {
     queryKey: ["transactions"],
     queryFn: getInstructorTransacations,
     staleTime: 10 * 1000 * 60, // 10 minutes
+    retry: 3,
   });
 
   const { pagination, setPagination } = useAppStore();
@@ -39,35 +41,39 @@ function Transactions() {
         Transactions
       </h5>
       <div className="flex flex-col">
-        {data?.map((item, index) => (
-          <div
-            className="flex items-center justify-between first:border-0 border-t gap-4 py-2"
-            key={index}
-          >
-            <div className="flex items-center gap-2">
-              <Avatar className="rounded-full" size="md">
-                <Avatar.Image src={item.user_avatar} />
-                <Avatar.Fallback>{item.user_name[0]}</Avatar.Fallback>
-              </Avatar>
-              <div>
-                <p className="font-medium leading-4">{item.user_name}</p>
-                <span className="text-muted text-sm">{item.course_name}</span>
+        {data?.length === 0 ? (
+          <CustomEmptyState title="No Transactions" description="" />
+        ) : (
+          data?.map((item, index) => (
+            <div
+              className="flex items-center justify-between first:border-0 border-t gap-4 py-2"
+              key={index}
+            >
+              <div className="flex items-center gap-2">
+                <Avatar className="rounded-full" size="md">
+                  <Avatar.Image src={item.user_avatar} />
+                  <Avatar.Fallback>{item.user_name[0]}</Avatar.Fallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium leading-4">{item.user_name}</p>
+                  <span className="text-muted text-sm">{item.course_name}</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <p className="text-accent text-xl font-semibold">
+                  {item.amount.toLocaleString("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <span className="text-muted text-xs">
+                  {new Date(item.created_at).toLocaleDateString("en-IN")}
+                </span>
               </div>
             </div>
-            <div className="flex flex-col items-end">
-              <p className="text-accent text-xl font-semibold">
-                {item.amount.toLocaleString("en-IN", {
-                  style: "currency",
-                  currency: "INR",
-                  maximumFractionDigits: 0,
-                })}
-              </p>
-              <span className="text-muted text-xs">
-                {new Date(item.created_at).toLocaleDateString("en-IN")}
-              </span>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
       {pagination.pages > 1 && (
         <Pagination className="mt-4 justify-center">

@@ -108,6 +108,7 @@ function Lesson({
             isIconOnly
             className="shrink-0"
             onClick={() => handleSaveName(name)}
+            isDisabled={!!savingName}
           >
             {savingName ? <Loader2 className="animate-spin" /> : <Check />}
           </Button>
@@ -147,6 +148,7 @@ function Lesson({
               variant="danger-soft"
               size="sm"
               className="shrink-0"
+              isDisabled={deleting !== 0}
               isIconOnly
             >
               {deleting !== 0 ? (

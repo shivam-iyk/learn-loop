@@ -16,12 +16,12 @@ function EarningStats() {
     {
       icon: Wallet,
       title: "Wallet",
-      value: user?.wallet,
+      value: user?.wallet || 0,
     },
     {
       icon: BookOpen,
       title: "Courses Sold",
-      value: data?.courses_sold,
+      value: data?.courses_sold || 0,
     },
     {
       icon: DollarSign,

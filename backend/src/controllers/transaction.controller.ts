@@ -5,7 +5,11 @@ import ApiError from "../utils/ApiError";
 import { query } from "../db";
 import ApiResponse from "../utils/ApiResponse";
 import PaytmConfig from "../config/paytm.config";
-import { courseIdSchema } from "../schemas/param.schema";
+import {
+  courseIdSchema,
+  limitSchema,
+  pageSchema,
+} from "../schemas/param.schema";
 
 const getInstructorTransactions = asyncHandler(
   async (req: Request, res: Response) => {
@@ -15,20 +19,22 @@ const getInstructorTransactions = asyncHandler(
       throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
     }
 
-    const { page, limit } = req.body;
-    if (!parseInt(page) || !parseInt(limit)) {
-      throw new ApiError(400, "Invalid page or limit");
+    const parsed = pageSchema.extend(limitSchema.shape).safeParse(req.query);
+    if (!parsed.success) {
+      const errors = parsed.error.issues.map((item) => item.message);
+      throw new ApiError(400, "Validation error", errors);
     }
 
+    const { page, limit } = parsed.data;
+
     const { rows: transactions } = await query(
-      `SELECT t.id, t.created_at, t.transaction_id, t.amount, t.status, u.user_avatar, u.user_name
+      `SELECT t.id, t.created_at, t.transaction_id, t.amount, t.status, u.avatar AS user_avatar, u.name AS user_name
       FROM transactions t
       JOIN users u ON u.id = t.user_id
       JOIN courses c ON c.id = t.course
-      GROUP BY t.id, t.created_at, t.transaction_id, t.amount, t.status
-      WHERE instructor = $1 AND type = 'enrollment'
-      OFFSET ${(page || 0 - 1) * limit} ROWS
-      LIMIT ${limit || 10}`,
+      WHERE t.instructor = $1 AND t.type != 'payout'
+      OFFSET ${(page - 1) * limit} ROWS
+      LIMIT ${limit}`,
       [id],
     );
 

@@ -8,7 +8,7 @@ import {
   TextField,
   toast,
 } from "@heroui/react";
-import { AlertTriangle, Eye, EyeOff, Key, Mail, User } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Key, Loader2, Mail, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -220,8 +220,15 @@ function Register() {
             </InputGroup>
             <FieldError />
           </TextField>
-          <button className="w-full button ring-visible-offset bg-linear-to-b from-accent/50 via-accent to-accent text-white">
-            Sign Up
+          <button
+            className="w-full button ring-visible-offset bg-linear-to-b from-accent/50 via-accent to-accent text-white"
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Register"
+            )}
           </button>
           <div className="relative">
             <Separator />

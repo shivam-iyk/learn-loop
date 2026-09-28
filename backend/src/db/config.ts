@@ -89,8 +89,8 @@ async function configureDB() {
 
   console.log("Quiz table created", quiz);
 
-  const { rows: quiz_questions } = await query(`
-        CREATE TABLE IF NOT EXISTS quiz_questions (
+  const { rows: questions } = await query(`
+        CREATE TABLE IF NOT EXISTS questions (
             id SERIAL PRIMARY KEY NOT NULL,
             quiz INT NOT NULL REFERENCES quiz(id),
             question TEXT NOT NULL,
@@ -100,20 +100,20 @@ async function configureDB() {
         );
     `);
 
-  console.log("Quiz questions table created", quiz_questions);
+  console.log("Quiz questions table created", questions);
 
-  const { rows: quiz_options } = await query(`
-        CREATE TABLE IF NOT EXISTS quiz_options (
+  const { rows: options } = await query(`
+        CREATE TABLE IF NOT EXISTS options (
             id SERIAL PRIMARY KEY NOT NULL,
-            question INT NOT NULL REFERENCES quiz_questions(id),
+            question INT NOT NULL REFERENCES questions(id),
             option TEXT NOT NULL,
             correct BOOLEAN NOT NULL DEFAULT false,
             correct_order INT,
-            match_option_id INT REFERENCES quiz_options(id)
+            match_option_id INT REFERENCES options(id)
         );
     `);
 
-  console.log("Quiz options table created", quiz_options);
+  console.log("Quiz options table created", options);
 
   const { rows: reviews } = await query(`
         CREATE TABLE IF NOT EXISTS reviews (
