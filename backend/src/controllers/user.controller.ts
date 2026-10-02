@@ -88,7 +88,12 @@ const becomeInstructor = asyncHandler(async (req: Request, res: Response) => {
   const updatedToken = await generateToken(data);
 
   res.clearCookie("token");
-  res.cookie("token", updatedToken);
+  res.cookie("token", updatedToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: parseInt(process.env.COOKIE_EXPIRY || "2592000000"),
+    sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+  });
 
   return res
     .status(200)

@@ -34,17 +34,12 @@ function QuestionInput({
                 <span className="text-danger"> *</span>
               </div>
               <Modal>
-                <Modal.Trigger
-                  className={`size-fit ${deleteVisible ? "" : "hidden"}`}
-                  tabIndex={0}
+                <Button
+                  className={`text-xs text-danger hover:underline bg-transparent pr-0 underline-offset-2 uppercase font-huninn size-fit ${deleteVisible ? "" : "hidden"}`}
+                  variant="danger"
                 >
-                  <button
-                    type="button"
-                    className="text-xs text-danger hover:underline underline-offset-2 uppercase font-huninn"
-                  >
-                    Delete
-                  </button>
-                </Modal.Trigger>
+                  Delete
+                </Button>
                 <Modal.Backdrop>
                   <Modal.Container>
                     <Modal.Dialog className="sm:max-w-[360px]">

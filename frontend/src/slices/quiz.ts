@@ -25,6 +25,7 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
       },
     ],
   },
+
   setQuiz: (quiz) => set({ quiz }),
 
   addQuestion: () => {
@@ -93,11 +94,17 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
           match_option_id: lastOptionId + 1,
         },
       );
+    } else if (type === "order") {
+      const lastCorrectOrder = question.options.at(-1)?.correct_order || 0;
+      options.push({
+        id: lastOptionId + 1,
+        option: "",
+        correct_order: lastCorrectOrder + 1,
+      });
     } else {
       options.push({
         id: lastOptionId + 1,
         option: "",
-        correct: false,
       });
     }
 
@@ -106,7 +113,6 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
         ...quiz,
         questions: quiz.questions.map((item) => {
           if (item.id === questionId) {
-            console.log([...item.options, ...options]);
             return {
               ...item,
               options: [...item.options, ...options],
@@ -140,9 +146,7 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
   handleQuestionChange: (target, value, questionId) => {
     const quiz = get().quiz;
     let options: Option[] = [];
-    const lastOptionId = parseInt(
-      (quiz.questions.at(-1)?.id || 1).toString() + (0).toString(),
-    );
+    const lastOptionId = parseInt(String(questionId) + String(0));
 
     const types = ["single_choice", "multiple_choice"];
     const question = quiz.questions.find((item) => item.id === questionId);
@@ -150,7 +154,6 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
 
     if (target === "type") {
       if (types.includes(prevType || "") && types.includes(value)) {
-        console.log(question?.options);
         if (prevType === "single_choice" && value === "multiple_choice") {
           options.push(...(question?.options || []));
         } else {
@@ -197,12 +200,28 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
             match_option_id: lastOptionId + 3,
           },
         );
-      } else {
+      } else if (value === "fill") {
+        options = [];
+      } else if (value === "order") {
         options.push(
           {
             id: lastOptionId + 1,
             option: "",
-            correct: true,
+            correct_order: 1,
+          },
+          {
+            id: lastOptionId + 2,
+            option: "",
+            correct_order: 2,
+          },
+        );
+      } else {
+        const correct = value === "order" ? undefined : true;
+        options.push(
+          {
+            id: lastOptionId + 1,
+            option: "",
+            correct,
           },
           {
             id: lastOptionId + 2,
@@ -215,15 +234,15 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
     set((state) => ({
       quiz: {
         ...state.quiz,
-        questions: quiz.questions.map((item) => {
-          if (item.id === questionId) {
+        questions: quiz.questions.map((question) => {
+          if (question.id === questionId) {
             return {
-              ...item,
+              ...question,
               [target]: value,
-              options: target === "type" ? options : item.options,
+              options: target === "type" ? options : question.options,
             };
           }
-          return item;
+          return question;
         }),
       },
     }));
@@ -291,33 +310,64 @@ export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
   },
 
   handleReorder: (questionId, from, to) => {
+    if (from === to) return;
     set(({ quiz }) => ({
       quiz: {
         ...quiz,
-        questions: quiz.questions.map((q) => {
-          if (q.id !== questionId) return q;
+        questions: quiz.questions.map((question) => {
+          if (question.id !== questionId) return question;
 
-          const lefts: Option[] = [];
-          const rights: Option[] = [];
-          q.options.forEach((o, i) => (i % 2 === 0 ? lefts : rights).push(o));
+          const options = [...question.options];
+          const [moved] = options.splice(from, 1);
+          options.splice(to, 0, moved);
 
-          // move the right option from `from` to `to` (in place on the copy)
-          const [moved] = rights.splice(from, 1);
-          rights.splice(to, 0, moved);
+          if (question.type !== "order") {
+            return { ...question, options };
+          }
+
+          const synced = options.map((option, index) =>
+            option.correct_order === index + 1
+              ? option
+              : { ...option, correct_order: index + 1 },
+          );
+
+          return { ...question, options: synced };
+        }),
+      },
+    }));
+  },
+
+  handleMatchReorder: (questionId, from, to) => {
+    if (from === to) return;
+
+    set(({ quiz }) => ({
+      quiz: {
+        ...quiz,
+        questions: quiz.questions.map((question) => {
+          if (question.id !== questionId) return question;
+
+          // `from`/`to` are positions within the right column only
+          // (left column is fixed, never draggable)
+          const lefts = question.options.filter((_, i) => i % 2 === 0);
+          const rights = question.options.filter((_, i) => i % 2 === 1);
+
+          const movedItem = rights[from];
+          const withoutMoved = rights.filter((_, i) => i !== from);
+          const reordered = [
+            ...withoutMoved.slice(0, to),
+            movedItem,
+            ...withoutMoved.slice(to),
+          ];
 
           const options = lefts.flatMap((left, i) => {
-            const right = rights[i];
+            const right = reordered[i];
             return [
-              left.match_option_id === right.id
-                ? left
-                : { ...left, match_option_id: right.id },
-              right.match_option_id === left.id
-                ? right
-                : { ...right, match_option_id: left.id },
+              { ...left, match_option_id: right.id },
+              { ...right, match_option_id: left.id },
             ];
           });
 
-          return { ...q, options };
+          return { ...question, options };
         }),
       },
     }));

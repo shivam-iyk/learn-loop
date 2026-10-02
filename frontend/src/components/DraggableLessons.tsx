@@ -24,8 +24,9 @@ import type { EditLessonI, Lesson, LessonFormI } from "../types/lesson";
 import { nameSchema } from "../schema/lesson";
 import useAppStore from "../store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteLesson } from "../services/lesson";
+import { deleteLesson, reorderLesson } from "../services/lesson";
 import { useEffect, useMemo, useState } from "react";
+import type { ApiError } from "../services/api";
 
 function Lesson({
   id,
@@ -226,13 +227,17 @@ function DraggableLessons({
     Record<number, string | undefined>
   >({});
 
-  // const reorderLessonMutation = useMutation({
-  //   mutationFn: (lessons: { id: number; sequence: number }[]) =>
-  //     reorderLesson(lessons),
-  //   onError: (error) => {
-  //     console.log(error);
-  //   },
-  // });
+  const reorderLessonMutation = useMutation<
+    Lesson[],
+    ApiError,
+    { id: number; sequence: number }[]
+  >({
+    mutationFn: (lessons) => reorderLesson(lessons),
+    onError: (error, _payload) => {
+      console.log(error);
+      toast.danger(error.message || "Something went wrong");
+    },
+  });
 
   const deleteLessonMutation = useMutation({
     mutationFn: (lessonId: number) => deleteLesson(lessonId),
@@ -259,7 +264,20 @@ function DraggableLessons({
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setLessons(move(lessons, event));
+    const reordered = move(lessons, event);
+
+    const resequenced = reordered.map((lesson, index) => ({
+      ...lesson,
+      sequence: index + 1,
+    }));
+
+    const previousLessons = lessons;
+    setLessons(resequenced);
+
+    reorderLessonMutation.mutate(
+      resequenced.map((l) => ({ id: l.id, sequence: l.sequence })),
+      { onError: () => setLessons(previousLessons) },
+    );
   };
 
   useEffect(() => {

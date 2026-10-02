@@ -30,7 +30,6 @@ export const answerSchema = z
 export const optionSchema = z
   .string()
   .nonempty("Option is required")
-  .min(2, "Option cannot be less than 10 characters")
   .max(10_000, "Option cannot be more than 10,000 characters");
 
 export const optionsSchema = z

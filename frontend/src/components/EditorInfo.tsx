@@ -161,17 +161,9 @@ function EditorInfo() {
 
   return (
     <Modal>
-      <Modal.Trigger
-        className="size-fit focus-visible:outline-none"
-        tabIndex={0}
-      >
-        <button
-          type="button"
-          className="p-2.5! size-fit! rounded-3xl! focus-visible:bg-background! ring-visible hover:text-foreground! hover:bg-background! focus:text-foreground!"
-        >
-          <Info size={16} />
-        </button>
-      </Modal.Trigger>
+      <Button className="p-2.5! size-fit! rounded-3xl! focus-visible:bg-background! ring-visible hover:text-foreground! hover:bg-background! focus:text-foreground!">
+        <Info size={16} className="m-0" />
+      </Button>
       <Modal.Backdrop>
         <Modal.Container size="lg">
           <Modal.Dialog className="overflow-y-auto">

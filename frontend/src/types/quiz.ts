@@ -50,4 +50,5 @@ export interface QuizSliceI {
     optionId?: number,
   ) => void;
   handleReorder: (questionId: number, from: number, to: number) => void;
+  handleMatchReorder: QuizSliceI["handleReorder"];
 }

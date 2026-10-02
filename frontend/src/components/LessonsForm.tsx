@@ -29,8 +29,6 @@ function LessonsForm({
   setLesson,
   saving,
   editing,
-  handleAdd,
-  handleEdit,
   formClassName = "",
   toolbarClassName = "",
 }: {
@@ -44,7 +42,7 @@ function LessonsForm({
   formClassName?: string;
   toolbarClassName?: string;
 }) {
-  const { lessons, quiz, setQuiz } = useAppStore();
+  const { lessons, quiz } = useAppStore();
 
   const [invalid, setInvalid] = useState(false);
 
@@ -69,12 +67,13 @@ function LessonsForm({
       default:
         return;
     }
-    if (editing) {
-      if (lesson?.quiz) setQuiz(lesson.quiz);
-      handleEdit(lesson);
-    } else {
-      handleAdd(lesson);
-    }
+    console.log(quiz);
+    // if (editing) {
+    //   if (lesson?.quiz) setQuiz(lesson.quiz);
+    //   handleEdit(lesson);
+    // } else {
+    //   handleAdd(lesson);
+    // }
     setInvalid(false);
   };
 

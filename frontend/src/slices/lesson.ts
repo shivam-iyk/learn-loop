@@ -14,6 +14,7 @@ export const createLessonSlice: StateCreator<LessonSlice> = (set) => ({
     sequence: 0,
     created_at: "",
   },
+
   setLessons: (lessons) => {
     set({ lessons });
   },

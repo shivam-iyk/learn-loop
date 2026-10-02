@@ -56,12 +56,12 @@ function RichTextField({
   return (
     <div className="flex flex-col gap-2">
       {label ? (
-        <span
+        <div
           className={`${error && touched ? "text-danger" : ""} label cursor-default`}
           onClick={() => editorRef.current?.focus()}
         >
           {label}
-        </span>
+        </div>
       ) : null}
       <Editor
         id="description"

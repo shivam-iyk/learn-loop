@@ -100,7 +100,12 @@ const login = asyncHandler(async (req: Request, res: Response) => {
   };
 
   const token = await generateToken(userData);
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: parseInt(process.env.COOKIE_EXPIRY || "2592000000"),
+    sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+  });
 
   const {
     password: _,
@@ -193,7 +198,12 @@ const verifyMail = asyncHandler(async (req: Request, res: Response) => {
   };
 
   const token = await generateToken(userData);
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: parseInt(process.env.COOKIE_EXPIRY || "2592000000"),
+    sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+  });
 
   return res
     .status(200)
