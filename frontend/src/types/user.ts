@@ -20,15 +20,14 @@ export interface Instructor {
   avatar: string;
   name: string;
   skills: string[];
-  courses: number;
+  courses: number | string;
 }
 
 export interface UserSlice {
   loading: false;
   instructor: Instructor & {
     bio: string;
-    students: number;
-    courses: number;
+    students: number | string;
   };
   instructors: Instructor[];
   user: UserI;
@@ -37,4 +36,6 @@ export interface UserSlice {
   setUser: (user: UserI) => void;
   becomeInstructor: () => void;
   updateAvatar: (avatar: string) => void;
+  setInstructor: (instructor: UserSlice["instructor"]) => void;
+  setInstructors: (instructors: Instructor[]) => void;
 }

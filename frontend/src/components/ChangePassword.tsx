@@ -20,13 +20,13 @@ function ChangePassword() {
 
   return (
     <div
-      className="flex flex-col gap-4 border border-default p-6 rounded-xl scroll-mt-20"
+      className="space-y-4 border border-default p-6 rounded-xl scroll-mt-20"
       id="change-password"
     >
       <h5 className="md:text-2xl text-xl font-outfit font-semibold tracking-tight">
         Change Password
       </h5>
-      <Form className="flex flex-col gap-4" onSubmit={handleUpdate}>
+      <Form className="space-y-4" onSubmit={handleUpdate}>
         <TextField
           name="current-password"
           value={password.current}

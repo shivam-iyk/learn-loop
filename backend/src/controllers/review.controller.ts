@@ -7,9 +7,6 @@ import { postReviewSchema } from "../schemas/review.schema";
 import { courseIdSchema, reviewIdSchema } from "../schemas/param.schema";
 
 const getReviews = asyncHandler(async (req: Request, res: Response) => {
-  const id = req.user?.id;
-  if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
-
   const parsed = courseIdSchema.safeParse(req.params);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);

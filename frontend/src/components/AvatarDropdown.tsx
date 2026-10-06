@@ -92,7 +92,7 @@ export function AvatarDropdown() {
               />
               <Avatar.Fallback delayMs={600}>{user?.name[0]}</Avatar.Fallback>
             </Avatar>
-            <div className="flex flex-col gap-0">
+            <div className="space-y-0">
               <p className="leading-5 text-base tracking-tight font-medium whitespace-nowrap font-outfit">
                 Jane Doe
               </p>

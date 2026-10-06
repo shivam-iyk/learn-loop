@@ -102,13 +102,11 @@ const getInstructor = asyncHandler(async (req: Request, res: Response) => {
   const { instructorId } = parsed.data;
 
   const { rows: instructor } = await query(
-    `
-    SELECT u.name, u.bio, u.avatar, u.cover, u.skills, COALESCE(COUNT(c.id), 0) AS course_count, COALESCE(SUM(c.students_enrolled), 0)
+    `SELECT u.id, u.name, u.bio, u.avatar, u.skills, COALESCE(COUNT(c.id), 0) AS courses, COALESCE(SUM(c.students_enrolled), 0) AS students
     FROM users u
     JOIN courses c ON c.owner = u.id
     WHERE u.id = $1 AND u.role = 'instructor'
-    GROUP BY u.name, u.bio, u.avatar, u.cover, u.skills
-    `,
+    GROUP BY u.id, u.name, u.bio, u.avatar, u.skills`,
     [instructorId],
   );
 

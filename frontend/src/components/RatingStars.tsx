@@ -18,27 +18,29 @@ function RatingStars({
   subTextClassName?: string;
 }) {
   const fullStars = useMemo(() => {
-    return parseInt(stars.toString().split(".")[0]);
+    return parseInt(stars.toString().split(".")[0]) || 0;
   }, [stars]);
+
   const halfStars = useMemo(() => {
     if (stars >= 5) return false;
-    const value = parseInt(stars.toString().split(".")[1] || "0");
+    const value = parseInt(stars.toString().split(".")[1]) || 0;
     if (value < 5) return false;
     return true;
   }, [stars]);
 
   return (
     <div className={cn("flex items-center gap-1 text-warning", className)}>
-      {Array.from({
-        length: fullStars,
-      }).map((_, index) => (
-        <Star
-          size={size}
-          fill="currentColor"
-          className={starsClassName}
-          key={index}
-        />
-      ))}
+      {fullStars !== 0 &&
+        Array.from({
+          length: fullStars,
+        }).map((_, index) => (
+          <Star
+            size={size}
+            fill="currentColor"
+            className={starsClassName}
+            key={index}
+          />
+        ))}
       {halfStars && (
         <div className={cn("relative size-4", starsClassName)}>
           <Star className="absolute top-0 left-0" size={size} />
@@ -49,7 +51,8 @@ function RatingStars({
           />
         </div>
       )}
-      {fullStars < 5 &&
+      {fullStars > 0 &&
+        fullStars < 5 &&
         Array.from({ length: 5 - fullStars - (halfStars ? 1 : 0) }).map(
           (_, index) => (
             <Star
@@ -61,10 +64,12 @@ function RatingStars({
           ),
         )}
       <span className={cn("text-foreground", subTextClassName)}>
-        {stars.toLocaleString("en-IN", {
-          style: "decimal",
-          maximumFractionDigits: 1,
-        })}
+        {isNaN(stars)
+          ? "Not"
+          : stars.toLocaleString("en-IN", {
+              style: "decimal",
+              maximumFractionDigits: 1,
+            })}
         {subText.length > 0 && " "}
         {subText}
       </span>

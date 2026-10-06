@@ -1,5 +1,5 @@
 import { EmptyState, Table, toast } from "@heroui/react";
-import { Edit2, Layers, Loader2, Package2 } from "lucide-react";
+import { Edit2, Layers, Loader2, Package2, ShieldAlert } from "lucide-react";
 import DiscardDraftModal from "./DiscardDraftModal";
 import PublishCourseModal from "./PublishCourseModal";
 import { useMemo } from "react";
@@ -7,7 +7,15 @@ import useAppStore from "../store";
 import CustomEmptyState from "./CustomEmptyState";
 import { Link } from "react-router-dom";
 
-function DraftCourses({ loading }: { loading: boolean }) {
+function DraftCourses({
+  loading,
+  isError = false,
+  error = null,
+}: {
+  loading: boolean;
+  isError?: boolean;
+  error?: any;
+}) {
   const { courses } = useAppStore();
 
   const drafts = useMemo(() => {
@@ -41,6 +49,12 @@ function DraftCourses({ loading }: { loading: boolean }) {
                   textContainerClassName="hidden"
                   iconClassName="animate-spin"
                   containerClassName="bg-background"
+                />
+              ) : isError ? (
+                <CustomEmptyState
+                  icon={ShieldAlert}
+                  title="Something went wrong"
+                  description={error?.message || "Please try again later"}
                 />
               ) : (
                 <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">

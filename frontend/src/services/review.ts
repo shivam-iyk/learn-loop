@@ -4,3 +4,8 @@ export const getInstructorReviews = async () => {
   const { data } = await api.get("/reviews/instructor");
   return data?.data;
 };
+
+export const getCourseReviews = async (courseId: string | number) => {
+  const { data } = await api.get(`/reviews/${courseId}`);
+  return data?.data;
+};

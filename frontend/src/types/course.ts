@@ -5,6 +5,7 @@ export interface Course {
   price: number;
   owner: number;
   description: string;
+  language: string;
   status: "draft" | "published" | "archived";
   category: string;
   rating_sum: number;
@@ -12,6 +13,8 @@ export interface Course {
   ban_reason: string | null;
   created_at: string;
   skills: string[] | null;
+  owner_name?: string;
+  owner_avatar?: string;
   students_enrolled: number;
   rating_count: number;
   tagline: string;

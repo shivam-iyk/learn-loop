@@ -1,19 +1,19 @@
 import { Button, cn, Modal, Tooltip } from "@heroui/react";
 import { Pen } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { CourseDetailsFormI } from "../types/course";
 import CourseDetailsForm from "./CourseDetailsForm";
-import type { LessonFormI } from "../types/lesson";
 import useAppStore from "../store";
 import CustomEmptyState from "./CustomEmptyState";
 
 function EditCourseModal({
+  courseId,
   buttonClassName = "",
 }: {
   courseId: number;
   buttonClassName?: string;
 }) {
-  const { course, lessons: lessonsStore } = useAppStore();
+  const { courses } = useAppStore();
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -25,12 +25,11 @@ function EditCourseModal({
     skills: [],
     price: "",
   });
-  const [_, setLessons] = useState<LessonFormI[]>([]);
   const [cover, setCover] = useState<{ file: File | null; uri: string }>({
     file: null,
     uri: "",
   });
-  const [notFound] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   // const handleUpdate = () => {
   //   setOpen(false);
@@ -47,28 +46,20 @@ function EditCourseModal({
   //   setCover({ file: null, uri: "" });
   // };
 
-  useEffect(() => {
-    const { name, category, tagline, description, price, skills } = course;
+  const handleOpen = () => {
+    const course = courses.find((item) => item.id === courseId);
+    if (!course) setNotFound(true);
     setForm({
-      name,
-      tagline,
-      category,
-      description,
-      price: String(price) || "",
-      skills: skills ?? [],
+      name: course?.name || "",
+      tagline: course?.tagline || "",
+      description: course?.description || "",
+      category: course?.category || "",
+      skills: course?.skills || [],
+      price: course?.price.toString() || "",
     });
-    setLessons(
-      lessonsStore.map((item) => {
-        const { course, video, notes, ...lesson } = item;
-        return {
-          ...lesson,
-          video: video || "",
-          notes: notes || "",
-          quiz: null,
-        };
-      }),
-    );
-  }, [lessonsStore]);
+    setCover({ file: null, uri: course?.cover || "" });
+    setOpen(true);
+  };
 
   if (notFound) {
   }
@@ -81,7 +72,7 @@ function EditCourseModal({
             "bg-success-soft text-success-soft-foreground",
             buttonClassName,
           )}
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
           size="sm"
           isIconOnly
         >

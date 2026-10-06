@@ -1,12 +1,32 @@
 import useAppStore from "../store";
-import { Chip } from "@heroui/react";
+import { Chip, Skeleton } from "@heroui/react";
 import { Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import RatingStars from "./RatingStars";
 import type { ReactNode } from "react";
 
-function CourseDetails({ children }: { children: ReactNode }) {
+function CourseDetails({
+  children,
+  isLoading = false,
+}: {
+  children: ReactNode;
+  isLoading?: boolean;
+}) {
   const { course } = useAppStore();
+
+  if (isLoading) {
+    return (
+      <div className="h-80 w-full flex flex-col justify-end gap-4 py-6">
+        <div className="absolute top-0 left-0 h-80 w-full bg-background/80" />
+        <div className="space-y-2">
+          <Skeleton className="w-20 h-5" />
+          <Skeleton className="w-40 h-8" />
+          <Skeleton className="w-32 h-4" />
+        </div>
+        <Skeleton className="w-80 h-5" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-80 w-full">
@@ -14,7 +34,9 @@ function CourseDetails({ children }: { children: ReactNode }) {
         src={course.cover}
         className="absolute top-0 left-0 w-full h-80 object-cover"
       />
-      <div className="bg-linear-to-b from-black/20 to-black/80 absolute top-0 left-0 w-full h-80">
+      <div
+        className={`${course.cover ? "bg-linear-to-b from-black/20 to-black/80" : "bg-background"} absolute top-0 left-0 w-full h-80`}
+      >
         <div className="flex justify-between max-w-7xl pr-2 mx-auto h-full">
           <div className="flex flex-col gap-2 justify-end p-6 flex-1">
             <Chip
@@ -56,15 +78,17 @@ function CourseDetails({ children }: { children: ReactNode }) {
                 students
               </div>
               <span>·</span>
-              <div>
-                created by{" "}
-                <Link
-                  to={`/instructor/${course.owner}`}
-                  className="text-white font-semibold hover:underline ring-visible px-1 rounded underline-offset-2"
-                >
-                  {/* {course.owner_name} */}
-                </Link>
-              </div>
+              {course?.owner_name && (
+                <div>
+                  created by{" "}
+                  <Link
+                    to={`/instructor/${course.owner}`}
+                    className="text-white font-semibold hover:underline ring-visible px-1 rounded underline-offset-2"
+                  >
+                    {course?.owner_name}
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
           {children}

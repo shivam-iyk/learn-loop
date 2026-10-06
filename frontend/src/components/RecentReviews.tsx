@@ -1,4 +1,4 @@
-import { Avatar, Button, Modal, Skeleton } from "@heroui/react";
+import { Avatar, Button, Modal } from "@heroui/react";
 import useAppStore from "../store";
 import RatingStars from "./RatingStars";
 import { formatDistance } from "date-fns";
@@ -9,6 +9,7 @@ import CustomEmptyState from "./CustomEmptyState";
 import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getInstructorReviews } from "../services/review";
+import RecentReviewSkeleton from "../skeletons/RecentReview";
 
 function Review({ review }: { review: ReviewI }) {
   return (
@@ -35,24 +36,6 @@ function Review({ review }: { review: ReviewI }) {
           </span>
         </div>
         <p className="text-muted text-sm">{review?.review}</p>
-      </div>
-    </div>
-  );
-}
-
-function ReviewSkeleton() {
-  return (
-    <div className="flex gap-4 border border-default bg-background/50 rounded-lg p-3 w-full">
-      <Skeleton className="rounded-full size-10" />
-      <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="w-20 h-3" />
-            <Skeleton className="w-24 h-5 mt-2" />
-          </div>
-          <Skeleton className="w-20 h-2 self-center" />
-        </div>
-        <Skeleton className="h-10 w-full mt-2" />
       </div>
     </div>
   );
@@ -147,12 +130,14 @@ function RecentReviews() {
         )}
       </div>
       <div className="flex flex-col gap-2 mt-4">
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, index) => <ReviewSkeleton key={index} />)
-          : reviews
-              .sort((a, b) => a?.review.localeCompare(b?.review || ""))
-              .slice(0, 3)
-              .map((item, index) => <Review review={item} key={index} />)}
+        {isLoading ? (
+          <RecentReviewSkeleton />
+        ) : (
+          reviews
+            .sort((a, b) => a?.review.localeCompare(b?.review || ""))
+            .slice(0, 3)
+            .map((item, index) => <Review review={item} key={index} />)
+        )}
       </div>
     </div>
   );

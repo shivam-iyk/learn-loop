@@ -32,11 +32,11 @@ function RateCourse({ courseId }: { courseId?: string }) {
       <p className="text-sm text-muted">
         Share your valuable experience with us
       </p>
-      <div className="flex flex-col gap-4">
+      <div className="space-y-4">
         <StarsSelector
           value={rating}
           setValue={(value) => setRating(value)}
-          className="justify-around gap-2 mt-4"
+          className="lg:justify-around gap-2 mt-4"
           buttonClassName="p-1"
           size={30}
         />

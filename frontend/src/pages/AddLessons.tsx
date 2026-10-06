@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LessonsForm from "../components/LessonsForm";
 import { useNavigate, useParams } from "react-router-dom";
 import type { EditLessonI, Lesson, LessonFormI } from "../types/lesson";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createLesson, editLesson, getLessons } from "../services/lesson";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createLesson, editLesson } from "../services/lesson";
 import { Button, toast } from "@heroui/react";
 import type { ApiError } from "../services/api";
 import DraggableLessons from "../components/DraggableLessons";
@@ -15,6 +15,9 @@ function AddLessons() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const { lessons, setLessons } = useAppStore();
+
+  const [editing, setEditing] = useState(false);
   const [lesson, setLesson] = useState<LessonFormI>({
     id: 0,
     type: "notes",
@@ -24,18 +27,6 @@ function AddLessons() {
     notes: "",
     quiz: null,
   });
-  const { lessons, setLessons } = useAppStore();
-
-  const { data, isError, error } = useQuery<Lesson[], ApiError>({
-    queryKey: ["lessons", courseId],
-    queryFn: () => getLessons(courseId),
-    enabled: !!courseId,
-    staleTime: 15 * 1000 * 60, // 15 minutes
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
-
-  const [editing, setEditing] = useState(false);
 
   const handleEditLesson = (lesson: Lesson) => {
     const lessonsForm = document.querySelector("#lessons-form");
@@ -110,11 +101,6 @@ function AddLessons() {
     },
   });
 
-  useEffect(() => {
-    if (!Array.isArray(data)) return;
-    setLessons(data);
-  }, [data, isError, error]);
-
   return (
     <div className="lg:w-2/3 flex-1 min-w-0">
       <div className="flex flex-col gap-6">
@@ -130,7 +116,7 @@ function AddLessons() {
               ? editLessonMutation.variables?.id || 0
               : 0
           }
-          courseId={courseId}
+          courseId={courseId || 0}
           editing={editing}
           handleEdit={handleEditLesson}
           handleCancelEdit={() => {

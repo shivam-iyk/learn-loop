@@ -43,7 +43,7 @@ function Lesson() {
                       Mark Complete
                     </Button>
                   )}
-                  <Suspense fallback={<Skeleton className="" />}>
+                  <Suspense fallback={<Skeleton className="h-9 w-24" />}>
                     <ReportModal
                       heading="Report Issue"
                       issues={[

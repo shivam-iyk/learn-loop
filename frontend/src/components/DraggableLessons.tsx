@@ -1,234 +1,53 @@
-import {
-  Button,
-  FieldError,
-  Input,
-  Modal,
-  TextField,
-  toast,
-} from "@heroui/react";
-import {
-  Check,
-  GripVertical,
-  ListTodo,
-  Loader2,
-  Notebook,
-  Pencil,
-  Play,
-  Trash,
-  X,
-} from "lucide-react";
+import { cn, toast } from "@heroui/react";
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
-import { useSortable } from "@dnd-kit/react/sortable";
 import { move } from "@dnd-kit/helpers";
-import type { EditLessonI, Lesson, LessonFormI } from "../types/lesson";
-import { nameSchema } from "../schema/lesson";
+import type { EditLessonI, Lesson as LessonI } from "../types/lesson";
 import useAppStore from "../store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteLesson, reorderLesson } from "../services/lesson";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteLesson, getLessons, reorderLesson } from "../services/lesson";
 import { useEffect, useMemo, useState } from "react";
 import type { ApiError } from "../services/api";
-
-function Lesson({
-  id,
-  index,
-  type,
-  name,
-  sequence,
-  nameEditedActive,
-  handleChange,
-  editing,
-  deleting,
-  savingName,
-  handleCancelEdit,
-  handleEdit,
-  handleDelete,
-  handleSaveName,
-  handleCancelSaveName,
-}: {
-  id: number;
-  sequence: number;
-  index: number;
-  type: LessonFormI["type"];
-  name: LessonFormI["name"];
-  nameEditedActive: boolean;
-  editing: boolean;
-  deleting: number;
-  handleChange: (value: string) => void;
-  handleEdit: () => void;
-  handleCancelEdit: () => void;
-  savingName: number;
-  handleSaveName: (name: string) => void;
-  handleCancelSaveName: () => void;
-  handleDelete: () => void;
-}) {
-  const { ref, handleRef } = useSortable({
-    id,
-    index,
-    type: "item",
-    accept: "item",
-  });
-
-  return (
-    <div className="flex flex-col gap-1 w-full" ref={ref}>
-      <div className="text-muted">
-        <span className="text-xs">Lesson {sequence + 1}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          className="shrink-0 bg-accent-soft text-accent cursor-default group hover:bg-background-secondary hover:cursor-grab"
-          size="sm"
-          isIconOnly
-          ref={handleRef}
-        >
-          <GripVertical className="group-hover:inline hidden text-foreground" />
-          {type === "video" ? (
-            <Play className="group-hover:hidden" />
-          ) : type === "notes" ? (
-            <Notebook className="group-hover:hidden" />
-          ) : (
-            <ListTodo className="group-hover:hidden" />
-          )}
-        </Button>
-        <TextField
-          aria-label={`lesson-${id}`}
-          name={`lesson-${id}`}
-          value={name}
-          onChange={(value) => handleChange(value)}
-          className="w-full"
-          validate={(value) => {
-            const result = nameSchema.safeParse(value);
-            return result.success ? null : result.error.issues[0].message;
-          }}
-        >
-          <Input placeholder="Lesson Name" />
-          <FieldError />
-        </TextField>
-        {nameEditedActive ? (
-          <Button
-            size="sm"
-            isIconOnly
-            className="shrink-0"
-            onClick={() => handleSaveName(name)}
-            isDisabled={!!savingName}
-          >
-            {savingName ? <Loader2 className="animate-spin" /> : <Check />}
-          </Button>
-        ) : editing ? (
-          <Button
-            size="sm"
-            onClick={handleCancelEdit}
-            variant="tertiary"
-            className="shrink-0 bg-background border hover:bg-background-secondary"
-            isIconOnly
-          >
-            <X />
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={handleEdit}
-            className="shrink-0 bg-warning-soft text-warning-soft-foreground"
-            isIconOnly
-          >
-            <Pencil />
-          </Button>
-        )}
-        {nameEditedActive ? (
-          <Button
-            size="sm"
-            variant="tertiary"
-            className="shrink-0 bg-background border hover:bg-background-secondary"
-            onClick={handleCancelSaveName}
-            isIconOnly
-          >
-            <X />
-          </Button>
-        ) : (
-          <Modal>
-            <Button
-              variant="danger-soft"
-              size="sm"
-              className="shrink-0"
-              isDisabled={deleting !== 0}
-              isIconOnly
-            >
-              {deleting !== 0 ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Trash />
-              )}
-            </Button>
-            <Modal.Backdrop>
-              <Modal.Container>
-                <Modal.Dialog>
-                  <Modal.Icon className="bg-danger-soft text-danger-soft-foreground mx-auto mb-4">
-                    <Trash />
-                  </Modal.Icon>
-                  <Modal.Header className="items-center text-center">
-                    <h4 className="font-outfit tracking-tight text-xl font-semibold">
-                      Delete Lesson
-                    </h4>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <p>
-                      Changes you made will be lost. Are you sure you want to
-                      delete this lesson?
-                    </p>
-                  </Modal.Body>
-                  <Modal.Footer className="flex-col">
-                    <Button
-                      variant="danger"
-                      className="w-full"
-                      slot="close"
-                      isDisabled={deleting !== 0}
-                      onClick={handleDelete}
-                    >
-                      {deleting !== 0 ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
-                    <Button className="w-full" slot="close" variant="ghost">
-                      Cancel
-                    </Button>
-                  </Modal.Footer>
-                </Modal.Dialog>
-              </Modal.Container>
-            </Modal.Backdrop>
-          </Modal>
-        )}
-      </div>
-    </div>
-  );
-}
+import Lesson from "./Lesson";
 
 function DraggableLessons({
-  editing,
-  editLesson,
+  className = "",
+  inputClassName = "",
+  editing = false,
+  editLesson = 0,
   courseId,
-  savingName,
-  handleCancelEdit,
-  handleEditName,
-  handleEdit,
+  savingName = 0,
+  handleCancelEdit = () => {},
+  handleEditName = () => {},
+  handleEdit = () => {},
 }: {
-  editing: boolean;
-  editLesson: number;
-  courseId?: string | number;
-  savingName: number;
-  handleCancelEdit: () => void;
-  handleEditName: (lesson: EditLessonI) => void;
-  handleEdit: (lesson: Lesson) => void;
+  className?: string;
+  inputClassName?: string;
+  editing?: boolean;
+  editLesson?: number;
+  courseId: string | number;
+  savingName?: number;
+  handleCancelEdit?: () => void;
+  handleEditName?: (lesson: EditLessonI) => void;
+  handleEdit?: (lesson: LessonI) => void;
 }) {
   const queryClient = useQueryClient();
   const { lessons, setLessons } = useAppStore();
+
+  const { data, isError, error } = useQuery<LessonI[], ApiError>({
+    queryKey: ["lessons", courseId],
+    queryFn: () => getLessons(courseId),
+    enabled: !!courseId,
+    staleTime: 15 * 1000 * 60, // 15 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
   const [editNames, setEditNames] = useState<
     Record<number, string | undefined>
   >({});
 
   const reorderLessonMutation = useMutation<
-    Lesson[],
+    LessonI[],
     ApiError,
     { id: number; sequence: number }[]
   >({
@@ -242,7 +61,7 @@ function DraggableLessons({
   const deleteLessonMutation = useMutation({
     mutationFn: (lessonId: number) => deleteLesson(lessonId),
     onSuccess: (data) => {
-      queryClient.setQueryData(["lessons", courseId], (oldData: Lesson[]) =>
+      queryClient.setQueryData(["lessons", courseId], (oldData: LessonI[]) =>
         oldData?.filter((item) => item?.id !== data?.id),
       );
     },
@@ -288,15 +107,21 @@ function DraggableLessons({
     );
   }, [orderedLessons]);
 
+  useEffect(() => {
+    if (!Array.isArray(data)) return;
+    setLessons(data);
+  }, [data, isError, error]);
+
   if (lessons.length === 0) return null;
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
-      <div className="flex flex-col gap-4">
+      <div className={cn("flex flex-col gap-4", className)}>
         {orderedLessons.map((item, index) => (
           <Lesson
             {...item}
             index={index}
+            inputClassName={inputClassName}
             name={editNames[item.id] ?? item.name}
             sequence={item.sequence}
             nameEditedActive={

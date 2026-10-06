@@ -1,11 +1,17 @@
+import { cn } from "@heroui/styles";
 import useAppStore from "../store";
 
-function CourseDescription() {
+function CourseDescription({ className = "" }: { className?: string }) {
   const { course } = useAppStore();
   return (
-    <div className="p-4 bg-background/50 rounded-lg">
-      <h4 className="text-xl font-semibold tracking-tight font-outfit">Description</h4>
-      <p className="font-quicksand mt-2">{course.description}</p>
+    <div className={cn("p-4 bg-background/50 rounded-lg", className)}>
+      <h4 className="text-xl font-semibold tracking-tight font-outfit">
+        Description
+      </h4>
+      <div
+        className="quill-text mt-2"
+        dangerouslySetInnerHTML={{ __html: course?.description }}
+      />
     </div>
   );
 }

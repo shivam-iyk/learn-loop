@@ -21,7 +21,7 @@ function BasicDetailsForm() {
   });
 
   return (
-    <Form className="flex flex-col gap-6 scroll-mt-20" id="basic-details">
+    <Form className="space-y-6 scroll-mt-20" id="basic-details">
       <TextField
         name="name"
         autoComplete="name"

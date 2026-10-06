@@ -4,6 +4,7 @@ import {
   Layers,
   Loader2,
   Package2,
+  ShieldAlert,
   Star,
   Users,
 } from "lucide-react";
@@ -16,7 +17,15 @@ import { updateCourse } from "../services/courses";
 import type { Course } from "../types/course";
 import type { ApiError } from "../services/api";
 
-function ArchivedCourses({ loading }: { loading: boolean }) {
+function ArchivedCourses({
+  loading,
+  isError = false,
+  error = null,
+}: {
+  loading: boolean;
+  isError?: boolean;
+  error?: any;
+}) {
   const queryClient = useQueryClient();
 
   const { courses, setCourses } = useAppStore();
@@ -130,6 +139,12 @@ function ArchivedCourses({ loading }: { loading: boolean }) {
                   textContainerClassName="hidden"
                   iconClassName="animate-spin"
                   containerClassName="bg-background"
+                />
+              ) : isError ? (
+                <CustomEmptyState
+                  icon={ShieldAlert}
+                  title="Something went wrong"
+                  description={error?.message || "Please try again later"}
                 />
               ) : (
                 <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">

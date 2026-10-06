@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import useAppStore from "../store";
 
 function Courses() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["courses"],
     queryFn: getOwnedCourses,
     staleTime: 15 * 1000 * 60, // 15 minutes
@@ -39,7 +39,7 @@ function Courses() {
           <span className="max-sm:hidden">Create Course</span>
         </Link>
       </div>
-      <ManageCourses loading={isLoading} />
+      <ManageCourses loading={isLoading} isError={isError} error={error} />
 
       <div>
         <h3 className="font-cal-sans tracking-tight sm:text-3xl text-2xl">
@@ -47,7 +47,7 @@ function Courses() {
         </h3>
         <p className="text-muted">Work in Progress</p>
       </div>
-      <DraftCourses loading={isLoading} />
+      <DraftCourses loading={isLoading} isError={isError} error={error} />
 
       <div>
         <h3 className="font-cal-sans tracking-tight sm:text-3xl text-2xl">
@@ -55,7 +55,7 @@ function Courses() {
         </h3>
         <p className="text-muted">No Longer Active</p>
       </div>
-      <ArchivedCourses loading={isLoading} />
+      <ArchivedCourses loading={isLoading} isError={isError} error={error} />
     </div>
   );
 }

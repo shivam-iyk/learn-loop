@@ -108,6 +108,8 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
       courses: 2,
     },
   ],
+  setInstructor: (instructor) => set({ instructor }),
+  setInstructors: (instructors) => set({ instructors }),
   login: (user) => {
     set({ user });
   },

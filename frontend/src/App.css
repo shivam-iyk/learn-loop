@@ -238,3 +238,18 @@ input[type="file"]::file-selector-button {
 .button-linear {
   @apply bg-linear-to-b bg-transparent from-accent-soft via-accent/50 to-accent dark:from-accent/40 dark:via-accent/80;
 }
+
+.quill-text {
+  h1 {
+    @apply text-2xl font-bold mb-3;
+  }
+  h2 {
+    @apply text-xl font-semibold mb-2;
+  }
+  h3 {
+    @apply text-lg font-semibold mb-1;
+  }
+  p {
+    @apply my-1;
+  }
+}

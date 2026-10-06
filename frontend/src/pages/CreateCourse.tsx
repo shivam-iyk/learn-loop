@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
 import CourseDetailsForm from "../components/CourseDetailsForm";
-import { toast } from "@heroui/react";
+import { Button, Skeleton, toast } from "@heroui/react";
 import type { Course, CourseDetailsFormI, CourseSlice } from "../types/course";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createCourse, getCourse, updateCourse } from "../services/courses";
 import useAppStore from "../store";
 import type { ApiError } from "../services/api";
+import { ShieldAlert } from "lucide-react";
+import CustomEmptyState from "../components/CustomEmptyState";
 
 function CreateCourse() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
   const { course, setCourse } = useAppStore();
 
-  const { data } = useQuery<CourseSlice["course"]>({
+  const { data, isLoading, error, isError } = useQuery<
+    CourseSlice["course"],
+    ApiError
+  >({
     queryKey: ["course", courseId],
     queryFn: () => getCourse(courseId),
     enabled: !!courseId && course.id.toString() !== courseId?.toString(),
+    staleTime: 15 * 60 * 1000, // 15 minutes
     retry: 1,
   });
 
@@ -189,6 +196,68 @@ function CreateCourse() {
     }
   }, [data]);
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 lg:w-2/3 flex-1 min-w-0 min-h-[70vh]">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-36" />
+          <Skeleton className="h-3 w-80" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-16 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-20 h-4" />
+          <Skeleton className="w-full h-32" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-32 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-24 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-30 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-12 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="w-16 h-4" />
+          <Skeleton className="w-full h-9" />
+        </div>
+        <Skeleton className="w-20 h-9 rounded-2xl self-end" />
+      </div>
+    );
+  }
+
+  if (isError && !isLoading) {
+    return (
+      <div className="lg:w-2/3 flex-1 min-w-0 bg-background rounded-lg py-10">
+        <CustomEmptyState
+          icon={ShieldAlert}
+          title="Something went wrong"
+          description={error?.message || "Please try again later"}
+          actions={
+            error?.errors?.[0] === "NOT_FOUND" ? (
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/create-course")}
+              >
+                New Course
+              </Button>
+            ) : null
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="lg:w-2/3 flex-1 min-w-0">
       <CourseDetailsForm
@@ -197,6 +266,7 @@ function CreateCourse() {
         setCover={setCover}
         setForm={(value) => setDetails(value)}
         handleNext={handleSaveCourse}
+        isEditing={Boolean(searchParams.get("edit"))}
         isLoading={
           createCourseMutation.isPending || updateCourseMutation.isPending
         }

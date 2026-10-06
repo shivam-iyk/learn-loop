@@ -62,7 +62,7 @@ function Connect({ role }: { role: "student" | "instructor" }) {
             answer questions, and build an active learning community beyond your
             course content.
           </p>
-          <ul className="flex flex-col gap-2 mt-6">
+          <ul className="space-y-2 mt-6">
             {highlights.map((item, index) => (
               <li className="flex items-center gap-1 text-foreground" key={index}>
                 <CircleCheck className="text-green-400" size={20} /> {item}
@@ -75,7 +75,7 @@ function Connect({ role }: { role: "student" | "instructor" }) {
             <Users className="text-accent" size={20} />
             React.js Tutorial
           </div>
-          <div className="flex flex-col gap-2 p-4">
+          <div className="space-y-2 p-4">
             {chats.map((item, index) => (
               <div className="flex flex-col" key={index}>
                 <div 

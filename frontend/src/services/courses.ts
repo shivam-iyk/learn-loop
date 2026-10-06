@@ -30,7 +30,10 @@ export const createCourse = async (formData: FormData) => {
   return data?.data;
 };
 
-export const updateCourse = async (courseId: number, formData: FormData) => {
+export const updateCourse = async (
+  courseId: string | number,
+  formData: FormData,
+) => {
   const { data } = await api.put(`/courses/edit/${courseId}`, formData);
   return data?.data;
 };

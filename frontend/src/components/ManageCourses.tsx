@@ -1,15 +1,31 @@
-import { Skeleton, Table, Tooltip } from "@heroui/react";
+import { Button, Table, Tooltip } from "@heroui/react";
 import useAppStore from "../store";
-import { Eye, Layers, Loader2, Star, Users } from "lucide-react";
+import {
+  Eye,
+  Layers,
+  Loader2,
+  Pen,
+  ShieldAlert,
+  Star,
+  Users,
+} from "lucide-react";
 import RatingStars from "../components/RatingStars";
 import CustomEmptyState from "./CustomEmptyState";
 import ArchiveCourseModal from "./ArchiveCourseModal";
-import { Link } from "react-router-dom";
-import { lazy, Suspense, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { getLanguageName } from "../lib/helpers";
 
-const EditCourseModal = lazy(() => import("./EditCourseModal"));
-
-function ManageCourses({ loading }: { loading: boolean }) {
+function ManageCourses({
+  loading,
+  isError = false,
+  error = null,
+}: {
+  loading: boolean;
+  isError?: boolean;
+  error?: any;
+}) {
+  const navigate = useNavigate();
   const { courses } = useAppStore();
 
   const published = useMemo(() => {
@@ -26,6 +42,9 @@ function ManageCourses({ loading }: { loading: boolean }) {
             </Table.Column>
             <Table.Column className="font-huninn uppercase">
               Lessons
+            </Table.Column>
+            <Table.Column className="font-huninn uppercase">
+              Language
             </Table.Column>
             <Table.Column className="font-huninn uppercase">Price</Table.Column>
             <Table.Column className="font-huninn uppercase">
@@ -50,6 +69,12 @@ function ManageCourses({ loading }: { loading: boolean }) {
                   iconClassName="animate-spin"
                   containerClassName="bg-background"
                 />
+              ) : isError ? (
+                <CustomEmptyState
+                  icon={ShieldAlert}
+                  title="Something went wrong"
+                  description={error?.message || "Please try again later"}
+                />
               ) : (
                 <CustomEmptyState
                   title="No courses found"
@@ -67,6 +92,7 @@ function ManageCourses({ loading }: { loading: boolean }) {
                     <Layers size={16} /> {item.lessons}
                   </div>
                 </Table.Cell>
+                <Table.Cell>{getLanguageName(item.language)}</Table.Cell>
                 <Table.Cell className="text-accent text-lg">
                   {item.price.toLocaleString("en-IN", {
                     style: "currency",
@@ -105,13 +131,21 @@ function ManageCourses({ loading }: { loading: boolean }) {
                         <p className="font-outfit">View Course</p>
                       </Tooltip.Content>
                     </Tooltip>
-                    <Suspense
-                      fallback={
-                        <Skeleton className="button button--sm min-w-8 rounded-2xl" />
-                      }
-                    >
-                      <EditCourseModal courseId={item.id} />
-                    </Suspense>
+                    <Tooltip delay={0}>
+                      <Button
+                        className="bg-success-soft text-success-soft-foreground"
+                        onClick={() =>
+                          navigate(`/create-course/${item.id}?edit=true`)
+                        }
+                        size="sm"
+                        isIconOnly
+                      >
+                        <Pen />
+                      </Button>
+                      <Tooltip.Content>
+                        <p className="font-outfit">Edit</p>
+                      </Tooltip.Content>
+                    </Tooltip>
                     <ArchiveCourseModal courseId={item.id} />
                   </div>
                 </Table.Cell>

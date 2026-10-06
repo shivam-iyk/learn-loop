@@ -3,11 +3,14 @@ import useAppStore from "../store";
 import { formatDistance } from "date-fns";
 import RatingStars from "./RatingStars";
 import type { Review as ReviewI } from "../types/review";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getCourseReviews } from "../services/review";
+import ReviewsSkeleton from "../skeletons/Reviews";
 
 function Review({ review }: { review: ReviewI }) {
   return (
-    <div className="flex flex-col gap-3 first:border-b p-4">
+    <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Avatar className="rounded-full size-7">
@@ -40,13 +43,42 @@ function Review({ review }: { review: ReviewI }) {
   );
 }
 
-function Reviews({ className }: { className?: string }) {
-  const { reviews } = useAppStore();
+function Reviews({
+  className,
+  courseId,
+}: {
+  className?: string;
+  courseId?: string;
+}) {
+  const { reviews, setReviews } = useAppStore();
 
-  const filteredReviews = useMemo(
-    () => reviews.filter((item) => item.review?.length > 0),
-    [reviews],
-  );
+  const { data, isLoading } = useQuery({
+    queryKey: ["reviews", courseId],
+    queryFn: () => getCourseReviews(courseId || 0),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    enabled: !!courseId,
+  });
+
+  const filteredReviews = useMemo(() => {
+    if (reviews.length === 0) return [];
+    const sortedReviews = reviews
+      .sort((a, b) => a.review.localeCompare(b.review))
+      .sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+
+    return sortedReviews.slice(0, 3);
+  }, [reviews]);
+
+  useEffect(() => {
+    if (!data) return;
+    setReviews(data);
+  }, [data]);
+
+  if (isLoading) {
+    return <ReviewsSkeleton />;
+  }
 
   return (
     <div

@@ -2,7 +2,7 @@ import useAppStore from "../store";
 import { CheckCircle, CreditCard, Shield } from "lucide-react";
 import { Button, cn } from "@heroui/react";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function CourseStatus({
   courseId,
@@ -11,6 +11,7 @@ function CourseStatus({
   courseId?: string;
   className?: string;
 }) {
+  const navigate = useNavigate();
   const { course, enrolledCourses, progress, user } = useAppStore();
 
   const benefits = [
@@ -35,7 +36,20 @@ function CourseStatus({
   }, [courseId]);
 
   if (course.owner === user.id) {
-    return null;
+    return (
+      <div
+        className={cn("py-2 pr-2 flex flex-col justify-end h-full", className)}
+      >
+        <div className="flex flex-col gap-2 bg-background p-4 rounded-lg w-80">
+          <Button
+            className="w-full"
+            onClick={() => navigate(`/create-course/${course.id}`)}
+          >
+            Edit Course
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -72,7 +86,7 @@ function CourseStatus({
             })}
           </h3>
         )}
-        {isEnrolled ? null : (
+        {isEnrolled && (
           <ul className="flex flex-col gap-2 text-sm text-muted">
             {benefits.map((item, index) => (
               <li className="flex items-center gap-2" key={index}>

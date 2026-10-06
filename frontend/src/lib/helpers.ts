@@ -3,6 +3,7 @@ import {
   formatDuration as formatDurationFns,
 } from "date-fns";
 import type { CourseSlice } from "../types/course";
+import { languages } from "./accessibility";
 
 export function formatDuration(seconds: number | string) {
   if (typeof seconds === "string") {
@@ -39,6 +40,10 @@ export const getPageNumbers = (pagination: CourseSlice["pagination"]) => {
     pages.push(pagination.pages);
   }
   return pages;
+};
+
+export const getLanguageName = (code: string) => {
+  return languages.find((lang) => lang.code === code)?.name || code;
 };
 
 export const instructorPages = [

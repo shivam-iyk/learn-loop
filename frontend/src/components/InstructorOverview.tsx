@@ -2,9 +2,41 @@ import { Avatar, Chip } from "@heroui/react";
 import useAppStore from "../store";
 import { BookOpen, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getInstructor } from "../services/user";
+import InstructorOverviewSkeleton from "../skeletons/InstructorOverview";
+import { useEffect } from "react";
+import CustomEmptyState from "./CustomEmptyState";
 
 function InstructorOverview() {
-  const { instructor } = useAppStore();
+  const { instructor, course, setInstructor } = useAppStore();
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["instructor", course.owner],
+    queryFn: () => getInstructor(course.owner),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    enabled: !!course.owner,
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setInstructor(data);
+  }, [data]);
+
+  if (isLoading) {
+    return <InstructorOverviewSkeleton />;
+  }
+
+  if (isError && !isLoading) {
+    return (
+      <div className="bg-background/50">
+        <CustomEmptyState
+          title="Something went wrong"
+          description={error?.message || "Please try again later!"}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-background/50 rounded-lg">
@@ -14,7 +46,7 @@ function InstructorOverview() {
       <div className="flex flex-col gap-4 mt-4 w-full">
         <div className="flex items-center gap-4">
           <Avatar className="rounded-full size-24">
-            <Avatar.Image src={instructor.avatar} />
+            <Avatar.Image src={instructor.avatar || "/avatar-small.png"} />
             <Avatar.Fallback>{instructor.name}</Avatar.Fallback>
           </Avatar>
           <div className="flex flex-col justify-between gap-1">
@@ -51,7 +83,7 @@ function InstructorOverview() {
           ))}
         </div>
         <p className="text-foreground text-justify font-quicksand px-2">
-          {instructor.bio}
+          {instructor.bio || "Nothing here yet"}
         </p>
       </div>
     </div>

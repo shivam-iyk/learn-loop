@@ -33,6 +33,7 @@ function CourseDetailsForm({
   formClassName = "",
   editorClassName = "",
   toolbarClassName = "",
+  isEditing = false,
 }: {
   cover: { file: File | null; uri: string };
   setCover: (cover: { file: File | null; uri: string }) => void;
@@ -44,6 +45,7 @@ function CourseDetailsForm({
   formClassName?: string;
   editorClassName?: string;
   toolbarClassName?: string;
+  isEditing?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -95,7 +97,7 @@ function CourseDetailsForm({
     >
       <div className={headerClassName}>
         <h4 className="text-xl font-poppins font-semibold tracking-tight">
-          Course Details
+          {isEditing ? "Edit Course" : "Course Details"}
         </h4>
         <p className="text-muted text-sm">Describe your course</p>
       </div>

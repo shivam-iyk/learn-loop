@@ -41,6 +41,7 @@ export const createCourseSlice: StateCreator<CourseSlice> = (set) => ({
     skills: null,
     cover: "",
     category: "",
+    language: "en",
     price: 0,
     rating_sum: 0,
     rating_count: 0,
