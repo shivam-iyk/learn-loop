@@ -42,9 +42,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
   const data = await sendMail(name, verifyCode, email);
   if (!data) {
-    throw new ApiError(500, "Failed to send mail, Please try again later!", [
-      "MAIL_SEND_FAILED",
-    ]);
+    throw new ApiError(500, "Failed to send mail", ["MAIL_SEND_FAILED"]);
   }
 
   const { rows: user } = await query(
@@ -173,9 +171,7 @@ const verifyMail = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!updatedUser) {
-    throw new ApiError(500, "Failed to verify email, Please try again later!", [
-      "ACTION_FAILED",
-    ]);
+    throw new ApiError(500, "Failed to verify email", ["ACTION_FAILED"]);
   }
 
   const userWithoutSensitiveData = {
@@ -261,13 +257,8 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation Error", errors);
   }
-  const { email, code, newPassword } = parsed.data;
 
-  if (!email || !newPassword) {
-    throw new ApiError(400, "Email & New Password are required", [
-      "EMAIL_AND_NEW_PASSWORD_REQUIRED",
-    ]);
-  }
+  const { email, code, newPassword } = parsed.data;
 
   const { rows: user } = await query("SELECT * FROM users WHERE email = $1", [
     email,

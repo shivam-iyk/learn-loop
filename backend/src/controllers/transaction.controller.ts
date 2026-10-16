@@ -73,7 +73,7 @@ const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
   );
   if (enrollment[0]) {
     throw new ApiError(400, "You are already enrolled to this course", [
-      "ALREADY_SATISFIED",
+      "ALREADY_ENROLLED",
     ]);
   }
 
@@ -165,32 +165,16 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
     "UPDATE transactions SET status = 'success' WHERE transaction_id = $1 RETURNING course, instructor, amount",
     [ORDERID],
   );
-  if (!transaction[0]) {
-    await query("ROLLBACK");
-    throw new ApiError(500, "Failed to verify payment", [
-      "TRANSACTION_NOT_UPDATED",
-    ]);
-  }
 
-  const { rows: instructor } = await query(
-    "UPDATE users SET wallet = wallet + $1 WHERE id = $2 RETURNING id",
-    [transaction[0]?.amount, transaction[0]?.instructor],
-  );
-  if (!instructor[0]) {
-    await query("ROLLBACK");
-    throw new ApiError(500, "Failed to verify payment", [
-      "INSTRUCTOR_WALLET_NOT_UPDATED",
-    ]);
-  }
+  await query("UPDATE users SET wallet = wallet + $1 WHERE id = $2", [
+    transaction[0]?.amount,
+    transaction[0]?.instructor,
+  ]);
 
-  const { rows: course } = await query(
-    "UPDATE courses SET students_enrolled = students_enrolled + 1 WHERE id = $1 RETURNING id",
+  await query(
+    "UPDATE courses SET students_enrolled = students_enrolled + 1 WHERE id = $1",
     [transaction[0]?.course],
   );
-  if (!course[0]) {
-    await query("ROLLBACK");
-    throw new ApiError(500, "Failed to verify payment", ["COURSE_NOT_UPDATED"]);
-  }
 
   const { rows: enrollment } = await query(
     "INSERT INTO enrollments (course, user_id) VALUES ($1, $2) RETURNING *",
@@ -210,8 +194,6 @@ const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
       200,
       {
         transaction,
-        instructor,
-        course,
         enrollment,
       },
       "Transaction verified successfully",

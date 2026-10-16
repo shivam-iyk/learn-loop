@@ -14,7 +14,7 @@ try {
         id,
       ]);
       if (user) next(null, user[0]);
-      else next(new ApiError(404, "User not found"), null);
+      else next(new ApiError(404, "User not found", ["USER_NOT_FOUND"]), null);
     } catch (error) {
       next(
         new ApiError(

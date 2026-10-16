@@ -85,7 +85,7 @@ function App() {
             <Route element={<MyCourses />} path="/my-courses" />
             <Route element={<Profile />} path="/profile" />
             <Route element={<Connect />} path="/connect" />
-            <Route element={<Connect />} path="/connect/:chatId" />
+            <Route element={<Connect />} path="/connect/:courseId" />
             <Route element={<Instructor />} path="/instructor/:instructorId" />
             <Route element={<Settings />} path="/settings" />
           </Route>

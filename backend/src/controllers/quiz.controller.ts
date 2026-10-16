@@ -29,7 +29,7 @@ const getQuiz = asyncHandler(async (req: Request, res: Response) => {
       [lessonId, id],
     );
     if (!enrollment[0]) {
-      throw new ApiError(401, "You are not enrolled to this course");
+      throw new ApiError(401, "You are not enrolled to this course", ["NOT_ENROLLED"]);
     }
   } else if (role === "instructor") {
     const { rows: course } = await query(
@@ -40,7 +40,7 @@ const getQuiz = asyncHandler(async (req: Request, res: Response) => {
       [lessonId],
     );
     if (course[0]?.owner !== id) {
-      throw new ApiError(401, "You cannot access these resources");
+      throw new ApiError(401, "You cannot access these resources", ["UNAUTHORIZED"]);
     }
   }
 
@@ -52,7 +52,7 @@ const getQuiz = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!quiz[0]) {
-    throw new ApiError(404, "Quiz not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Quiz not found", ["QUIZ_NOT_FOUND"]);
   }
 
   const { rows: questions } = await query(

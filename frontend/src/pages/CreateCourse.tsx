@@ -65,7 +65,7 @@ function CreateCourse() {
           case "COVER_IMAGE_REQUIRED":
             message = "Please provide cover image";
             break;
-          case "COVER_IMAGE_SIZE":
+          case "IMAGE_SIZE":
             description = "Please try with a smaller file";
             queryClient.invalidateQueries({ queryKey: ["courses"] });
             break;
@@ -115,7 +115,7 @@ function CreateCourse() {
           case "COVER_IMAGE_REQUIRED":
             message = "Please provide cover image";
             break;
-          case "COVER_IMAGE_SIZE":
+          case "IMAGE_SIZE":
             description = "Please try with a smaller file";
             queryClient.invalidateQueries({ queryKey: ["courses"] });
             break;

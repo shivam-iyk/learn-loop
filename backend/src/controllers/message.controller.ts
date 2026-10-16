@@ -1,43 +1,40 @@
 import { Request, Response } from "express";
 import asyncHandler from "../utils/AsyncHandler";
-import { newMessageSchema } from "../schemas/message.schema";
+import { getMessagesSchema, newMessageSchema } from "../schemas/message.schema";
 import ApiError from "../utils/ApiError";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { query } from "../db";
 import { emitSocketEvent } from "../socket";
 import { ChatEventEnum } from "../utils/constants";
 import ApiResponse from "../utils/ApiResponse";
-import { messageIdSchema } from "../schemas/param.schema";
+import { courseIdSchema, messageIdSchema } from "../schemas/param.schema";
 
 const getChats = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
+  const role = req.user?.role;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
   const { rows: chats } = await query(
-    `SELECT e.course, c.id, c.name, c.cover, c.tagline,
-    (
-      SELECT m.content
-      FROM message AS m
-      WHERE m.course = c.id
-      ORDER BY m.created_at DESC
-      LIMIT 1
-    ) AS last_message,
-    (
-      SELECT m.created_at
-      FROM message AS m
-      WHERE m.course = c.id
-      ORDER BY m.created_at DESC
-      LIMIT 1
-    ) AS last_message_at,
-    FROM enrollments AS e 
-    JOIN course AS c ON c.id = e.course
-    WHERE user_id = $1`,
+    `SELECT c.id, c.name, c.cover, c.tagline,
+      (
+        SELECT m.content
+        FROM messages AS m
+        WHERE m.course = c.id
+        ORDER BY m.created_at DESC
+        LIMIT 1
+      ) AS last_message,
+      (
+        SELECT m.created_at
+        FROM messages AS m
+        WHERE m.course = c.id
+        ORDER BY m.created_at DESC
+        LIMIT 1
+      ) AS last_message_at
+      FROM enrollments AS e 
+      JOIN courses AS c ON c.id = e.course
+      WHERE user_id = $1 OR c.owner = $1`,
     [id],
   );
-
-  if (!chats) {
-    throw new ApiError(404, "No chats found", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)
@@ -48,26 +45,48 @@ const getMessages = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const { course } = req.params;
-  if (!course || typeof course !== "string" || isNaN(parseInt(course))) {
-    throw new ApiError(400, "Course ID is required", ["COURSE_ID_REQUIRED"]);
+  const parsed = courseIdSchema.safeParse(req.params);
+  const options = getMessagesSchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
   }
+
+  if (!options.data) {
+    const errors = options.error.issues.map((err) => err.message);
+    throw new ApiError(400, "Validation Error", errors);
+  }
+
+  const { courseId } = parsed.data;
+  const { page, limit } = options.data;
 
   const { rows: messages } = await query(
-    `SELECT m.*, u.id, u.name, u.avatar, u.role 
+    `SELECT m.*, u.name, u.avatar, u.role, COUNT(*) OVER() AS total_count 
     FROM messages AS m 
     JOIN users u ON u.id = m.sender
-    WHERE id = $1`,
-    [course],
+    WHERE course = $1
+    ORDER BY created_at DESC
+    OFFSET ${(page - 1) * limit} ROWS
+    LIMIT ${limit}`,
+    [courseId],
   );
 
-  if (!messages) {
-    throw new ApiError(404, "No messages found", ["NOT_FOUND"]);
-  }
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, messages, "Messages found successfully"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        messages: messages?.map(({ total_count, ...course }) => course),
+        pagination: {
+          page,
+          limit,
+          total: parseInt(messages[0]?.total_count) || 0,
+          pages: Math.ceil(messages[0]?.total_count / limit),
+        },
+      },
+      "Messages found successfully",
+    ),
+  );
 });
 
 const sendMessage = asyncHandler(async (req: Request, res: Response) => {
@@ -92,7 +111,7 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     if (attachmentFile.size > 50_000_000) {
       // File greater than 50MB
       throw new ApiError(400, "Attachment cannot be larger than 50MB", [
-        "COVER_IMAGE_SIZE",
+        "IMAGE_SIZE",
       ]);
     }
 
@@ -137,14 +156,15 @@ const sendMessage = asyncHandler(async (req: Request, res: Response) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, message, "Message sent successfully"));
+    .json(new ApiResponse(200, message[0], "Message sent successfully"));
 });
 
 const editMessage = asyncHandler(async (req: Request, res: Response) => {
   const id = req.user?.id;
   if (!id) throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
 
-  const parsed = newMessageSchema.partial("content").safeParse(req.body);
+  const parsed = newMessageSchema.partial({ course: true }).safeParse(req.body);
+
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation Error", errors);
@@ -164,7 +184,7 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
     [messageId],
   );
   if (!message) {
-    throw new ApiError(404, "Message not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Message not found", ["MESSAGE_NOT_FOUND"]);
   }
 
   if (message[0]?.sender.toString() !== id.toString()) {
@@ -173,29 +193,37 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
     ]);
   }
 
-  await query(
+  const { rows: updatedMessage } = await query(
     `UPDATE messages
-    SET content = $1,
-    WHERE id = $2`,
+    SET content = $1
+    WHERE id = $2
+    RETURNING *`,
     [content, messageId],
   );
 
+  if (!updatedMessage) {
+    throw new ApiError(500, "Failed to update message", ["ACTION_FAILED"]);
+  }
+
   const { rows: users } = await query(
     "SELECT user_id FROM enrollments WHERE course = $1",
-    [message[0]?.course],
+    [updatedMessage[0]?.course],
   );
+
   users?.forEach((item) => {
     if (item?.toString() === id) return;
     emitSocketEvent(
-      message[0]?.course,
+      updatedMessage[0]?.course,
       ChatEventEnum.EDITED_MESSAGE,
-      message[0],
+      updatedMessage[0],
     );
   });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, message, "Message edited successfully"));
+    .json(
+      new ApiResponse(200, updatedMessage[0], "Message edited successfully"),
+    );
 });
 
 const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
@@ -214,7 +242,7 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
     [messageId],
   );
 
-  if (!message) {
+  if (!message[0]) {
     throw new ApiError(404, "Message not found", ["NOT_FOUND"]);
   }
 
@@ -239,6 +267,10 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
       message[0],
     );
   });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, message[0], "Message deleted successfully"));
 });
 
 export { getChats, getMessages, sendMessage, editMessage, deleteMessage };

@@ -42,10 +42,6 @@ const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
     [search],
   );
 
-  if (!courses) {
-    throw new ApiError(400, "No suggestions found");
-  }
-
   return res
     .status(200)
     .json(new ApiResponse(200, courses, "Suggestions found"));
@@ -114,10 +110,6 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
     FROM courses
     WHERE status = 'published'`);
 
-  if (!courses[0]) {
-    throw new ApiError(400, "No courses found", ["NOT_FOUND"]);
-  }
-
   return res.status(200).json(
     new ApiResponse(
       200,
@@ -125,7 +117,8 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
         courses: courses.map(({ total_count, ...course }) => course),
         pagination: {
           page,
-          total: courses[0]?.total_count,
+          limit,
+          total: parseInt(courses[0]?.total_count) || 0,
           pages: Math.ceil(courses[0]?.total_count / limit),
         },
         filters: filters[0],
@@ -157,7 +150,7 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!course[0]) {
-    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Course not found", ["COURSE_NOT_FOUND"]);
   }
 
   if (role === "instructor" && course[0]?.owner !== id) {
@@ -180,9 +173,6 @@ const getEnrolledCourses = asyncHandler(async (req: Request, res: Response) => {
     WHERE e.user_id = $1`,
     [id],
   );
-  if (!courses[0]) {
-    throw new ApiError(404, "No enrolled courses found", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)
@@ -200,9 +190,6 @@ const getOwnedCourses = asyncHandler(async (req: Request, res: Response) => {
     "SELECT * FROM courses WHERE owner = $1",
     [id],
   );
-  if (!courses[0]) {
-    throw new ApiError(404, "No owned courses found", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)
@@ -258,17 +245,13 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   } else if (coverImage.size > 50_000_000) {
     // File greater than 50MB
     throw new ApiError(400, "Cover image cannot be larger than 50MB", [
-      "COVER_IMAGE_SIZE",
+      "IMAGE_SIZE",
     ]);
   }
 
   const coverImageUrl = await uploadToCloudinary(coverImage.path, "course");
   if (!coverImageUrl) {
-    throw new ApiError(
-      500,
-      "Failed to upload cover image, Please try again later!",
-      ["UPLOAD_FAILED"],
-    );
+    throw new ApiError(500, "Failed to upload cover image", ["UPLOAD_FAILED"]);
   }
 
   const { rows: course } = await query(
@@ -289,11 +272,7 @@ const createCourse = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!course[0]) {
-    throw new ApiError(
-      500,
-      "Failed to create course, Please try again later!",
-      ["ACTION_FAILED"],
-    );
+    throw new ApiError(500, "Failed to create course", ["ACTION_FAILED"]);
   }
 
   return res
@@ -338,7 +317,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     if (coverImage.size > 50_000_000) {
       // File greater than 50MB
       throw new ApiError(400, "Cover image cannot be larger than 50MB", [
-        "COVER_IMAGE_SIZE",
+        "IMAGE_SIZE",
       ]);
     }
 
@@ -355,7 +334,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     [courseId],
   );
   if (!courseExists[0]) {
-    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Course not found", ["COURSE_NOT_FOUND"]);
   }
 
   if (courseExists[0]?.owner !== id) {
@@ -393,11 +372,7 @@ const editCourse = asyncHandler(async (req: Request, res: Response) => {
     ],
   );
   if (!course[0]) {
-    throw new ApiError(
-      500,
-      "Failed to update course, Please try again later!",
-      ["ACTION_FAILED"],
-    );
+    throw new ApiError(500, "Failed to update course", ["ACTION_FAILED"]);
   }
 
   return res
@@ -426,7 +401,7 @@ const discardDraft = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!course) {
-    throw new ApiError(404, "Course not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Course not found", ["COURSE_NOT_FOUND"]);
   }
 
   if (course[0]?.owner !== id) {
@@ -435,15 +410,17 @@ const discardDraft = asyncHandler(async (req: Request, res: Response) => {
     ]);
   }
 
+  if (course[0]?.status !== "draft") {
+    throw new ApiError(400, "Course not a draft", ["NOT_DRAFT"]);
+  }
+
   const { rows: discardedDraft } = await query(
     "DELETE FROM courses WHERE id = $1 RETURNING name",
     [courseId],
   );
 
   if (!discardedDraft) {
-    throw new ApiError(400, "Cannot discard course, Please try again later", [
-      "ACTION_FAILED",
-    ]);
+    throw new ApiError(400, "Cannot discard course", ["ACTION_FAILED"]);
   }
 
   return res

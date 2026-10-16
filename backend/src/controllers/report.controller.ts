@@ -19,9 +19,6 @@ const getReports = asyncHandler(async (req: Request, res: Response) => {
     "SELECT * FROM reports WHERE user_id = $1",
     [id],
   );
-  if (!reports) {
-    throw new ApiError(400, "No reports found", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)
@@ -46,7 +43,7 @@ const createReport = asyncHandler(async (req: Request, res: Response) => {
     if (image.size > 50_000_000) {
       // File greater than 50MB
       throw new ApiError(400, "Image cannot be larger than 50MB", [
-        "COVER_IMAGE_SIZE",
+        "IMAGE_SIZE",
       ]);
     }
 

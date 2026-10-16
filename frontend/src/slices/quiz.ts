@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
-import type { Option, QuizSliceI } from "../types/quiz";
+import type { Option, QuizSlice } from "../types/quiz";
 
-export const createQuizSlice: StateCreator<QuizSliceI> = (set, get) => ({
+export const createQuizSlice: StateCreator<QuizSlice> = (set, get) => ({
   quiz: {
     id: 0,
     pass_mark: 0,

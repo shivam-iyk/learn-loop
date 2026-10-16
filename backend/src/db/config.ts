@@ -161,6 +161,8 @@ async function configureDB() {
             sender INT NOT NULL REFERENCES users(id),
             content TEXT,
             attachment JSONB,
+            reply VARCHAR(100),
+            reply_by VARCHAR(255),
             created_at TIMESTAMPTZ DEFAULT NOW()
         );
     `);

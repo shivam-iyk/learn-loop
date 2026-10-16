@@ -53,11 +53,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 
   if (!lesson[0]) {
     await query("ROLLBACK");
-    throw new ApiError(
-      500,
-      "Failed to create lesson, Please try again later!",
-      ["ACTION_FAILED"],
-    );
+    throw new ApiError(500, "Failed to create lesson", ["ACTION_FAILED"]);
   }
 
   const data = lesson[0];
@@ -72,9 +68,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 
     if (!savedQuiz[0]) {
       await query("ROLLBACK");
-      throw new ApiError(500, "Failed to save quiz, Please try again later!", [
-        "ACTION_FAILED",
-      ]);
+      throw new ApiError(500, "Failed to save quiz", ["ACTION_FAILED"]);
     }
 
     const options: ((typeof quiz.questions)[number]["options"][number] & {
@@ -100,11 +94,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 
     if (savedQuestions?.length === 0) {
       await query("ROLLBACK");
-      throw new ApiError(
-        500,
-        "Failed to save questions, Please try again later!",
-        ["ACTION_FAILED"],
-      );
+      throw new ApiError(500, "Failed to save questions", ["ACTION_FAILED"]);
     }
 
     options.forEach((item) => {
@@ -123,9 +113,7 @@ const createLesson = asyncHandler(async (req: Request, res: Response) => {
 
     if (savedOptions?.length === 0) {
       await query("ROLLBACK");
-      throw new ApiError(500, "Failed to save quiz, Please try again later!", [
-        "ACTION_FAILED",
-      ]);
+      throw new ApiError(500, "Failed to save quiz", ["ACTION_FAILED"]);
     }
 
     data.quiz = savedQuiz[0];
@@ -170,7 +158,9 @@ const getLessons = asyncHandler(async (req: Request, res: Response) => {
       [courseId, id],
     );
     if (!enrollment[0]) {
-      throw new ApiError(401, "You are not enrolled to this course");
+      throw new ApiError(401, "You are not enrolled to this course", [
+        "UNAUTHORIZED",
+      ]);
     }
   } else if (role === "instructor") {
     const { rows: course } = await query(
@@ -178,7 +168,9 @@ const getLessons = asyncHandler(async (req: Request, res: Response) => {
       [courseId],
     );
     if (course[0]?.owner !== id) {
-      throw new ApiError(401, "You cannot access these resources");
+      throw new ApiError(401, "You cannot access these resources", [
+        "UNAUTHORIZED",
+      ]);
     }
   }
 
@@ -245,11 +237,7 @@ const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!updatedLessons[0]) {
-    throw new ApiError(
-      500,
-      "Failed to reorder lessons, Please try again later!",
-      ["ACTION_FAILED"],
-    );
+    throw new ApiError(500, "Failed to reorder lessons", ["ACTION_FAILED"]);
   }
 
   return res
@@ -396,11 +384,7 @@ const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
 
   if (!deletedLesson[0]) {
     await query("ROLLBACK");
-    throw new ApiError(
-      500,
-      "Failed to delete lesson, Please try again later!",
-      ["ACTION_FAILED"],
-    );
+    throw new ApiError(500, "Failed to delete lesson", ["ACTION_FAILED"]);
   }
 
   await query(

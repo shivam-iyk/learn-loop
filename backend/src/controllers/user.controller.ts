@@ -70,7 +70,7 @@ const becomeInstructor = asyncHandler(async (req: Request, res: Response) => {
   if (!user[0]) {
     throw new ApiError(
       500,
-      "Failed to become instructor, Please try again later!",
+      "Failed to become instructor",
       ["ACTION_FAILED"],
     );
   }
@@ -122,7 +122,7 @@ const onboardUser = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!user[0]) {
-    throw new ApiError(500, "Failed to onboard user, Please try again later!", [
+    throw new ApiError(500, "Failed to onboard user", [
       "ACTION_FAILED",
     ]);
   }
@@ -144,7 +144,7 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
   } else if (avatar.size > 50_000_000) {
     // File greater than 50MB
     throw new ApiError(400, "Avatar image cannot be larger than 50MB", [
-      "AVATAR_IMAGE_SIZE",
+      "IMAGE_SIZE",
     ]);
   }
 
@@ -152,7 +152,7 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
   if (!avatarUrl) {
     throw new ApiError(
       500,
-      "Failed to upload avatar, Please try again later!",
+      "Failed to upload avatar",
       ["UPLOAD_FAILED"],
     );
   }
@@ -202,7 +202,7 @@ const removeAvatar = asyncHandler(async (req: Request, res: Response) => {
   if (!result) {
     throw new ApiError(
       500,
-      "Failed to delete avatar, Please try again later!",
+      "Failed to delete avatar",
       ["UPLOAD_FAILED"],
     );
   }

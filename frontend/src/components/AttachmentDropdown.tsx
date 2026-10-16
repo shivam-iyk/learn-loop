@@ -9,18 +9,17 @@ const ACCEPT_TYPES = {
   document: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z",
 };
 
-function AttachmentDropdown() {
+function AttachmentDropdown({
+  attachment,
+  setAttachment,
+}: {
+  attachment: { file: File | null; url: string };
+  setAttachment: (attachment: { file: File | null; url: string }) => void;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [accept, setAccept] = useState<keyof typeof ACCEPT_TYPES>("image");
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [attachment, setAttachment] = useState<{
-    file: File | null;
-    url: string;
-  }>({
-    file: null,
-    url: "",
-  });
 
   const getSize = (bytes?: number) => {
     if (!bytes) return "";
@@ -111,7 +110,7 @@ function AttachmentDropdown() {
                   <img
                     src={attachment.url}
                     alt="Preview not available"
-                    className="w-full object-contain rounded-lg"
+                    className="w-full object-contain rounded-lg max-h-[70vh]"
                   />
                 ) : attachment.file?.type.includes("video") ? (
                   <video
@@ -125,7 +124,7 @@ function AttachmentDropdown() {
                     <audio src={attachment.url} controls className="w-full" />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center text-black py-4">
+                  <div className="flex flex-col items-center text-foreground py-4">
                     <span className="bg-background-secondary rounded-2xl p-2 mx-auto">
                       <FileText className="size-16" strokeWidth={1.5} />
                     </span>

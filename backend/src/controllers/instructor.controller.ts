@@ -28,9 +28,7 @@ const getOverview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!overview[0]) {
-    throw new ApiError(500, "Failed to get overview, Please try again later!", [
-      "ACTION_FAILED",
-    ]);
+    throw new ApiError(500, "Failed to get overview", ["NOT_FOUND"]);
   }
 
   return res
@@ -58,10 +56,6 @@ const getPopularInstructors = asyncHandler(
       GROUP BY u.id, u.name, u.avatar, u.bio
       ORDER BY total_students DESC
       LIMIT 10`);
-
-    if (!instructors[0]) {
-      throw new ApiError(400, "No instructors found", ["NOT_FOUND"]);
-    }
 
     return res
       .status(200)
@@ -111,7 +105,7 @@ const getInstructor = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!instructor[0]) {
-    throw new ApiError(404, "Instructor not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Instructor not found", ["INSTRUCTOR_NOT_FOUND"]);
   }
 
   return res
@@ -146,10 +140,6 @@ const getInstructors = asyncHandler(async (req: Request, res: Response) => {
      AND ($5::int IS NULL OR COUNT(c.id) <= $5)`,
     [skills, minDuration, maxDuration, minCourses, maxCourses],
   );
-
-  if (!instructors[0]) {
-    throw new ApiError(404, "No instructors found", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)

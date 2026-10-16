@@ -27,9 +27,9 @@ export interface QuizI {
   questions: Question[];
 }
 
-export interface QuizSliceI {
+export interface QuizSlice {
   quiz: QuizI;
-  setQuiz: (quiz: QuizSliceI["quiz"]) => void;
+  setQuiz: (quiz: QuizSlice["quiz"]) => void;
   addQuestion: () => void;
   removeQuestion: (questionId: number) => void;
   addOption: (questionId: number) => void;
@@ -50,5 +50,5 @@ export interface QuizSliceI {
     optionId?: number,
   ) => void;
   handleReorder: (questionId: number, from: number, to: number) => void;
-  handleMatchReorder: QuizSliceI["handleReorder"];
+  handleMatchReorder: QuizSlice["handleReorder"];
 }

@@ -45,7 +45,7 @@ function CustomEmptyState({
         </h4>
         <span className="text-sm text-muted">{description}</span>
       </div>
-      {actions && <div className="mt-2">{actions}</div>}
+      {actions && <div>{actions}</div>}
     </EmptyState>
   );
 }

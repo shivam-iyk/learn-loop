@@ -7,12 +7,15 @@ import {
   sendMessage,
 } from "../controllers/message.controller";
 import upload from "../middlewares/multer.middleware";
+import verifyJWT from "../middlewares/auth.middleware";
 
 const router = Router();
 
+router.use(verifyJWT);
+
 router.get("/chats", getChats);
 
-router.get("/", getMessages);
+router.get("/:courseId", getMessages);
 
 router.route("/send").post(upload.single("attachment"), sendMessage);
 

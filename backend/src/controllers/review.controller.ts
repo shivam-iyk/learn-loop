@@ -22,9 +22,6 @@ const getReviews = asyncHandler(async (req: Request, res: Response) => {
      WHERE r.course = $1`,
     [courseId],
   );
-  if (!reviews[0]) {
-    throw new ApiError(404, "No reviews found for this course", ["NOT_FOUND"]);
-  }
 
   return res
     .status(200)
@@ -70,7 +67,7 @@ const postReview = asyncHandler(async (req: Request, res: Response) => {
   );
   if (duplicateReview[0]) {
     throw new ApiError(400, "You have already reviewed this course", [
-      "ALREADY_SATISFIED",
+      "ALREADY_REVIEWED",
     ]);
   }
 
@@ -88,7 +85,7 @@ const postReview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!review[0]) {
-    throw new ApiError(500, "Failed to post review, Please try again later!", [
+    throw new ApiError(500, "Failed to post review", [
       "ACTION_FAILED",
     ]);
   }
@@ -128,7 +125,7 @@ const editReview = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!reviewExists[0]) {
-    throw new ApiError(404, "Review not found", ["NOT_FOUND"]);
+    throw new ApiError(404, "Review not found", ["REVIEW_NOT_FOUND"]);
   }
 
   const { rows: review } = await query(
@@ -139,7 +136,7 @@ const editReview = asyncHandler(async (req: Request, res: Response) => {
     [rating, reviewContent, reviewId],
   );
   if (!review) {
-    throw new ApiError(500, "Failed to edit review, Please try again later!");
+    throw new ApiError(500, "Failed to edit review");
   }
 
   if (rating) {
