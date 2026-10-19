@@ -28,6 +28,7 @@ function Settings() {
       if (isProtectedPage) {
         navigate("/login");
       }
+      queryClient.invalidateQueries();
       queryClient.clear();
     },
   });

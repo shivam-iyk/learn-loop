@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const getSuggestionsSchema = z.object({
+const getSearchSuggestionsSchema = z.object({
   search: z
     .string()
     .min(1, "Query cannot be less than 1 characters")
@@ -21,6 +21,20 @@ const getCoursesSchema = z.object({
   minLessons: z.coerce.number().int().nonnegative().optional(),
   maxLessons: z.coerce.number().int().nonnegative().optional(),
 });
+
+const getHomeCoursesSchema = z
+  .object({
+    category: z.string().optional(),
+    skill: z.string().optional(),
+    variant: z
+      .string()
+      .refine((value) =>
+        ["category", "recommended", "skills", "free"].includes(value),
+      ),
+  })
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    message: "At least one field must be provided",
+  });
 
 const skill = z
   .string()
@@ -55,4 +69,9 @@ const createCourseSchema = z.object({
     .optional(),
 });
 
-export { getSuggestionsSchema, getCoursesSchema, createCourseSchema };
+export {
+  getCoursesSchema,
+  createCourseSchema,
+  getHomeCoursesSchema,
+  getSearchSuggestionsSchema,
+};

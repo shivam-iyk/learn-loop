@@ -159,6 +159,11 @@ const ERROR_MAP: Record<string, ParsedError> = {
     message: "You are already an instructor",
     invalidate: [["user"]],
   },
+  COURSE_BANNED: {
+    message: "Course not available",
+    description: "",
+    invalidate: [["courses"]],
+  }
 };
 
 export function parseApiError(error: ApiError | null | undefined): ParsedError {

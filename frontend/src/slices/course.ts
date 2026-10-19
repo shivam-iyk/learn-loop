@@ -61,4 +61,6 @@ export const createCourseSlice: StateCreator<CourseSlice> = (set) => ({
   },
   suggestedCourses: [],
   recentCourses: [],
+  setSuggestedCourses: (courses) => set({ suggestedCourses: courses }),
+  setRecentCourses: (courses) => set({ recentCourses: courses }),
 });

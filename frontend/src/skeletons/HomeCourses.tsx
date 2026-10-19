@@ -1,17 +1,17 @@
 import { Skeleton } from "@heroui/react";
 
-function HomeCourses({ hasVariant = false }: { hasVariant?: boolean }) {
+function HomeCourses({ hasChips = false }: { hasChips?: boolean }) {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center w-full mb-3">
         <Skeleton className="h-6 w-60 rounded-lg" />
-        <Skeleton className="h-6 w-20 rounded-lg" />
+        {!hasChips && <Skeleton className="h-6 w-20 rounded-lg" />}
       </div>
-      {hasVariant && (
+      {hasChips && (
         <div className="flex items-center gap-2 mb-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton
-              className="h-8 rounded-full"
+              className="h-10 rounded-full"
               style={{
                 width: `${4 + 2 * Math.random()}rem`,
               }}

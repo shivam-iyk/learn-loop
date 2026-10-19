@@ -5,6 +5,10 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Course } from "../types/course";
 import RatingChip from "./RatingChip";
+import { useQuery } from "@tanstack/react-query";
+import { getCarouselCards } from "../services/courses";
+import { useEffect } from "react";
+import CourseCarouselSkeleton from "../skeletons/CourseCarousel";
 
 function Slide({
   course,
@@ -25,7 +29,7 @@ function Slide({
           className="h-full object-cover rounded-xl aspect-video group-hover:scale-105 group-focus-visible:scale-105 transition-transform duration-300 text-xs text-muted"
         />
         <div className="absolute bottom-0 w-full bg-linear-to-b from-transparent via-black/50 to-black/80 h-full group-hover:opacity-100 group-focus-visible:opacity-100 opacity-0 transition-opacity duration-300 text-white flex flex-col items-center justify-center gap-2 z-10">
-          <Play className="sm:size-16 size-8" />
+          <Play className="lg:size-16 sm:size-12 size-8" />
           <h3 className="sm:text-xl text-base font-poppins">
             {isSuggested ? "Start Learning" : "Continue Learning"}
           </h3>
@@ -58,14 +62,30 @@ function Slide({
 }
 
 function CourseCarousel() {
-  const { recentCourses, suggestedCourses } = useAppStore();
+  const { recentCourses, suggestedCourses, setSuggestedCourses } =
+    useAppStore();
   const [emblaRef, emblaApi] = useEmblaCarousel();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => getCarouselCards(),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setSuggestedCourses(data?.courses);
+  }, [data]);
+
+  if (isLoading) {
+    return <CourseCarouselSkeleton />;
+  }
 
   return (
     <div className="w-full">
       <div className="flex justify-between items-center w-full mb-3 min-h-10">
         <h3 className="uppercase text-lg text-muted font-huninn">
-          Continue Learning
+          {data?.category} Learning
         </h3>
         <div className="embla__controls">
           <div className="embla__buttons">

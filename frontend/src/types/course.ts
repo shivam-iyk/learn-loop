@@ -21,35 +21,43 @@ export interface Course {
   lessons: number;
 }
 
+export interface Pagination {
+  page: number;
+  pages: number;
+  total: number;
+  limit: number;
+}
+
+export interface Filters {
+  price: number[];
+  categories: string[];
+  duration: Set<string>;
+  rating: number;
+  lessons: number[];
+}
+
+export type SortTypes = "latest" | "popular" | "price-low" | "price-high";
+
 export interface CourseSlice {
   loading: false;
-  pagination: {
-    page: number;
-    pages: number;
-    total: number;
-    limit: number;
-  };
-  setPagination: (pagination: CourseSlice["pagination"]) => void;
+  pagination: Pagination;
+  setPagination: (pagination: Pagination) => void;
   enrolledCourses: { id: number }[];
   progress: { completed: number; total: number };
-  sort: "latest" | "popular" | "price-low" | "price-high";
-  setSort: (sort: CourseSlice["sort"]) => void;
+  sort: SortTypes;
+  setSort: (sort: SortTypes) => void;
   search: string;
   setSearch: (value: string) => void;
-  filters: {
-    price: number[];
-    categories: string[];
-    duration: Set<string>;
-    rating: number;
-    lessons: number[];
-  };
-  setFilters: (filters: CourseSlice["filters"]) => void;
+  filters: Filters;
+  setFilters: (filters: Filters) => void;
   courses: Course[];
   setCourses: (courses: Course[]) => void;
   course: Course;
-  setCourse: (course: CourseSlice["course"]) => void;
+  setCourse: (course: Course) => void;
   recentCourses: Course[];
   suggestedCourses: Course[];
+  setSuggestedCourses: (courses: Course[]) => void;
+  setRecentCourses: (courses: Course[]) => void;
 }
 
 export interface CourseDetailsFormI {
@@ -66,7 +74,7 @@ export interface FilterParam {
   page: number;
   limit: number;
   search: string | null;
-  sort: "latest" | "popular" | "price-low" | "price-high";
+  sort: SortTypes;
   minPrice: number | null;
   maxPrice: number | null;
   rating: number | null;

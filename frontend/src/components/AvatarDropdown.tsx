@@ -21,6 +21,7 @@ export function AvatarDropdown() {
         (item) => location.pathname.includes(item),
       );
       queryClient.clear();
+      queryClient.invalidateQueries();
       if (isProtectedPage) {
         navigate("/login");
       }

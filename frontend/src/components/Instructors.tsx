@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import useAppStore from "../store";
 import { Button } from "@heroui/react";
 import type { UserSlice } from "../types/user";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getPopularInstructors } from "../services/user";
+import InstructorsSkeleton from "../skeletons/Instructors";
 
 function Instructor({
   instructor,
@@ -12,12 +15,15 @@ function Instructor({
 }) {
   return (
     <div className="border border-background rounded-lg p-4 text-center snap-start hover:border-background-tertiary">
-      <img src={instructor.avatar} className="w-40 mb-3" />
+      <img
+        src={instructor.avatar || "/avatar-small.png"}
+        className="w-40 mb-3"
+      />
       <h3 className="font-medium sm:text-lg text-base whitespace-nowrap font-outfit">
         {instructor.name}
       </h3>
       <p className="text-muted text-xs truncate">
-        {instructor.skills.slice(0, 3).join(", ")}
+        {instructor.skills?.slice(0, 3).join(", ")}
       </p>
       <p className="text-xs text-muted">{instructor.courses} Courses</p>
       <Link
@@ -31,7 +37,7 @@ function Instructor({
 }
 
 function Instructors() {
-  const { instructors } = useAppStore();
+  const { instructors, setInstructors } = useAppStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const slidePrev = () => {
@@ -42,6 +48,7 @@ function Instructors() {
       behavior: "smooth",
     });
   };
+
   const slideNext = () => {
     if (!containerRef.current) return;
     const scrollWidth = containerRef.current.children[0].clientWidth;
@@ -50,6 +57,21 @@ function Instructors() {
       behavior: "smooth",
     });
   };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["instructors"],
+    queryFn: getPopularInstructors,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setInstructors(data);
+  }, [data]);
+
+  if (isLoading) {
+    <InstructorsSkeleton />;
+  }
 
   return (
     <div className="w-full">

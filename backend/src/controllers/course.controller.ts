@@ -6,22 +6,26 @@ import ApiResponse from "../utils/ApiResponse";
 import {
   createCourseSchema,
   getCoursesSchema,
-  getSuggestionsSchema,
+  getHomeCoursesSchema,
+  getSearchSuggestionsSchema,
 } from "../schemas/course.schema";
 import { deleteFromCloudinary, uploadToCloudinary } from "../utils/cloudinary";
-import { courseIdSchema } from "../schemas/param.schema";
+import { courseIdSchema, instructorIdSchema } from "../schemas/param.schema";
 
-const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = getSuggestionsSchema.safeParse(req.query);
-  if (!parsed.success) {
-    const errors = parsed.error.issues.map((err) => err.message);
-    throw new ApiError(400, "Validation error", errors);
-  }
+const getSearchSuggestions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.user?.id || null;
 
-  const { search } = parsed.data;
+    const parsed = getSearchSuggestionsSchema.safeParse(req.query);
+    if (!parsed.success) {
+      const errors = parsed.error.issues.map((err) => err.message);
+      throw new ApiError(400, "Validation error", errors);
+    }
 
-  const { rows: courses } = await query(
-    `SELECT DISTINCT term
+    const { search } = parsed.data;
+
+    const { rows: courses } = await query(
+      `SELECT DISTINCT term
       FROM (
           SELECT category AS term
           FROM courses
@@ -36,18 +40,243 @@ const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
           SELECT name AS term
           FROM courses
       ) AS suggestions
-      WHERE term ILIKE $1 || '%'
+      WHERE term ILIKE $1 || '%' AND status = 'published' AND NOT is_banned AND NOT ($2::int IS NULL OR owner = $2)
       ORDER BY term
-      LIMIT 10;`,
-    [search],
-  );
+      LIMIT 10`,
+      [search, id],
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, courses, "Suggestions found"));
+  },
+);
+
+const getInstructorCourses = asyncHandler(
+  async (req: Request, res: Response) => {
+    const parsed = instructorIdSchema.safeParse(req.params);
+    if (!parsed.success) {
+      const errors = parsed.error.issues.map((err) => err.message);
+      throw new ApiError(400, "Validation error", errors);
+    }
+
+    const { instructorId } = parsed.data;
+
+    const { rows: courses } = await query(
+      `SELECT * 
+      FROM courses 
+      WHERE ($1::int IS NULL OR owner = $1) AND status = 'published' AND NOT is_banned`,
+      [instructorId],
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, courses, "Courses found successfully"));
+  },
+);
+
+const getCarouselCards = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.user?.id || null;
+
+  let courses;
+  let category: "continue" | "suggested" = "suggested";
+
+  const card_columns =
+    "c.name, c.cover, c.tagline, c.category, c.skills, c.rating_count, c.rating_sum, c.students_enrolled";
+
+  if (id) {
+    category = "continue";
+    const { rows } = await query(
+      `WITH my_enrollments AS (
+        SELECT course, MIN(enrolled_at) AS enrolled_at
+        FROM enrollments
+        WHERE user_id = $1
+        GROUP BY course
+      )
+      SELECT ${card_columns},
+            c.id,
+            tl.total_lessons,
+            pr.completed_lessons,
+            COALESCE(
+              ROUND(100.0 * pr.completed_lessons / NULLIF(tl.total_lessons, 0))::int, 0
+            ) AS progress,
+            COALESCE(pr.last_completed_at, me.enrolled_at) AS last_activity
+        FROM my_enrollments me
+        JOIN courses c ON c.id = me.course
+        CROSS JOIN LATERAL (
+          SELECT COUNT(*)::int AS total_lessons
+          FROM lessons l
+          WHERE l.course = c.id
+        ) tl
+        CROSS JOIN LATERAL (
+          SELECT COUNT(DISTINCT lp.lesson)::int AS completed_lessons,
+                MAX(lp.completed_at) AS last_completed_at
+          FROM lesson_progress lp
+          JOIN lessons l ON l.id = lp.lesson AND l.course = c.id
+          WHERE lp.user_id = $1 AND lp.completed
+        ) pr
+        WHERE c.status = 'published'
+          AND COALESCE(c.is_banned, false) = false
+          AND c.owner <> $1
+          AND (tl.total_lessons = 0 OR pr.completed_lessons < tl.total_lessons)
+        ORDER BY last_activity DESC
+        LIMIT 5`,
+      [id],
+    );
+    courses = rows;
+  }
+
+  if (!courses || courses.length === 0) {
+    category = "suggested";
+    const { rows } = await query(
+      `SELECT ${card_columns}, c.id
+      FROM courses c
+      WHERE c.status = 'published'
+        AND COALESCE(c.is_banned, false) = false
+        AND ($1::int IS NULL OR c.owner <> $1::int)
+        AND ($1::int IS NULL OR NOT EXISTS (
+              SELECT 1 FROM enrollments e
+              WHERE e.user_id = $1::int AND e.course = c.id))
+      ORDER BY (COALESCE(c.rating_sum, 0) + 35.0) / (COALESCE(c.rating_count, 0) + 10)
+              + 0.5 * LN(1 + COALESCE(c.students_enrolled, 0)) DESC,
+              c.id
+      LIMIT 5`,
+      [id],
+    );
+    courses = rows;
+  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, courses, "Suggestions found"));
+    .json(
+      new ApiResponse(200, { category, courses }, "Courses found successfully"),
+    );
+});
+
+const getHomeCourses = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.user?.id || null;
+
+  const parsed = getHomeCoursesSchema.safeParse(req.query);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((item) => item.message);
+    throw new ApiError(400, "Validation Error", errors);
+  }
+
+  const { category, skill, variant } = parsed.data;
+
+  let sql = "";
+  let params: unknown[] = [];
+  let categories: string[] | undefined = undefined;
+  let skills: string[] | undefined = undefined;
+
+  const columns =
+    "id, cover, name, tagline, category, skills, lessons, students_enrolled, price, rating_sum, rating_count";
+
+  const available = `c.status = 'published' AND NOT c.is_banned AND NOT EXISTS (
+    SELECT 1 FROM enrollments e
+    WHERE e.course = c.id AND e.user_id = $1
+  )`;
+
+  const rankC = `c.rating_sum::float / NULLIF(c.rating_count, 0) DESC NULLS LAST, c.students_enrolled DESC`;
+  const rank = `rating_sum::float / NULLIF(rating_count, 0) DESC NULLS LAST, students_enrolled DESC`;
+
+  if (variant === "category") {
+    const { rows } = await query(
+      `SELECT category
+      FROM courses c
+      WHERE c.status = 'published' AND NOT c.is_banned
+      GROUP BY category
+      ORDER BY COUNT(*) DESC`,
+    );
+
+    categories = rows?.map((r) => r?.category);
+    params = [id, category];
+
+    sql = `SELECT ${columns} FROM (
+        SELECT c.*, ROW_NUMBER() OVER (
+          PARTITION BY c.category ORDER BY ${rankC}
+        ) AS rn
+        FROM courses c
+        WHERE ${available}
+          AND ($2::text IS NULL OR c.category = $2)
+      ) t
+      ORDER BY rn, ${rank}
+      LIMIT 4`;
+  }
+
+  if (variant === "skills") {
+    const { rows } = await query(
+      `SELECT s AS skill
+      FROM courses c, unnest(c.skills) AS s
+      WHERE c.status = 'published' AND NOT c.is_banned
+      GROUP BY s
+      ORDER BY COUNT(*) DESC`,
+    );
+
+    skills = rows?.map((s) => s?.skill);
+    params = [id, skill];
+
+    sql = `SELECT ${columns} FROM (
+        SELECT DISTINCT ON (id) * FROM (
+          SELECT c.*, ROW_NUMBER() OVER (
+            PARTITION BY s ORDER BY ${rankC}
+          ) AS rn
+          FROM courses c, unnest(c.skills) AS s
+          WHERE ${available}
+            AND ($2::text IS NULL OR s = $2)
+        ) x
+        ORDER BY id, rn
+      ) t
+      ORDER BY rn, ${rank}
+      LIMIT 4`;
+  }
+
+  if (variant === "recommended") {
+    sql = `SELECT ${columns}
+    FROM courses c
+    WHERE ${available}
+      ORDER BY
+        (c.category IN (
+          SELECT c2.category FROM enrollments e2
+          JOIN courses c2 ON c2.id = e2.course
+          WHERE e2.user_id = $1
+        )) DESC,
+        ${rankC}
+        LIMIT 4`;
+    params = [id];
+  }
+
+  if (variant === "free") {
+    sql = `SELECT ${columns}
+    FROM courses c
+      WHERE ${available} AND c.price = 0
+      ORDER BY
+        (c.category IN (
+          SELECT c2.category FROM enrollments e2
+          JOIN courses c2 ON c2.id = e2.course
+          WHERE e2.user_id = $1
+          )) DESC,
+        ${rankC}
+        LIMIT 4`;
+    params = [id];
+  }
+
+  const { rows: courses } = await query(sql, params);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { courses, skills, categories },
+        "Courses found successfully",
+      ),
+    );
 });
 
 const getCourses = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.user?.id;
+
   const parsed = getCoursesSchema.safeParse(req.query);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((err) => err.message);
@@ -88,6 +317,8 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
      AND ($6::int IS NULL OR lessons <= $6)
      AND ($7::text IS NULL OR name ILIKE '%' || $7 || '%')
      AND status = 'published'
+     AND NOT is_banned 
+     AND NOT ($8::int IS NULL OR owner = $8)
      ORDER BY ${orderBy}
      OFFSET ${(page - 1) * limit} ROWS
      LIMIT ${limit}`,
@@ -99,16 +330,20 @@ const getCourses = asyncHandler(async (req: Request, res: Response) => {
       minLessons ?? null,
       maxLessons ?? null,
       search ?? null,
+      id ?? null,
     ],
   );
 
-  const { rows: filters } = await query(`
+  const { rows: filters } = await query(
+    `
     SELECT
       MAX(price) AS "max_price",
       MAX(lessons) AS "max_lessons",
       ARRAY_AGG(DISTINCT category ORDER BY category) FILTER (WHERE category IS NOT NULL) AS categories
     FROM courses
-    WHERE status = 'published'`);
+    WHERE status = 'published' AND NOT is_banned AND NOT ($1::int IS NULL OR owner = $1)`,
+    [id],
+  );
 
   return res.status(200).json(
     new ApiResponse(
@@ -142,7 +377,7 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
   const { courseId } = parsed.data;
 
   const { rows: course } = await query(
-    `SELECT c.id, c.name, c.tagline, c.cover, c.description, c.students_enrolled, c.owner, c.skills, c.is_banned, c.status, c.ban_reason, c.category, c.price, c.rating_sum, c.rating_count, c.lessons, c.created_at, i.name AS owner_name, i.avatar as owner_avatar 
+    `SELECT c.*, i.name AS owner_name, i.avatar as owner_avatar 
       FROM courses c
       JOIN users i ON c.owner = i.id
       WHERE c.id = $1`,
@@ -155,6 +390,10 @@ const getCourse = asyncHandler(async (req: Request, res: Response) => {
 
   if (role === "instructor" && course[0]?.owner !== id) {
     throw new ApiError(401, "Unauthorized request", ["UNAUTHORIZED"]);
+  }
+
+  if (course[0]?.is_banned) {
+    throw new ApiError(403, "Course not available", ["COURSE_BANNED"]);
   }
 
   return res
@@ -170,7 +409,7 @@ const getEnrolledCourses = asyncHandler(async (req: Request, res: Response) => {
     `SELECT c.* 
     FROM courses c 
     JOIN enrollments e ON e.course = c.id 
-    WHERE e.user_id = $1`,
+    WHERE e.user_id = $1 AND status = 'published' AND NOT is_banned`,
     [id],
   );
 
@@ -466,6 +705,12 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
     ]);
   }
 
+  if (course[0]?.is_banned) {
+    throw new ApiError(403, "Course not available to enroll", [
+      "COURSE_BANNED",
+    ]);
+  }
+
   await query("BEGIN");
 
   const { rows: enrollment } = await query(
@@ -489,11 +734,14 @@ const enrollFreeCourse = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export {
-  getSuggestions,
+  getSearchSuggestions,
   getCourses,
   getCourse,
   getEnrolledCourses,
+  getHomeCourses,
+  getCarouselCards,
   getTopEarningCourses,
+  getInstructorCourses,
   enrollFreeCourse,
   discardDraft,
   getOwnedCourses,

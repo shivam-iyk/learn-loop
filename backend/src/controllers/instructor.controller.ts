@@ -3,7 +3,6 @@ import asyncHandler from "../utils/AsyncHandler";
 import ApiError from "../utils/ApiError";
 import { query } from "../db";
 import ApiResponse from "../utils/ApiResponse";
-import { getInstructorsSchema } from "../schemas/instructor.schema";
 import { instructorIdSchema } from "../schemas/param.schema";
 
 const getOverview = asyncHandler(async (req: Request, res: Response) => {
@@ -41,8 +40,8 @@ const getPopularInstructors = asyncHandler(
     const id = req.user?.id;
     if (!id) throw new ApiError(400, "Unauthorized request", ["UNAUTHORIZED"]);
 
-    const { rows: instructors } = await query(`
-      SELECT 
+    const { rows: instructors } = await query(
+      `SELECT 
         u.id,
         u.name,
         u.avatar,
@@ -54,8 +53,8 @@ const getPopularInstructors = asyncHandler(
       JOIN courses c ON c.owner = u.id
       WHERE u.role = 'instructor' AND c.status = 'published'
       GROUP BY u.id, u.name, u.avatar, u.bio
-      ORDER BY total_students DESC
-      LIMIT 10`);
+      ORDER BY total_students DESC`,
+    );
 
     return res
       .status(200)
@@ -114,31 +113,14 @@ const getInstructor = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getInstructors = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = getInstructorsSchema.safeParse(req.query);
-  if (!parsed.success) {
-    const errors = parsed.error.issues.map((err) => err.message);
-    throw new ApiError(400, "Validation Error", errors);
-  }
-
-  const { skills, minDuration, maxDuration, minCourses, maxCourses } =
-    parsed.data;
-
   const { rows: instructors } = await query(
     `SELECT 
     u.name, u.skills, u.bio, u.avatar,
-    COALESCE(SUM(c.students_enrolled), 0) AS total_students,
-    COUNT(c.id) AS course_count
+    COUNT(c.id) AS courses
    FROM users AS u
    JOIN courses c ON c.owner = u.id AND c.status = 'published'
    WHERE u.role = 'instructor'
-   AND ($1::text IS NULL OR $1 = ANY(u.skills))
-   AND ($2::int IS NULL OR c.duration >= $2)
-   AND ($3::int IS NULL OR c.duration <= $3)
-   GROUP BY u.name, u.skills, u.bio, u.avatar
-   HAVING
-     ($4::int IS NULL OR COUNT(c.id) >= $4)
-     AND ($5::int IS NULL OR COUNT(c.id) <= $5)`,
-    [skills, minDuration, maxDuration, minCourses, maxCourses],
+   GROUP BY u.name, u.skills, u.bio, u.avatar`,
   );
 
   return res

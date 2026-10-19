@@ -14,3 +14,8 @@ export const getInstructor = async (instructorId: string | number) => {
   const { data } = await api.get(`/instructors/${instructorId}`);
   return data?.data;
 };
+
+export const getPopularInstructors = async () => {
+  const { data } = await api.get("/instructors/popular");
+  return data?.data;
+};

@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import UpgradeAlert from "../components/UpgradeAlert";
 import HomeCoursesSkeleton from "../skeletons/HomeCourses";
-import InstructorsSkeleton from "../skeletons/HomeCourses";
+import InstructorsSkeleton from "../skeletons/Instructors";
 
 const HomeCourses = lazy(() => import("../components/HomeCourses"));
 const Instructors = lazy(() => import("../components/Instructors"));
@@ -38,7 +38,7 @@ function Home() {
           path="/explore"
         />
       </Suspense>
-      <Suspense fallback={<HomeCoursesSkeleton hasVariant />}>
+      <Suspense fallback={<HomeCoursesSkeleton hasChips />}>
         <HomeCourses
           variant="category"
           title="Browse by Category"
@@ -48,7 +48,7 @@ function Home() {
       <Suspense fallback={<InstructorsSkeleton />}>
         <Instructors />
       </Suspense>
-      <Suspense fallback={<HomeCoursesSkeleton />}>
+      <Suspense fallback={<HomeCoursesSkeleton hasChips />}>
         <HomeCourses
           variant="skills"
           title="Browse by Skills"

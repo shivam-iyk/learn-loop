@@ -3,18 +3,32 @@ import { Link } from "react-router-dom";
 import useAppStore from "../store";
 import HomeCard from "./HomeCard";
 import { Button } from "@heroui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getHomeCourses } from "../services/courses";
+import HomeCoursesSkeleton from "../skeletons/HomeCourses";
 
 interface Props {
-  variant?: "recommended" | "free" | "category" | "skills";
+  variant: "recommended" | "free" | "category" | "skills";
   title: string;
   path: string;
 }
 
 function HomeCourses({ variant, title, path }: Props) {
-  const { courses } = useAppStore();
+  const { courses, setCourses } = useAppStore();
 
   const [current, setCurrent] = useState("All");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["recommended-courses", current, variant],
+    queryFn: () =>
+      getHomeCourses(
+        variant,
+        current !== "All" ? current : undefined,
+        current !== "All" ? current : undefined,
+      ),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
 
   const { categories, skills } = useMemo(() => {
     const categories = new Set<string>();
@@ -37,6 +51,19 @@ function HomeCourses({ variant, title, path }: Props) {
       skills: ["All", ...Array.from(skills).sort((a, b) => a.localeCompare(b))],
     };
   }, [courses]);
+
+  useEffect(() => {
+    if (!data) return;
+    setCourses(data?.courses);
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <HomeCoursesSkeleton
+        hasChips={["category", "skills"].includes(variant)}
+      />
+    );
+  }
 
   return (
     <div className="w-full">

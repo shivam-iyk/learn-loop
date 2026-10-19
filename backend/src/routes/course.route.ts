@@ -4,21 +4,30 @@ import {
   discardDraft,
   editCourse,
   enrollFreeCourse,
+  getCarouselCards,
   getCourse,
   getCourses,
   getEnrolledCourses,
+  getHomeCourses,
+  getInstructorCourses,
   getOwnedCourses,
-  getSuggestions,
+  getSearchSuggestions,
   getTopEarningCourses,
 } from "../controllers/course.controller";
-import verifyJWT from "../middlewares/auth.middleware";
+import verifyJWT, { identifyUser } from "../middlewares/auth.middleware";
 import upload from "../middlewares/multer.middleware";
 
 const router = Router();
 
-router.get("/", getCourses);
+router.get("/", identifyUser, getCourses);
 
-router.get("/suggestions", getSuggestions);
+router.get("/search-suggestions", identifyUser, getSearchSuggestions);
+
+router.get("/instructor/:instructorId", getInstructorCourses);
+
+router.get("/home", identifyUser, getHomeCourses);
+
+router.get("/carousel", identifyUser, getCarouselCards);
 
 router.use(verifyJWT);
 
